@@ -18,8 +18,6 @@ namespace TruckRemoteControlServer
 
         int clientsCount = 0;
         public static bool paused = false;
-        private bool running = true;
-        private string lastMessage = "";
 
         private UdpClient udpClient;
         private PCController controller = new PCController();
@@ -111,7 +109,7 @@ namespace TruckRemoteControlServer
                 } else if (paused)
                 {
                     paused = false;
-                    PostStatusTextAndColor("Enabled", Color.ForestGreen);
+                    PostStatusTextAndColor("Client connected", Color.ForestGreen);
                 }
                 else if (clientMessage.Contains("disconnected"))
                 {
@@ -132,25 +130,12 @@ namespace TruckRemoteControlServer
                 controller.updateBreakGasState(breakClicked, gasClicked);
                 controller.updateTurnSignals(leftSignalEnabled, rightSignalEnabled);
                 controller.updateParkingBrake(parkingBrakeEnabled);
-
-                lastMessage = clientMessage;
             }
-        }
-
-
-        public bool IsRunning()
-        {
-            return running;
         }
 
         public bool IsConnected()
         {
             return clientsCount > 0;
-        }
-
-        public string getLastMessage()
-        {
-            return lastMessage;
         }
 
         public void Stop()
@@ -159,8 +144,8 @@ namespace TruckRemoteControlServer
             {
                 udpClient.Close();
             }
-            catch (Exception) { }
-            running = false;
+            catch (Exception) {
+            }
         }
 
         private void PostStatusTextAndColor(string labelText, Color color)

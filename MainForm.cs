@@ -25,5 +25,10 @@ namespace TruckRemoteControlServer
             server = new UDPServer();
             server.Start();
         }
+
+        private void NumericUpPort_ValueChanged(object sender, EventArgs e)
+        {
+            //if(numericUpPort.text)
+        }
     }
 }

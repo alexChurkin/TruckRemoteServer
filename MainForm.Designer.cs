@@ -33,12 +33,12 @@
             this.numericUpPort = new System.Windows.Forms.NumericUpDown();
             this.buttonPause = new System.Windows.Forms.Button();
             this.buttonStart = new System.Windows.Forms.Button();
-            this.trackBar1 = new System.Windows.Forms.TrackBar();
+            this.sensitivityTrackBar = new System.Windows.Forms.TrackBar();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -94,6 +94,7 @@
             this.buttonPause.TabIndex = 5;
             this.buttonPause.Text = "Pause";
             this.buttonPause.UseVisualStyleBackColor = true;
+            this.buttonPause.Click += new System.EventHandler(this.ButtonPause_Click);
             // 
             // buttonStart
             // 
@@ -105,13 +106,18 @@
             this.buttonStart.TabIndex = 6;
             this.buttonStart.Text = "Start";
             this.buttonStart.UseVisualStyleBackColor = true;
+            this.buttonStart.Click += new System.EventHandler(this.ButtonStart_Click);
             // 
-            // trackBar1
+            // sensitivityTrackBar
             // 
-            this.trackBar1.Location = new System.Drawing.Point(169, 85);
-            this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(131, 45);
-            this.trackBar1.TabIndex = 7;
+            this.sensitivityTrackBar.Location = new System.Drawing.Point(169, 85);
+            this.sensitivityTrackBar.Maximum = 40;
+            this.sensitivityTrackBar.Minimum = 10;
+            this.sensitivityTrackBar.Name = "sensitivityTrackBar";
+            this.sensitivityTrackBar.Size = new System.Drawing.Size(141, 45);
+            this.sensitivityTrackBar.TabIndex = 7;
+            this.sensitivityTrackBar.Value = 20;
+            this.sensitivityTrackBar.Scroll += new System.EventHandler(this.SensitivityTrackBar_Scroll);
             // 
             // label3
             // 
@@ -152,7 +158,7 @@
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.trackBar1);
+            this.Controls.Add(this.sensitivityTrackBar);
             this.Controls.Add(this.buttonStart);
             this.Controls.Add(this.buttonPause);
             this.Controls.Add(this.numericUpPort);
@@ -165,7 +171,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Truck Remote Control Server";
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -177,7 +183,7 @@
         private System.Windows.Forms.NumericUpDown numericUpPort;
         private System.Windows.Forms.Button buttonPause;
         private System.Windows.Forms.Button buttonStart;
-        private System.Windows.Forms.TrackBar trackBar1;
+        private System.Windows.Forms.TrackBar sensitivityTrackBar;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;

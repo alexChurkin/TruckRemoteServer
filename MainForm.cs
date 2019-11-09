@@ -30,5 +30,20 @@ namespace TruckRemoteControlServer
         {
             //if(numericUpPort.text)
         }
+
+        private void ButtonPause_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ButtonStart_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void SensitivityTrackBar_Scroll(object sender, EventArgs e)
+        {
+            PCController.Sensitivity = sensitivityTrackBar.Value;
+        }
     }
 }

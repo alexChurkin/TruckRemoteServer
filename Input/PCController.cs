@@ -3,6 +3,8 @@ namespace TruckRemoteControlServer
 {
     class PCController
     {
+        public static int Sensitivity = 20;
+
         private int prevValue, newValue;
         private bool prevBreakClicked, prevGasClicked;
         private bool prevLeftSignal, prevRightSignal;
@@ -20,9 +22,10 @@ namespace TruckRemoteControlServer
 
         public void updateAccelerometerValue(double accelerometerValue)
         {
-            prevValue = newValue;
             newValue = getNewCursorOffset(accelerometerValue);
             InputEmulator.Move(newValue - prevValue);
+
+            prevValue = newValue;
         }
 
         public void updateBreakGasState(bool breakClicked, bool gasClicked)
@@ -193,8 +196,7 @@ namespace TruckRemoteControlServer
 
         private int getNewCursorOffset(double accelerometerValue)
         {
-            //20 - sensitivity
-            return (int) (accelerometerValue * (20 * 1.5));
+            return (int) (accelerometerValue * (Sensitivity * 1.5));
         }
     }
 }

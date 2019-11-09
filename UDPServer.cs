@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Net;
 using System.Diagnostics;
 using System.Globalization;
+using System.Windows.Forms;
+using System.Drawing;
 
 namespace TruckRemoteControlServer
 {
@@ -17,10 +19,21 @@ namespace TruckRemoteControlServer
         int clientsCount = 0;
         public static bool paused = false;
         private bool running = true;
-        private string lastMessage = "0,false,false,false,false,false";
+        private string lastMessage = "";
 
         private UdpClient udpClient;
         private PCController controller = new PCController();
+
+        private Label labelStatus;
+        private Button buttonStop;
+        private Button buttonStart;
+
+        public UDPServer(Label labelStatus, Button buttonStop, Button buttonStart)
+        {
+            this.labelStatus = labelStatus;
+            this.buttonStart = buttonStart;
+            this.buttonStop = buttonStop;
+        }
 
         public void Start()
         {
@@ -44,11 +57,17 @@ namespace TruckRemoteControlServer
             catch (Exception e)
             {
                 Debug.WriteLine($"Exception with UDPServer: {e.Message}");
+                PostStatusTextAndColor("No connection", Color.OrangeRed);
+                NotifyButtonsIsConnected(false);
+                //TODO Disable stop and enable start
             }
         }
 
         private void StartListeningForConnection()
         {
+            PostStatusTextAndColor("Enabled", Color.ForestGreen);
+            NotifyButtonsIsConnected(true);
+
             IPEndPoint anyIpEndPoint = null;
 
             while (true)
@@ -70,7 +89,7 @@ namespace TruckRemoteControlServer
 
         private void ListenRemoteClient(IPEndPoint specificClientEndPoint)
         {
-            Debug.WriteLine("Started listening");
+            PostStatusTextAndColor("Client connected", Color.ForestGreen);
             IPEndPoint newEndPoint = null;
             udpClient.Connect(specificClientEndPoint);
             udpClient.Client.ReceiveTimeout = 10000;
@@ -86,8 +105,15 @@ namespace TruckRemoteControlServer
 
                 if (clientMessage.Contains("paused"))
                 {
+                    paused = true;
+                    PostStatusTextAndColor("Paused by client", Color.ForestGreen);
                     continue;
-                } else if (clientMessage.Contains("disconnected"))
+                } else if (paused)
+                {
+                    paused = false;
+                    PostStatusTextAndColor("Enabled", Color.ForestGreen);
+                }
+                else if (clientMessage.Contains("disconnected"))
                 {
                     Debug.WriteLine("disconnected!!!! ");
                 }
@@ -106,6 +132,8 @@ namespace TruckRemoteControlServer
                 controller.updateBreakGasState(breakClicked, gasClicked);
                 controller.updateTurnSignals(leftSignalEnabled, rightSignalEnabled);
                 controller.updateParkingBrake(parkingBrakeEnabled);
+
+                lastMessage = clientMessage;
             }
         }
 
@@ -131,8 +159,29 @@ namespace TruckRemoteControlServer
             {
                 udpClient.Close();
             }
-            catch (Exception) {}
+            catch (Exception) { }
             running = false;
         }
+
+        private void PostStatusTextAndColor(string labelText, Color color)
+        {
+            labelStatus.BeginInvoke((MethodInvoker)delegate ()
+            {
+                this.labelStatus.Text = labelText;
+                this.labelStatus.ForeColor = color;
+            });
         }
+
+        private void NotifyButtonsIsConnected(bool isConnected)
+        {
+            buttonStop.BeginInvoke((MethodInvoker)delegate ()
+            {
+                this.buttonStop.Enabled = isConnected;
+            });
+            buttonStart.BeginInvoke((MethodInvoker)delegate ()
+            {
+                this.buttonStart.Enabled = !isConnected;
+            });
+        }
+    }
 }

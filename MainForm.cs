@@ -44,7 +44,7 @@ namespace TruckRemoteControlServer
 
         public void StartUDPServer()
         {
-            server = new UDPServer();
+            server = new UDPServer(labelStatus, buttonStop, buttonStart);
             server.Start();
         }
 
@@ -78,6 +78,11 @@ namespace TruckRemoteControlServer
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             server.Stop();
+        }
+
+        private void BackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+
         }
     }
 }

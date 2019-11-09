@@ -113,7 +113,7 @@
             // 
             // sensitivityTrackBar
             // 
-            this.sensitivityTrackBar.Location = new System.Drawing.Point(169, 85);
+            this.sensitivityTrackBar.Location = new System.Drawing.Point(163, 85);
             this.sensitivityTrackBar.Maximum = 39;
             this.sensitivityTrackBar.Minimum = 10;
             this.sensitivityTrackBar.Name = "sensitivityTrackBar";
@@ -126,7 +126,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label3.Location = new System.Drawing.Point(175, 18);
+            this.label3.Location = new System.Drawing.Point(169, 13);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(61, 20);
             this.label3.TabIndex = 8;
@@ -136,7 +136,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label4.Location = new System.Drawing.Point(176, 66);
+            this.label4.Location = new System.Drawing.Point(170, 66);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(71, 16);
             this.label4.TabIndex = 9;
@@ -190,7 +190,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(322, 256);
+            this.ClientSize = new System.Drawing.Size(315, 256);
             this.Controls.Add(this.labelSensitivity);
             this.Controls.Add(this.labelIp);
             this.Controls.Add(this.label7);

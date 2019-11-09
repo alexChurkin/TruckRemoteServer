@@ -31,19 +31,23 @@ namespace TruckRemoteControlServer
             //if(numericUpPort.text)
         }
 
-        private void ButtonPause_Click(object sender, EventArgs e)
+        private void ButtonStop_Click(object sender, EventArgs e)
         {
-
+            server.Stop();
+            buttonStop.Enabled = false;
+            buttonStart.Enabled = true;
         }
 
         private void ButtonStart_Click(object sender, EventArgs e)
         {
-
+            server.port = (int) numericUpPort.Value;
+            server.Start();
         }
 
         private void SensitivityTrackBar_Scroll(object sender, EventArgs e)
         {
             PCController.Sensitivity = sensitivityTrackBar.Value;
+            labelSensitivity.Text = (sensitivityTrackBar.Value - 9).ToString();
         }
     }
 }

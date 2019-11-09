@@ -12,8 +12,7 @@ namespace TruckRemoteControlServer
 {
     public class UDPServer
     {
-        private int ip;
-        private int port = new Random().Next(49152, 65535);
+        public int port = 18250;
 
         int clientsCount = 0;
         public static bool paused = false;
@@ -35,7 +34,7 @@ namespace TruckRemoteControlServer
             {
                 IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
                 IPAddress ipAddress = IPAddress.Parse("0.0.0.0");
-                IPEndPoint localIpEndPoint = new IPEndPoint(ipAddress, 18250);
+                IPEndPoint localIpEndPoint = new IPEndPoint(ipAddress, port);
 
                 Debug.WriteLine("UDP Client created");
                 udpClient = new UdpClient(localIpEndPoint);

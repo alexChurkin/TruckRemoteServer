@@ -24,9 +24,7 @@ namespace TruckRemoteControlServer
             IPHostEntry ipEntry = Dns.GetHostByName(strHostName);
             IPAddress[] addr = ipEntry.AddressList;
 
-            string userIPAddress = string.Empty;
-            userIPAddress = addr[0].ToString();
-            labelIp.Text = userIPAddress;
+            labelIp.Text = addr[0].ToString();
 
             StartUDPServer();
         }
@@ -59,6 +57,11 @@ namespace TruckRemoteControlServer
         {
             PCController.Sensitivity = sensitivityTrackBar.Value;
             labelSensitivity.Text = (sensitivityTrackBar.Value - 9).ToString();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            server.Stop();
         }
     }
 }

@@ -45,17 +45,14 @@ namespace TruckRemoteControlServer
                 IPAddress ipAddress = IPAddress.Parse("0.0.0.0");
                 IPEndPoint localIpEndPoint = new IPEndPoint(ipAddress, port);
 
-                Debug.WriteLine("UDP Client created");
                 udpClient = new UdpClient(localIpEndPoint);
 
                 StartListeningForConnection();
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Debug.WriteLine($"Exception with UDPServer: {e.Message}");
                 PostStatusTextAndColor("Disabled", Color.OrangeRed);
                 NotifyButtonsIsConnected(false);
-                //TODO Disable stop and enable start
             }
         }
 
@@ -76,8 +73,11 @@ namespace TruckRemoteControlServer
                     Debug.WriteLine("Hello received!");
                     byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
                     udpClient.Send(bytesToAnswer, bytesToAnswer.Length, anyIpEndPoint);
+
                     ListenRemoteClient(anyIpEndPoint);
-                    udpClient.Client.ReceiveTimeout = -1;
+                    udpClient.Close();
+
+                    LaunchServer();
                     PostStatusTextAndColor("Enabled", Color.ForestGreen);
                 }
             }
@@ -113,11 +113,6 @@ namespace TruckRemoteControlServer
                         paused = false;
                         PostStatusTextAndColor("Client connected", Color.ForestGreen);
                     }
-                    else if (clientMessage.Contains("disconnected"))
-                    {
-                        Debug.WriteLine("disconnected!!!! ");
-                    }
-
 
                     string[] msgParts = clientMessage.Split(',');
 
@@ -134,7 +129,8 @@ namespace TruckRemoteControlServer
                     controller.updateParkingBrake(parkingBrakeEnabled);
                 }
             }
-            catch (SocketException) {
+            catch (SocketException)
+            {
                 return;
             }
         }

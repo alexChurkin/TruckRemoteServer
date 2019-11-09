@@ -15,6 +15,7 @@ namespace TruckRemoteControlServer
         public int port = 18250;
 
         int clientsCount = 0;
+        public bool enabled = true;
         public static bool paused = false;
 
         private UdpClient udpClient;
@@ -39,6 +40,7 @@ namespace TruckRemoteControlServer
 
         public void LaunchServer()
         {
+            enabled = true;
             try
             {
                 IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
@@ -77,8 +79,12 @@ namespace TruckRemoteControlServer
                     ListenRemoteClient(anyIpEndPoint);
                     udpClient.Close();
 
-                    LaunchServer();
-                    PostStatusTextAndColor("Enabled", Color.ForestGreen);
+                    if (enabled)
+                    {
+                        LaunchServer();
+                        PostStatusTextAndColor("Enabled", Color.ForestGreen);
+                        NotifyButtonsIsConnected(true);
+                    }
                 }
             }
         }
@@ -142,6 +148,7 @@ namespace TruckRemoteControlServer
 
         public void Stop()
         {
+            enabled = false;
             try
             {
                 udpClient.Close();

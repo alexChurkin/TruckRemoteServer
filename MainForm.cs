@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace TruckRemoteControlServer
@@ -37,7 +30,10 @@ namespace TruckRemoteControlServer
 
         private void NumericUpPort_ValueChanged(object sender, EventArgs e)
         {
-            //if(numericUpPort.text)
+            if(numericUpPort.Text.Trim() == "" || numericUpPort.Text.Trim() == "0")
+            {
+                numericUpPort.ResetText();
+            }
         }
 
         private void ButtonStop_Click(object sender, EventArgs e)

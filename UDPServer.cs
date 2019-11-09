@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Net.Sockets;
@@ -55,7 +53,7 @@ namespace TruckRemoteControlServer
             catch (Exception e)
             {
                 Debug.WriteLine($"Exception with UDPServer: {e.Message}");
-                PostStatusTextAndColor("No connection", Color.OrangeRed);
+                PostStatusTextAndColor("Disabled", Color.OrangeRed);
                 NotifyButtonsIsConnected(false);
                 //TODO Disable stop and enable start
             }
@@ -80,7 +78,7 @@ namespace TruckRemoteControlServer
                     udpClient.Send(bytesToAnswer, bytesToAnswer.Length, anyIpEndPoint);
                     ListenRemoteClient(anyIpEndPoint);
                     udpClient.Client.ReceiveTimeout = -1;
-                    Debug.WriteLine("Listening for remote client ended");
+                    PostStatusTextAndColor("Enabled", Color.ForestGreen);
                 }
             }
         }
@@ -90,46 +88,54 @@ namespace TruckRemoteControlServer
             PostStatusTextAndColor("Client connected", Color.ForestGreen);
             IPEndPoint newEndPoint = null;
             udpClient.Connect(specificClientEndPoint);
-            udpClient.Client.ReceiveTimeout = 10000;
+            udpClient.Client.ReceiveTimeout = 5000;
 
-            while (true)
+            try
             {
-                byte[] receivedBytes = udpClient.Receive(ref newEndPoint);
-                if (!newEndPoint.Address.Equals(specificClientEndPoint.Address)) continue;
-
-                string clientMessage = Encoding.UTF8.GetString(receivedBytes);
-
-                Debug.WriteLine(clientMessage);
-
-                if (clientMessage.Contains("paused"))
+                while (true)
                 {
-                    paused = true;
-                    PostStatusTextAndColor("Paused by client", Color.ForestGreen);
-                    continue;
-                } else if (paused)
-                {
-                    paused = false;
-                    PostStatusTextAndColor("Client connected", Color.ForestGreen);
+                    byte[] receivedBytes = udpClient.Receive(ref newEndPoint);
+
+                    if (!newEndPoint.Address.Equals(specificClientEndPoint.Address)) continue;
+
+                    string clientMessage = Encoding.UTF8.GetString(receivedBytes);
+
+                    Debug.WriteLine(clientMessage);
+
+                    if (clientMessage.Contains("paused"))
+                    {
+                        paused = true;
+                        PostStatusTextAndColor("Paused by client", Color.ForestGreen);
+                        continue;
+                    }
+                    else if (paused)
+                    {
+                        paused = false;
+                        PostStatusTextAndColor("Client connected", Color.ForestGreen);
+                    }
+                    else if (clientMessage.Contains("disconnected"))
+                    {
+                        Debug.WriteLine("disconnected!!!! ");
+                    }
+
+
+                    string[] msgParts = clientMessage.Split(',');
+
+                    double accelerometerValue = double.Parse(msgParts[0], CultureInfo.InvariantCulture);
+                    bool breakClicked = bool.Parse(msgParts[1]);
+                    bool gasClicked = bool.Parse(msgParts[2]);
+                    bool leftSignalEnabled = bool.Parse(msgParts[3]);
+                    bool rightSignalEnabled = bool.Parse(msgParts[4]);
+                    bool parkingBrakeEnabled = bool.Parse(msgParts[5]);
+
+                    controller.updateAccelerometerValue(accelerometerValue);
+                    controller.updateBreakGasState(breakClicked, gasClicked);
+                    controller.updateTurnSignals(leftSignalEnabled, rightSignalEnabled);
+                    controller.updateParkingBrake(parkingBrakeEnabled);
                 }
-                else if (clientMessage.Contains("disconnected"))
-                {
-                    Debug.WriteLine("disconnected!!!! ");
-                }
-
-
-                string[] msgParts = clientMessage.Split(',');
-
-                double accelerometerValue = double.Parse(msgParts[0], CultureInfo.InvariantCulture);
-                bool breakClicked = bool.Parse(msgParts[1]);
-                bool gasClicked = bool.Parse(msgParts[2]);
-                bool leftSignalEnabled = bool.Parse(msgParts[3]);
-                bool rightSignalEnabled = bool.Parse(msgParts[4]);
-                bool parkingBrakeEnabled = bool.Parse(msgParts[5]);
-
-                controller.updateAccelerometerValue(accelerometerValue);
-                controller.updateBreakGasState(breakClicked, gasClicked);
-                controller.updateTurnSignals(leftSignalEnabled, rightSignalEnabled);
-                controller.updateParkingBrake(parkingBrakeEnabled);
+            }
+            catch (SocketException) {
+                return;
             }
         }
 
@@ -144,7 +150,8 @@ namespace TruckRemoteControlServer
             {
                 udpClient.Close();
             }
-            catch (Exception) {
+            catch (Exception)
+            {
             }
         }
 

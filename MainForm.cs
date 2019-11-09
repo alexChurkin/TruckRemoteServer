@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,6 +18,16 @@ namespace TruckRemoteControlServer
         public MainForm()
         {
             InitializeComponent();
+            string strHostName = string.Empty;
+
+            strHostName = Dns.GetHostName();
+            IPHostEntry ipEntry = Dns.GetHostByName(strHostName);
+            IPAddress[] addr = ipEntry.AddressList;
+
+            string userIPAddress = string.Empty;
+            userIPAddress = addr[0].ToString();
+            labelIp.Text = userIPAddress;
+
             StartUDPServer();
         }
 

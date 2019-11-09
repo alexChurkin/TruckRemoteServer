@@ -11,15 +11,35 @@ namespace TruckRemoteControlServer
         public MainForm()
         {
             InitializeComponent();
-            string strHostName = string.Empty;
+            ShowIpInLabel();
+            StartUDPServer();
+        }
 
-            strHostName = Dns.GetHostName();
-            IPHostEntry ipEntry = Dns.GetHostByName(strHostName);
+        public void ShowIpInLabel()
+        {
+            IPHostEntry ipEntry = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress[] addr = ipEntry.AddressList;
 
-            labelIp.Text = addr[0].ToString();
+            string addr192String = string.Empty;
 
-            StartUDPServer();
+            foreach (IPAddress address in addr)
+            {
+                string addressString = address.ToString();
+                if (addressString.StartsWith("192"))
+                {
+                    addr192String = addressString;
+                    break;
+                }
+            }
+
+            if (addr192String != string.Empty)
+            {
+                labelIp.Text = addr192String;
+            }
+            else
+            {
+                labelIp.Text = addr[0].ToString();
+            }
         }
 
         public void StartUDPServer()

@@ -62,6 +62,7 @@ namespace TruckRemoteControlServer
                     byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
                     udpClient.Send(bytesToAnswer, bytesToAnswer.Length, anyIpEndPoint);
                     ListenRemoteClient(anyIpEndPoint);
+                    udpClient.Client.ReceiveTimeout = -1;
                     Debug.WriteLine("Listening for remote client ended");
                 }
             }
@@ -72,7 +73,9 @@ namespace TruckRemoteControlServer
             Debug.WriteLine("Started listening");
             IPEndPoint newEndPoint = null;
             udpClient.Connect(specificClientEndPoint);
-            while(true)
+            udpClient.Client.ReceiveTimeout = 10000;
+
+            while (true)
             {
                 byte[] receivedBytes = udpClient.Receive(ref newEndPoint);
                 if (!newEndPoint.Address.Equals(specificClientEndPoint.Address)) continue;
@@ -83,7 +86,6 @@ namespace TruckRemoteControlServer
 
                 if (clientMessage.Contains("paused"))
                 {
-                    //
                     continue;
                 } else if (clientMessage.Contains("disconnected"))
                 {

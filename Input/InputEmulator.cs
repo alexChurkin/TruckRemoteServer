@@ -10,7 +10,13 @@ namespace TruckRemoteControlServer
 
         public static void Move(int xDelta)
         {
-            mouse_event((int)MOUSEEVENTF.MOVE, xDelta, 0, 0, 0);
+            INPUT input = new INPUT();
+            input.type = (int)InputType.INPUT_MOUSE;
+            input.mi.dwFlags = (int)MOUSEEVENTF.MOVE;
+            input.mi.dx = xDelta;
+            SendInput(1, new INPUT[] { input }, Marshal.SizeOf(input));
+
+            //mouse_event((int)MOUSEEVENTF.MOVE, xDelta, 0, 0, 0);
         }
 
         public static void KeyClick(short scanCode)

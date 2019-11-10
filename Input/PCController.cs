@@ -1,11 +1,12 @@
-﻿
-namespace TruckRemoteControlServer
+﻿namespace TruckRemoteControlServer
 {
     class PCController
     {
         public static int Sensitivity = 20;
 
         private int prevValue, newValue;
+        private int prevMovement;
+
         private bool prevBreakClicked, prevGasClicked;
         private bool prevLeftSignal, prevRightSignal;
         private bool wasParkingBreakEnabled;
@@ -23,9 +24,12 @@ namespace TruckRemoteControlServer
         public void updateAccelerometerValue(double accelerometerValue)
         {
             newValue = getNewCursorOffset(accelerometerValue);
-            InputEmulator.Move(newValue - prevValue);
+            int newMovement = newValue - prevValue;
 
+            int finalMovement = (int) (prevMovement + 0.8 * (newMovement - prevMovement));
+            InputEmulator.Move(finalMovement);
             prevValue = newValue;
+            prevMovement = newMovement;
         }
 
         public void updateBreakGasState(bool breakClicked, bool gasClicked)
@@ -196,7 +200,7 @@ namespace TruckRemoteControlServer
 
         private int getNewCursorOffset(double accelerometerValue)
         {
-            return (int) (accelerometerValue * (Sensitivity * 1.5));
+            return (int)(accelerometerValue * (Sensitivity * 1.5));
         }
     }
 }

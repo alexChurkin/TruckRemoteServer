@@ -14,7 +14,6 @@ namespace TruckRemoteControlServer
     {
         public int port = 18250;
 
-        int clientsCount = 0;
         public bool enabled = true;
         public static bool paused = false;
 
@@ -139,11 +138,6 @@ namespace TruckRemoteControlServer
             {
                 return;
             }
-        }
-
-        public bool IsConnected()
-        {
-            return clientsCount > 0;
         }
 
         public void Stop()

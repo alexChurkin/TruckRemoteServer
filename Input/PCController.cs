@@ -24,12 +24,7 @@
         public void updateAccelerometerValue(double accelerometerValue)
         {
             newValue = getNewCursorOffset(accelerometerValue);
-            int newMovement = newValue - prevValue;
-
-            int finalMovement = (int) (prevMovement + 0.8 * (newMovement - prevMovement));
-            InputEmulator.Move(finalMovement);
-            prevValue = newValue;
-            prevMovement = newMovement;
+            InputEmulator.MoveTo(newValue);
         }
 
         public void updateBreakGasState(bool breakClicked, bool gasClicked)

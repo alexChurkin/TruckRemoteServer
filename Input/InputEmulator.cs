@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 namespace TruckRemoteControlServer
 {
     public static class InputEmulator
     {
-        public static int screenWidth = Screen.PrimaryScreen.Bounds.Width;
-
         public static void Move(int xDelta)
         {
             INPUT input = new INPUT();
@@ -15,8 +12,15 @@ namespace TruckRemoteControlServer
             input.mi.dwFlags = (int)MOUSEEVENTF.MOVE;
             input.mi.dx = xDelta;
             SendInput(1, new INPUT[] { input }, Marshal.SizeOf(input));
+        }
 
-            //mouse_event((int)MOUSEEVENTF.MOVE, xDelta, 0, 0, 0);
+        public static void MoveTo(int xCoord)
+        {
+            INPUT input = new INPUT();
+            input.type = (int)InputType.INPUT_MOUSE;
+            input.mi.dwFlags = (int)MOUSEEVENTF.MOVE | (int)MOUSEEVENTF.ABSOLUTE;
+            input.mi.dx = xCoord;
+            SendInput(1, new INPUT[] { input }, Marshal.SizeOf(input));
         }
 
         public static void KeyClick(short scanCode)
@@ -64,9 +68,6 @@ namespace TruckRemoteControlServer
 
 
         /*................................................................................................*/
-        [DllImport("user32.dll")]
-        private static extern void mouse_event(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
-
         [DllImport("user32.dll", SetLastError = true)]
         public static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 

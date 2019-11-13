@@ -2,7 +2,7 @@
 {
     class PCController
     {
-        public static int Sensitivity = 20;
+        public static int Sensitivity = 18;
 
         private int prevValue, newValue;
         private int prevMovement;
@@ -23,12 +23,10 @@
 
         public void updateAccelerometerValue(double accelerometerValue)
         {
-            newValue = getNewCursorOffset(accelerometerValue);
-            int newMovement = newValue - prevValue;
+            int newMovement = getNewCursorOffset(accelerometerValue);
 
-            int finalMove = (int)(prevMovement + (newMovement - prevMovement) * 0.8);
-            InputEmulator.Move(finalMove);
-            prevValue = newValue;
+            int finalMove = (int)(prevMovement + (newMovement - prevMovement) * 0.7);
+            InputEmulator.MoveTo(finalMove);
             prevMovement = newMovement;
         }
 

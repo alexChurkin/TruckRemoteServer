@@ -1,4 +1,6 @@
-﻿namespace TruckRemoteControlServer
+﻿using System;
+
+namespace TruckRemoteControlServer
 {
     class PCController
     {
@@ -236,7 +238,9 @@
                 } else
                 {
                     InputEmulator.KeyRelease(DIK_H_SCAN);
+                    Console.WriteLine("released H");
                 }
+                prevHornState = isHorn;
             }
         }
 

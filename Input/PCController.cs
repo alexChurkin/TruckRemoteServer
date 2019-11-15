@@ -10,6 +10,7 @@
         private bool prevBreakClicked, prevGasClicked;
         private bool prevLeftSignal, prevRightSignal;
         private bool wasParkingBreakEnabled;
+        private int prevLightsState;
 
         private int lastConditionNumber = -1;
 
@@ -19,6 +20,8 @@
         private byte DIK_CLOSE_BRACKET_SCAN = 0x1B;
         private byte DIK_F_SCAN = 0x21;
         private byte DIK_SPACE_SCAN = 0x39;
+        private byte DIK_L_SCAN = 0x26;
+        private byte DIK_K_SCAN = 0x25;
 
 
         public void updateAccelerometerValue(double accelerometerValue)
@@ -193,6 +196,31 @@
             {
                 wasParkingBreakEnabled = isParkingBrakeEnabled;
                 InputEmulator.KeyClick(DIK_SPACE_SCAN);
+            }
+        }
+
+        public void updateLights(int lightsState)
+        {
+            if(lightsState != prevLightsState)
+            {
+                prevLightsState = lightsState;
+
+                switch(lightsState)
+                {
+                    case 0:
+                        InputEmulator.KeyClick(DIK_K_SCAN);
+                        InputEmulator.KeyClick(DIK_L_SCAN);
+                        break;
+                    case 1:
+                        InputEmulator.KeyClick(DIK_L_SCAN);
+                        break;
+                    case 2:
+                        InputEmulator.KeyClick(DIK_L_SCAN);
+                        break;
+                    case 3:
+                        InputEmulator.KeyClick(DIK_K_SCAN);
+                        break;
+                }
             }
         }
 

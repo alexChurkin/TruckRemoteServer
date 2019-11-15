@@ -6,7 +6,6 @@ namespace TruckRemoteControlServer
     {
         public static int Sensitivity = 18;
 
-        private int prevValue, newValue;
         private int prevMovement;
 
         private bool prevBreakClicked, prevGasClicked;
@@ -34,7 +33,7 @@ namespace TruckRemoteControlServer
 
             int finalMove = (int)(prevMovement + (newMovement - prevMovement) * 0.7);
             InputEmulator.MoveTo(finalMove);
-            prevMovement = newMovement;
+            prevMovement = finalMove;
         }
 
         public void updateBreakGasState(bool breakClicked, bool gasClicked)

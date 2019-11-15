@@ -128,12 +128,14 @@ namespace TruckRemoteControlServer
                     bool rightSignalEnabled = bool.Parse(msgParts[4]);
                     bool parkingBrakeEnabled = bool.Parse(msgParts[5]);
                     int lightsState = int.Parse(msgParts[6]);
+                    bool isHorn = bool.Parse(msgParts[7]);
 
                     controller.updateAccelerometerValue(accelerometerValue);
                     controller.updateBreakGasState(breakClicked, gasClicked);
                     controller.updateTurnSignals(leftSignalEnabled, rightSignalEnabled);
                     controller.updateParkingBrake(parkingBrakeEnabled);
                     controller.updateLights(lightsState);
+                    controller.updateHorn(isHorn);
                 }
             }
             catch (SocketException)

@@ -11,6 +11,7 @@
         private bool prevLeftSignal, prevRightSignal;
         private bool wasParkingBreakEnabled;
         private int prevLightsState;
+        private bool prevHornState;
 
         private int lastConditionNumber = -1;
 
@@ -22,6 +23,7 @@
         private byte DIK_SPACE_SCAN = 0x39;
         private byte DIK_L_SCAN = 0x26;
         private byte DIK_K_SCAN = 0x25;
+        private byte DIK_H_SCAN = 0x23;
 
 
         public void updateAccelerometerValue(double accelerometerValue)
@@ -220,6 +222,20 @@
                     case 3:
                         InputEmulator.KeyClick(DIK_K_SCAN);
                         break;
+                }
+            }
+        }
+
+        public void updateHorn(bool isHorn)
+        {
+            if(isHorn != prevHornState)
+            {
+                if(isHorn)
+                {
+                    InputEmulator.KeyPress(DIK_H_SCAN);
+                } else
+                {
+                    InputEmulator.KeyRelease(DIK_H_SCAN);
                 }
             }
         }

@@ -11,8 +11,17 @@ namespace TruckRemoteControlServer
         public MainForm()
         {
             InitializeComponent();
+            int sensitivity = Properties.Settings.Default.Sensitivity;
+            decimal port = Properties.Settings.Default.Port;
+            sensitivityTrackBar.Value = sensitivity;
+            labelSensitivity.Text = sensitivity.ToString();
+            numericUpPort.Value = port;
+
             ShowIpInLabel();
-            StartUDPServer();
+
+            server = new UDPServer(labelStatus, buttonStop, buttonStart);
+            server.port = (int) port;
+            server.Start();
         }
 
         public void ShowIpInLabel()
@@ -42,18 +51,15 @@ namespace TruckRemoteControlServer
             }
         }
 
-        public void StartUDPServer()
-        {
-            server = new UDPServer(labelStatus, buttonStop, buttonStart);
-            server.Start();
-        }
-
         private void NumericUpPort_ValueChanged(object sender, EventArgs e)
         {
             if(numericUpPort.Text.Trim() == "" || numericUpPort.Text.Trim() == "0")
             {
                 numericUpPort.ResetText();
+                Properties.Settings.Default.Port = 18250;
             }
+            Properties.Settings.Default.Port = numericUpPort.Value;
+            Properties.Settings.Default.Save();
         }
 
         private void ButtonStop_Click(object sender, EventArgs e)
@@ -73,6 +79,9 @@ namespace TruckRemoteControlServer
         {
             PCController.Sensitivity = sensitivityTrackBar.Value;
             labelSensitivity.Text = (sensitivityTrackBar.Value).ToString();
+
+            Properties.Settings.Default.Sensitivity = sensitivityTrackBar.Value;
+            Properties.Settings.Default.Save();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

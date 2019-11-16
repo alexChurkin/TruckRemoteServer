@@ -4,7 +4,7 @@ namespace TruckRemoteControlServer
 {
     class PCController
     {
-        public static int Sensitivity = 18;
+        public static int Sensitivity = 30;
 
         private int prevMovement;
 

@@ -114,12 +114,13 @@
             // sensitivityTrackBar
             // 
             this.sensitivityTrackBar.Location = new System.Drawing.Point(163, 85);
-            this.sensitivityTrackBar.Maximum = 39;
-            this.sensitivityTrackBar.Minimum = 10;
+            this.sensitivityTrackBar.Maximum = 100;
+            this.sensitivityTrackBar.Minimum = 1;
             this.sensitivityTrackBar.Name = "sensitivityTrackBar";
             this.sensitivityTrackBar.Size = new System.Drawing.Size(141, 45);
             this.sensitivityTrackBar.TabIndex = 7;
-            this.sensitivityTrackBar.Value = 18;
+            this.sensitivityTrackBar.TickFrequency = 5;
+            this.sensitivityTrackBar.Value = 30;
             this.sensitivityTrackBar.Scroll += new System.EventHandler(this.SensitivityTrackBar_Scroll);
             // 
             // label3
@@ -180,11 +181,11 @@
             this.labelSensitivity.AutoSize = true;
             this.labelSensitivity.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelSensitivity.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelSensitivity.Location = new System.Drawing.Point(229, 114);
+            this.labelSensitivity.Location = new System.Drawing.Point(222, 114);
             this.labelSensitivity.Name = "labelSensitivity";
-            this.labelSensitivity.Size = new System.Drawing.Size(15, 16);
+            this.labelSensitivity.Size = new System.Drawing.Size(22, 16);
             this.labelSensitivity.TabIndex = 13;
-            this.labelSensitivity.Text = "9";
+            this.labelSensitivity.Text = "30";
             // 
             // MainForm
             // 

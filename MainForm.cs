@@ -72,7 +72,7 @@ namespace TruckRemoteControlServer
         private void SensitivityTrackBar_Scroll(object sender, EventArgs e)
         {
             PCController.Sensitivity = sensitivityTrackBar.Value;
-            labelSensitivity.Text = (sensitivityTrackBar.Value - 9).ToString();
+            labelSensitivity.Text = (sensitivityTrackBar.Value).ToString();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

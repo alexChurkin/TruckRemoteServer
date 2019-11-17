@@ -69,9 +69,17 @@ namespace TruckRemoteControlServer
                 byte[] receivedBytes = udpClient.Receive(ref anyIpEndPoint);
                 string clientMessage = Encoding.UTF8.GetString(receivedBytes);
 
-                if (clientMessage.Equals("TruckRemoteHello"))
+                if (clientMessage.Contains("TruckRemoteHello"))
                 {
                     Debug.WriteLine("Hello received!");
+                    string[] allParts = clientMessage.Substring(clientMessage.IndexOf("\n") + 1)
+                        .Split(',');
+                    controller.setStartValues(
+                        bool.Parse(allParts[0]),
+                        bool.Parse(allParts[1]),
+                        bool.Parse(allParts[2]),
+                        int.Parse(allParts[3]));
+
                     byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
                     udpClient.Send(bytesToAnswer, bytesToAnswer.Length, anyIpEndPoint);
 

@@ -26,6 +26,13 @@ namespace TruckRemoteControlServer
         private byte DIK_K_SCAN = 0x25;
         private byte DIK_H_SCAN = 0x23;
 
+        public void setStartValues(bool leftSignal, bool rightSignal, bool isParking, int lightsState)
+        {
+            prevLeftSignal = leftSignal;
+            prevRightSignal = rightSignal;
+            wasParkingBreakEnabled = isParking;
+            prevLightsState = lightsState;
+        }
 
         public void updateAccelerometerValue(double accelerometerValue)
         {

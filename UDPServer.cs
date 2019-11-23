@@ -15,7 +15,7 @@ namespace TruckRemoteControlServer
         public int port = 18250;
 
         public bool enabled = true;
-        public static bool paused = false;
+        public static bool controllerPaused = false;
 
         private UdpClient udpClient;
         private PCController controller = new PCController();
@@ -23,6 +23,8 @@ namespace TruckRemoteControlServer
         private Label labelStatus;
         private Button buttonStop;
         private Button buttonStart;
+
+        private IPEndPoint controllerEndPoint, panelEndPoint;
 
         public UDPServer(Label labelStatus, Button buttonStop, Button buttonStart)
         {
@@ -48,108 +50,119 @@ namespace TruckRemoteControlServer
 
                 udpClient = new UdpClient(localIpEndPoint);
 
-                StartListeningForConnection();
+                StartListeningForMessages();
             }
             catch (Exception)
             {
-                PostStatusTextAndColor("Disabled", Color.OrangeRed);
-                NotifyButtonsIsConnected(false);
+                ShowStatus("Disabled", Color.OrangeRed);
+                SetButtonsIsListening(false);
+                controllerEndPoint = null;
+                panelEndPoint = null;
             }
         }
 
-        private void StartListeningForConnection()
+        private void StartListeningForMessages()
         {
-            PostStatusTextAndColor("Enabled", Color.ForestGreen);
-            NotifyButtonsIsConnected(true);
+            ShowStatus("Enabled", Color.ForestGreen);
+            SetButtonsIsListening(true);
 
-            IPEndPoint anyIpEndPoint = null;
+            IPEndPoint remoteEndPoint = null;
 
             while (true)
             {
-                byte[] receivedBytes = udpClient.Receive(ref anyIpEndPoint);
-                string clientMessage = Encoding.UTF8.GetString(receivedBytes);
+                byte[] receivedBytes = udpClient.Receive(ref remoteEndPoint);
+                string receivedMessage = Encoding.UTF8.GetString(receivedBytes);
 
-                if (clientMessage.Contains("TruckRemoteHello"))
+                if (remoteEndPoint.Equals(controllerEndPoint))
                 {
-                    Debug.WriteLine("Hello received!");
-                    string[] allParts = clientMessage.Substring(clientMessage.IndexOf("\n") + 1)
-                        .Split(',');
-                    controller.setStartValues(
-                        bool.Parse(allParts[0]),
-                        bool.Parse(allParts[1]),
-                        bool.Parse(allParts[2]),
-                        int.Parse(allParts[3]));
-
-                    byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
-                    udpClient.Send(bytesToAnswer, bytesToAnswer.Length, anyIpEndPoint);
-
-                    ListenRemoteClient(anyIpEndPoint);
-                    udpClient.Close();
-
-                    if (enabled)
-                    {
-                        LaunchServer();
-                        PostStatusTextAndColor("Enabled", Color.ForestGreen);
-                        NotifyButtonsIsConnected(true);
-                    }
+                    OnMessageFromController(receivedMessage);
+                }
+                else if (remoteEndPoint.Equals(panelEndPoint))
+                {
+                    OnMessageFromPanel(receivedMessage);
+                }
+                else if (receivedMessage.Contains("TruckRemoteHello"))
+                {
+                    OnHelloFromController(receivedMessage, remoteEndPoint);
+                }
+                else if (receivedMessage.Equals("TruckRemoteHelloFromPanel"))
+                {
+                    OnHelloFromPanel(receivedMessage, remoteEndPoint);
                 }
             }
         }
 
-        private void ListenRemoteClient(IPEndPoint specificClientEndPoint)
+        private void OnHelloFromController(string initMessage, IPEndPoint remoteEndPoint)
         {
-            PostStatusTextAndColor("Client connected", Color.ForestGreen);
-            IPEndPoint newEndPoint = null;
-            udpClient.Connect(specificClientEndPoint);
+            if (controllerEndPoint != null) return;
+            Debug.WriteLine("Hello from controller received!");
+
+            string[] dataParts = initMessage.Substring(initMessage.IndexOf("\n") + 1).Split(',');
+            controller.setStartValues(
+                bool.Parse(dataParts[0]),
+                bool.Parse(dataParts[1]),
+                bool.Parse(dataParts[2]),
+                int.Parse(dataParts[3]));
+
+            byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
+            udpClient.Send(bytesToAnswer, bytesToAnswer.Length, remoteEndPoint);
+
+            controllerEndPoint = remoteEndPoint;
+
             udpClient.Client.ReceiveTimeout = 5000;
+            UpdateStatus();
+        }
 
-            try
+        private void OnHelloFromPanel(string initMessage, IPEndPoint remoteEndPoint)
+        {
+            if (panelEndPoint != null) return;
+            Debug.WriteLine("Hello from panel received!");
+
+            //TODO Parse init message
+
+            byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
+            udpClient.Send(bytesToAnswer, bytesToAnswer.Length, remoteEndPoint);
+
+            udpClient.Client.ReceiveTimeout = 5000;
+            UpdateStatus();
+        }
+
+        private void OnMessageFromController(string message)
+        {
+            if (message.Contains("paused"))
             {
-                while (true)
-                {
-                    byte[] receivedBytes = udpClient.Receive(ref newEndPoint);
-
-                    if (!newEndPoint.Address.Equals(specificClientEndPoint.Address)) continue;
-
-                    string clientMessage = Encoding.UTF8.GetString(receivedBytes);
-
-                    Debug.WriteLine(clientMessage);
-
-                    if (clientMessage.Contains("paused"))
-                    {
-                        paused = true;
-                        PostStatusTextAndColor("Paused by client", Color.ForestGreen);
-                        continue;
-                    }
-                    else if (paused)
-                    {
-                        paused = false;
-                        PostStatusTextAndColor("Client connected", Color.ForestGreen);
-                    }
-
-                    string[] msgParts = clientMessage.Split(',');
-
-                    double accelerometerValue = double.Parse(msgParts[0], CultureInfo.InvariantCulture);
-                    bool breakClicked = bool.Parse(msgParts[1]);
-                    bool gasClicked = bool.Parse(msgParts[2]);
-                    bool leftSignalEnabled = bool.Parse(msgParts[3]);
-                    bool rightSignalEnabled = bool.Parse(msgParts[4]);
-                    bool parkingBrakeEnabled = bool.Parse(msgParts[5]);
-                    int lightsState = int.Parse(msgParts[6]);
-                    bool isHorn = bool.Parse(msgParts[7]);
-
-                    controller.updateAccelerometerValue(accelerometerValue);
-                    controller.updateBreakGasState(breakClicked, gasClicked);
-                    controller.updateTurnSignals(leftSignalEnabled, rightSignalEnabled);
-                    controller.updateParkingBrake(parkingBrakeEnabled);
-                    controller.updateLights(lightsState);
-                    controller.updateHorn(isHorn);
-                }
+                controllerPaused = true;
+                UpdateStatus();
             }
-            catch (SocketException)
+            else if (controllerPaused)
             {
-                return;
+                controllerPaused = false;
+                UpdateStatus();
             }
+
+            string[] msgParts = message.Split(',');
+
+            double accelerometerValue = double.Parse(msgParts[0], CultureInfo.InvariantCulture);
+            bool breakClicked = bool.Parse(msgParts[1]);
+            bool gasClicked = bool.Parse(msgParts[2]);
+            bool leftSignalEnabled = bool.Parse(msgParts[3]);
+            bool rightSignalEnabled = bool.Parse(msgParts[4]);
+            bool parkingBrakeEnabled = bool.Parse(msgParts[5]);
+            int lightsState = int.Parse(msgParts[6]);
+            bool isHorn = bool.Parse(msgParts[7]);
+
+            controller.updateAccelerometerValue(accelerometerValue);
+            controller.updateBreakGasState(breakClicked, gasClicked);
+            controller.updateTurnSignals(leftSignalEnabled, rightSignalEnabled);
+            controller.updateParkingBrake(parkingBrakeEnabled);
+            controller.updateLights(lightsState);
+            controller.updateHorn(isHorn);
+        }
+
+        private void OnMessageFromPanel(string message)
+        {
+            string[] msgParts = message.Split(',');
+            //TODO Proccess message
         }
 
         public void Stop()
@@ -164,7 +177,49 @@ namespace TruckRemoteControlServer
             }
         }
 
-        private void PostStatusTextAndColor(string labelText, Color color)
+
+        private void UpdateStatus()
+        {
+            if (enabled)
+            {
+                if (controllerEndPoint != null && panelEndPoint != null)
+                {
+                    if (controllerPaused)
+                    {
+                        ShowStatus("Controller paused & Panel connected", Color.ForestGreen);
+                    }
+                    else
+                    {
+                        ShowStatus("Controller & Panel connected", Color.ForestGreen);
+                    }
+                }
+                else if (controllerEndPoint != null)
+                {
+                    if (controllerPaused)
+                    {
+                        ShowStatus("Controller paused", Color.ForestGreen);
+                    }
+                    else
+                    {
+                        ShowStatus("Controller connected", Color.ForestGreen);
+                    }
+                }
+                else if (panelEndPoint != null)
+                {
+                    ShowStatus("Panel connected", Color.ForestGreen);
+                }
+                else
+                {
+                    ShowStatus("Enabled", Color.ForestGreen);
+                }
+            }
+            else
+            {
+                ShowStatus("Disabled", Color.OrangeRed);
+            }
+        }
+
+        private void ShowStatus(string labelText, Color color)
         {
             labelStatus.BeginInvoke((MethodInvoker)delegate ()
             {
@@ -173,7 +228,7 @@ namespace TruckRemoteControlServer
             });
         }
 
-        private void NotifyButtonsIsConnected(bool isConnected)
+        private void SetButtonsIsListening(bool isConnected)
         {
             buttonStop.BeginInvoke((MethodInvoker)delegate ()
             {

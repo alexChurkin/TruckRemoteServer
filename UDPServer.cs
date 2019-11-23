@@ -18,13 +18,13 @@ namespace TruckRemoteControlServer
         public static bool controllerPaused = false;
 
         private UdpClient udpClient;
+        private IPEndPoint controllerEndPoint, panelEndPoint;
+
         private PCController controller = new PCController();
 
         private Label labelStatus;
         private Button buttonStop;
         private Button buttonStart;
-
-        private IPEndPoint controllerEndPoint, panelEndPoint;
 
         public UDPServer(Label labelStatus, Button buttonStop, Button buttonStart)
         {
@@ -52,8 +52,9 @@ namespace TruckRemoteControlServer
 
                 StartListeningForMessages();
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e.ToString());
                 ShowStatus("Disabled", Color.OrangeRed);
                 SetButtonsIsListening(false);
                 controllerEndPoint = null;
@@ -109,8 +110,7 @@ namespace TruckRemoteControlServer
 
             controllerEndPoint = remoteEndPoint;
 
-            udpClient.Client.ReceiveTimeout = 5000;
-            UpdateStatus();
+            UpdateUiState();
         }
 
         private void OnHelloFromPanel(string initMessage, IPEndPoint remoteEndPoint)
@@ -123,8 +123,7 @@ namespace TruckRemoteControlServer
             byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
             udpClient.Send(bytesToAnswer, bytesToAnswer.Length, remoteEndPoint);
 
-            udpClient.Client.ReceiveTimeout = 5000;
-            UpdateStatus();
+            UpdateUiState();
         }
 
         private void OnMessageFromController(string message)
@@ -132,12 +131,13 @@ namespace TruckRemoteControlServer
             if (message.Contains("paused"))
             {
                 controllerPaused = true;
-                UpdateStatus();
+                UpdateUiState();
+                return;
             }
             else if (controllerPaused)
             {
                 controllerPaused = false;
-                UpdateStatus();
+                UpdateUiState();
             }
 
             string[] msgParts = message.Split(',');
@@ -178,10 +178,11 @@ namespace TruckRemoteControlServer
         }
 
 
-        private void UpdateStatus()
+        private void UpdateUiState()
         {
             if (enabled)
             {
+                SetButtonsIsListening(true);
                 if (controllerEndPoint != null && panelEndPoint != null)
                 {
                     if (controllerPaused)
@@ -215,6 +216,7 @@ namespace TruckRemoteControlServer
             }
             else
             {
+                SetButtonsIsListening(false);
                 ShowStatus("Disabled", Color.OrangeRed);
             }
         }

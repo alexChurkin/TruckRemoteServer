@@ -15,7 +15,7 @@ namespace TruckRemoteControlServer
         public int port = 18250;
 
         public bool enabled = true;
-        public static bool controllerPaused = false;
+        public static bool controllerPaused, panelPaused;
 
         private UdpClient udpClient;
         private IPEndPoint controllerEndPoint, panelEndPoint;
@@ -69,26 +69,39 @@ namespace TruckRemoteControlServer
 
             IPEndPoint remoteEndPoint = null;
 
-            while (true)
+            try
             {
-                byte[] receivedBytes = udpClient.Receive(ref remoteEndPoint);
-                string receivedMessage = Encoding.UTF8.GetString(receivedBytes);
+                while (true)
+                {
+                    byte[] receivedBytes = udpClient.Receive(ref remoteEndPoint);
+                    string receivedMessage = Encoding.UTF8.GetString(receivedBytes);
 
-                if (remoteEndPoint.Equals(controllerEndPoint))
-                {
-                    OnMessageFromController(receivedMessage);
+                    if (remoteEndPoint.Equals(controllerEndPoint))
+                    {
+                        OnMessageFromController(receivedMessage);
+                    }
+                    else if (remoteEndPoint.Equals(panelEndPoint))
+                    {
+                        OnMessageFromPanel(receivedMessage);
+                    }
+                    else if (receivedMessage.Contains("TruckRemoteHello"))
+                    {
+                        OnHelloFromController(receivedMessage, remoteEndPoint);
+                        udpClient.Client.ReceiveTimeout = 3000;
+                    }
+                    else if (receivedMessage.Equals("TruckRemoteHelloFromPanel"))
+                    {
+                        OnHelloFromPanel(receivedMessage, remoteEndPoint);
+                        udpClient.Client.ReceiveTimeout = 3000;
+                    }
                 }
-                else if (remoteEndPoint.Equals(panelEndPoint))
+            }
+            catch (SocketException e)
+            {
+                if (e.SocketErrorCode == SocketError.TimedOut)
                 {
-                    OnMessageFromPanel(receivedMessage);
-                }
-                else if (receivedMessage.Contains("TruckRemoteHello"))
-                {
-                    OnHelloFromController(receivedMessage, remoteEndPoint);
-                }
-                else if (receivedMessage.Equals("TruckRemoteHelloFromPanel"))
-                {
-                    OnHelloFromPanel(receivedMessage, remoteEndPoint);
+                    Stop();
+                    LaunchServer();
                 }
             }
         }
@@ -161,7 +174,18 @@ namespace TruckRemoteControlServer
 
         private void OnMessageFromPanel(string message)
         {
-            string[] msgParts = message.Split(',');
+            if (message.Contains("paused"))
+            {
+                panelPaused = true;
+                UpdateUiState();
+                return;
+            }
+            else if (panelPaused)
+            {
+                panelPaused = false;
+                UpdateUiState();
+            }
+
             //TODO Proccess message
         }
 

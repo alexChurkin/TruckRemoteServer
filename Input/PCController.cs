@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TruckRemoteControlServer
+namespace TruckRemoteServer
 {
     class PCController
     {

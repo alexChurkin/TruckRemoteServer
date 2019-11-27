@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace TruckRemoteControlServer
+namespace TruckRemoteServer
 {
     static class Program
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace TruckRemoteControlServer
+namespace TruckRemoteServer
 {
     public static class InputEmulator
     {

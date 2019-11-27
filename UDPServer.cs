@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace TruckRemoteControlServer
+namespace TruckRemoteServer
 {
     public class UDPServer
     {

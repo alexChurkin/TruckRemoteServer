@@ -2,7 +2,7 @@
 using System.Net;
 using System.Windows.Forms;
 
-namespace TruckRemoteControlServer
+namespace TruckRemoteServer
 {
     public partial class MainForm : Form
     {

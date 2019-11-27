@@ -1,4 +1,4 @@
-﻿namespace TruckRemoteControlServer
+﻿namespace TruckRemoteServer
 {
     partial class MainForm
     {
@@ -209,7 +209,7 @@
             this.Name = "MainForm";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Truck Remote Control Server";
+            this.Text = "Truck Remote Server";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).EndInit();

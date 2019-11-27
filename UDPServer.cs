@@ -98,6 +98,7 @@ namespace TruckRemoteServer
             }
             catch (SocketException e)
             {
+                Console.WriteLine(e.ToString());
                 if (e.SocketErrorCode == SocketError.TimedOut)
                 {
                     Stop();
@@ -198,6 +199,12 @@ namespace TruckRemoteServer
             }
             catch (Exception)
             {
+            }
+            finally
+            {
+                controllerEndPoint = null;
+                panelEndPoint = null;
+                ShowStatus("Disabled", Color.OrangeRed);
             }
         }
 

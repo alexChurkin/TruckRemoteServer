@@ -48,7 +48,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(16, 129);
+            this.label1.Location = new System.Drawing.Point(16, 144);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(35, 16);
             this.label1.TabIndex = 1;
@@ -67,7 +67,7 @@
             // numericUpPort
             // 
             this.numericUpPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.numericUpPort.Location = new System.Drawing.Point(57, 127);
+            this.numericUpPort.Location = new System.Drawing.Point(57, 142);
             this.numericUpPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -91,7 +91,7 @@
             // buttonStop
             // 
             this.buttonStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonStop.Location = new System.Drawing.Point(15, 164);
+            this.buttonStop.Location = new System.Drawing.Point(15, 179);
             this.buttonStop.Name = "buttonStop";
             this.buttonStop.Size = new System.Drawing.Size(125, 33);
             this.buttonStop.TabIndex = 5;
@@ -103,7 +103,7 @@
             // 
             this.buttonStart.Enabled = false;
             this.buttonStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonStart.Location = new System.Drawing.Point(15, 207);
+            this.buttonStart.Location = new System.Drawing.Point(15, 222);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(125, 33);
             this.buttonStart.TabIndex = 6;
@@ -191,7 +191,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(315, 256);
+            this.ClientSize = new System.Drawing.Size(315, 264);
             this.Controls.Add(this.labelSensitivity);
             this.Controls.Add(this.labelIp);
             this.Controls.Add(this.label7);

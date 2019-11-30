@@ -226,11 +226,13 @@ namespace TruckRemoteServer
             {
                 controllerEndPoint = null;
                 controllerPaused = false;
+                UpdateUiState();
             }
             else if(panelEndPoint != null && currentTime - lastPanelMsgTime > 3000)
             {
                 panelEndPoint = null;
                 panelPaused = false;
+                UpdateUiState();
             }
         }
 
@@ -244,19 +246,19 @@ namespace TruckRemoteServer
                 {
                     if (controllerPaused && panelPaused)
                     {
-                        ShowStatus("Devices paused", Color.ForestGreen);
+                        ShowStatus("All devices paused", Color.ForestGreen);
                     }
                     else if(controllerPaused)
                     {
-                        ShowStatus("Panel active & Controller paused", Color.ForestGreen);
+                        ShowStatus("Controller: paused\nPanel: active", Color.ForestGreen);
                     }
                     else if(panelPaused)
                     {
-                        ShowStatus("Controller active & Panel paused", Color.ForestGreen);
+                        ShowStatus("Controller: active\nPanel: paused", Color.ForestGreen);
                     }
                     else
                     {
-                        ShowStatus("Devices active", Color.ForestGreen);
+                        ShowStatus("All devices active", Color.ForestGreen);
                     }
                 }
                 //Connected only controller

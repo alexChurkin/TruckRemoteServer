@@ -9,7 +9,6 @@ namespace TruckRemoteServer
 
         private static vJoy joyStick;
         private static vJoy.JoystickState iReport;
-        private static long maxValue;
 
         private static uint joyId = 1;
 
@@ -27,23 +26,15 @@ namespace TruckRemoteServer
             {
                 Console.WriteLine("Acquired: vJoy device number {0}.\n", joyId);
                 joyStick.ResetVJD(joyId);
-                joyStick.GetVJDAxisMax(joyId, HID_USAGES.HID_USAGE_X, ref maxValue);
                 return true;
             }
         }
 
         public static void MoveXAxis(double accelerometerValue)
         {
-            int xAxisValue;
-            if (accelerometerValue < 0)
-            {
-                xAxisValue = 20;//(int) maxValue - (int) (Math.Abs(accelerometerValue) / 10 * PCController.Sensitivity);
-            }
-            else
-            {
-                xAxisValue = 40; //(int) maxValue + (int)(Math.Abs(accelerometerValue) / 10 * PCController.Sensitivity);
-            }
-            joyStick.SetAxis(16500, joyId, HID_USAGES.HID_USAGE_X);
+            //Can be from 0 to 32768
+            int xAxisValue = 16384 + (int)(accelerometerValue * 500 * PCController.Sensitivity);
+            joyStick.SetAxis(xAxisValue, joyId, HID_USAGES.HID_USAGE_X);
         }
 
         public static void KeyClick(short scanCode)

@@ -33,7 +33,7 @@ namespace TruckRemoteServer
         public static void MoveXAxis(double accelerometerValue)
         {
             //Can be from 0 to 32768
-            int xAxisValue = 16384 + (int)(accelerometerValue * 500 * PCController.Sensitivity);
+            int xAxisValue = 16384 + (int)(accelerometerValue * 33.5 * PCController.Sensitivity);
             joyStick.SetAxis(xAxisValue, joyId, HID_USAGES.HID_USAGE_X);
         }
 

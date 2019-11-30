@@ -4,7 +4,7 @@ namespace TruckRemoteServer
 {
     class PCController
     {
-        public static int Sensitivity = 30;
+        public static int Sensitivity = 50;
 
         //Controller
         private bool prevBreakClicked, prevGasClicked;

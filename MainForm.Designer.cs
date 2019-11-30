@@ -120,7 +120,7 @@
             this.sensitivityTrackBar.Size = new System.Drawing.Size(141, 45);
             this.sensitivityTrackBar.TabIndex = 7;
             this.sensitivityTrackBar.TickFrequency = 5;
-            this.sensitivityTrackBar.Value = 30;
+            this.sensitivityTrackBar.Value = 50;
             this.sensitivityTrackBar.Scroll += new System.EventHandler(this.SensitivityTrackBar_Scroll);
             // 
             // label3
@@ -185,7 +185,7 @@
             this.labelSensitivity.Name = "labelSensitivity";
             this.labelSensitivity.Size = new System.Drawing.Size(22, 16);
             this.labelSensitivity.TabIndex = 13;
-            this.labelSensitivity.Text = "30";
+            this.labelSensitivity.Text = "50";
             // 
             // MainForm
             // 

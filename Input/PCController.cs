@@ -8,6 +8,7 @@ namespace TruckRemoteServer
 
         private int prevMovement;
 
+        //Controller
         private bool prevBreakClicked, prevGasClicked;
         private bool prevLeftSignal, prevRightSignal;
         private bool wasParkingBreakEnabled;
@@ -26,7 +27,25 @@ namespace TruckRemoteServer
         private byte DIK_K_SCAN = 0x25;
         private byte DIK_H_SCAN = 0x23;
 
-        public void setStartValues(bool leftSignal, bool rightSignal, bool isParking, int lightsState)
+        //Panel
+        private bool prevDiffBlock;
+        private int prevWipersState;
+        private bool prevLiftingAxle;
+        private bool prevFlashingBeacon;
+
+        private const int DIK_V_SCAN = 0x2F;
+        private const int DIK_P_SCAN = 0x19;
+        private const int DIK_U_SCAN = 0x16;
+        private const int DIK_O_SCAN = 0x18;
+
+
+        /* Controller */
+        public void initializeJoy()
+        {
+            InputEmulator.InitJoy();
+        }
+
+        public void setControllerStartValues(bool leftSignal, bool rightSignal, bool isParking, int lightsState)
         {
             prevLeftSignal = leftSignal;
             prevRightSignal = rightSignal;
@@ -36,11 +55,15 @@ namespace TruckRemoteServer
 
         public void updateAccelerometerValue(double accelerometerValue)
         {
-            int newMovement = getNewCursorOffset(accelerometerValue);
-
-            int finalMove = (int)(prevMovement + (newMovement - prevMovement) * 0.7);
-            InputEmulator.MoveTo(finalMove);
-            prevMovement = finalMove;
+            int xAxisValue;
+            if(accelerometerValue < 0)
+            {
+                xAxisValue = 16384 - (int) (Math.Abs(accelerometerValue) / 10 * Sensitivity);
+            } else
+            {
+                xAxisValue = 16384 + (int) (Math.Abs(accelerometerValue) / 10 * Sensitivity);
+            }
+            InputEmulator.MoveTo(xAxisValue);
         }
 
         public void updateBreakGasState(bool breakClicked, bool gasClicked)
@@ -253,6 +276,51 @@ namespace TruckRemoteServer
         private int getNewCursorOffset(double accelerometerValue)
         {
             return (int)(accelerometerValue * (Sensitivity * 1.5));
+        }
+
+        /* Panel */
+        public void setPanelStartValues(bool diffBlock, int wipersState, bool liftingAxle, bool flashingBeacon)
+        {
+            prevDiffBlock = diffBlock;
+            prevWipersState = wipersState;
+            prevLiftingAxle = liftingAxle;
+            prevFlashingBeacon = flashingBeacon;
+        }
+
+        public void updateDiffBlock(bool diffBlock)
+        {
+            if(prevDiffBlock != diffBlock)
+            {
+                prevDiffBlock = diffBlock;
+                InputEmulator.KeyClick(DIK_V_SCAN);
+            }
+        }
+
+        public void updateWipers(int wipersState)
+        {
+            if (prevWipersState != wipersState)
+            {
+                prevWipersState = wipersState;
+                InputEmulator.KeyClick(DIK_P_SCAN);
+            }
+        }
+
+        public void updateLiftingAxle(bool liftingAxle)
+        {
+            if (prevLiftingAxle != liftingAxle)
+            {
+                prevLiftingAxle = liftingAxle;
+                InputEmulator.KeyClick(DIK_U_SCAN);
+            }
+        }
+
+        public void updateFlashingBeacon(bool flashingBeacon)
+        {
+            if (prevFlashingBeacon != flashingBeacon)
+            {
+                prevFlashingBeacon = flashingBeacon;
+                InputEmulator.KeyClick(DIK_O_SCAN);
+            }
         }
     }
 }

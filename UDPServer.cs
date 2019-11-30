@@ -21,7 +21,7 @@ namespace TruckRemoteServer
         private UdpClient udpClient;
         private IPEndPoint controllerEndPoint, panelEndPoint;
 
-        private PCController controller = new PCController();
+        private PCController pcController = new PCController();
 
         private Label labelStatus;
         private Button buttonStop;
@@ -86,6 +86,7 @@ namespace TruckRemoteServer
                         lastPanelMsgTime = getUnixTime();
                         CheckTimeDifferences();
                         OnMessageFromPanel(receivedMessage);
+                        Console.WriteLine(receivedMessage);
                     }
                     else if (receivedMessage.Contains("TruckRemoteHello"))
                     {
@@ -118,11 +119,12 @@ namespace TruckRemoteServer
             Debug.WriteLine("Hello from controller received!");
 
             string[] dataParts = initMessage.Substring(initMessage.IndexOf("\n") + 1).Split(',');
-            controller.setStartValues(
+            pcController.setControllerStartValues(
                 bool.Parse(dataParts[0]),
                 bool.Parse(dataParts[1]),
                 bool.Parse(dataParts[2]),
                 int.Parse(dataParts[3]));
+            pcController.initializeJoy();
 
             byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
             udpClient.Send(bytesToAnswer, bytesToAnswer.Length, remoteEndPoint);
@@ -137,7 +139,12 @@ namespace TruckRemoteServer
             if (panelEndPoint != null) return;
             Console.WriteLine("Hello from panel received!");
 
-            //TODO Parse init message
+            string[] dataParts = initMessage.Substring(initMessage.IndexOf("\n") + 1).Split(',');
+            pcController.setPanelStartValues(
+                bool.Parse(dataParts[0]),
+                int.Parse(dataParts[1]),
+                bool.Parse(dataParts[2]),
+                bool.Parse(dataParts[3]));
 
             byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
             udpClient.Send(bytesToAnswer, bytesToAnswer.Length, remoteEndPoint);
@@ -175,12 +182,12 @@ namespace TruckRemoteServer
             int lightsState = int.Parse(msgParts[6]);
             bool isHorn = bool.Parse(msgParts[7]);
 
-            controller.updateAccelerometerValue(accelerometerValue);
-            controller.updateBreakGasState(breakClicked, gasClicked);
-            controller.updateTurnSignals(leftSignalEnabled, rightSignalEnabled);
-            controller.updateParkingBrake(parkingBrakeEnabled);
-            controller.updateLights(lightsState);
-            controller.updateHorn(isHorn);
+            pcController.updateAccelerometerValue(accelerometerValue);
+            pcController.updateBreakGasState(breakClicked, gasClicked);
+            pcController.updateTurnSignals(leftSignalEnabled, rightSignalEnabled);
+            pcController.updateParkingBrake(parkingBrakeEnabled);
+            pcController.updateLights(lightsState);
+            pcController.updateHorn(isHorn);
         }
 
         private void OnMessageFromPanel(string message)
@@ -200,7 +207,17 @@ namespace TruckRemoteServer
                 UpdateUiState();
             }
 
-            //TODO Proccess message
+            string[] msgParts = message.Split(',');
+
+            bool diffBlock = bool.Parse(msgParts[0]);
+            int wipersState = int.Parse(msgParts[1]);
+            bool liftingAxle = bool.Parse(msgParts[2]);
+            bool flashingBeacon = bool.Parse(msgParts[3]);
+
+            pcController.updateDiffBlock(diffBlock);
+            pcController.updateWipers(wipersState);
+            pcController.updateLiftingAxle(liftingAxle);
+            pcController.updateFlashingBeacon(flashingBeacon);
         }
 
         public void Stop()

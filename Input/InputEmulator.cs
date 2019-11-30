@@ -1,26 +1,39 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using vJoyInterfaceWrap;
 
 namespace TruckRemoteServer
 {
     public static class InputEmulator
     {
-        public static void Move(int xDelta)
+
+        private static vJoy joystick;
+        private static vJoy.JoystickState iReport;
+
+        private static uint joyId = 1;
+
+        public static bool InitJoy()
         {
-            INPUT input = new INPUT();
-            input.type = (int)InputType.INPUT_MOUSE;
-            input.mi.dwFlags = (int)MOUSEEVENTF.MOVE;
-            input.mi.dx = xDelta;
-            SendInput(1, new INPUT[] { input }, Marshal.SizeOf(input));
+            joystick = new vJoy();
+            VjdStat status = joystick.GetVJDStatus(joyId);
+
+            if ((status == VjdStat.VJD_STAT_OWN) || ((status == VjdStat.VJD_STAT_FREE) && (!joystick.AcquireVJD(joyId))))
+            {
+                Console.WriteLine("Failed to acquire vJoy device number {0}.\n", joyId);
+                return false;
+            }
+            else
+            {
+                Console.WriteLine("Acquired: vJoy device number {0}.\n", joyId);
+                joystick.ResetVJD(joyId);
+                return true;
+            }
         }
 
-        public static void MoveTo(int xCoord)
+        public static void MoveTo(int xAxis)
         {
-            INPUT input = new INPUT();
-            input.type = (int)InputType.INPUT_MOUSE;
-            input.mi.dwFlags = (int)MOUSEEVENTF.MOVE | (int)MOUSEEVENTF.ABSOLUTE;
-            input.mi.dx = xCoord;
-            SendInput(1, new INPUT[] { input }, Marshal.SizeOf(input));
+            Console.WriteLine("SetAxisX" + joystick.SetAxis(xAxis, joyId, HID_USAGES.HID_USAGE_X));
+            joystick.UpdateVJD(joyId, ref iReport);
         }
 
         public static void KeyClick(short scanCode)

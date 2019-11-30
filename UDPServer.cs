@@ -89,11 +89,13 @@ namespace TruckRemoteServer
                     }
                     else if (receivedMessage.Contains("TruckRemoteHello"))
                     {
+                        lastControllerMsgTime = getUnixTime();
                         OnHelloFromController(receivedMessage, remoteEndPoint);
                         udpClient.Client.ReceiveTimeout = 3000;
                     }
                     else if (receivedMessage.Contains("TruckPanelRemoteHello"))
                     {
+                        lastPanelMsgTime = getUnixTime();
                         OnHelloFromPanel(receivedMessage, remoteEndPoint);
                         udpClient.Client.ReceiveTimeout = 3000;
                     }

@@ -25,7 +25,7 @@ namespace TruckRemoteServer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        [global::System.Configuration.DefaultSettingValueAttribute("50")]
         public int Sensitivity {
             get {
                 return ((int)(this["Sensitivity"]));

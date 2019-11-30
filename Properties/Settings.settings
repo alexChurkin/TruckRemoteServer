@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="Sensitivity" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">30</Value>
+      <Value Profile="(Default)">50</Value>
     </Setting>
     <Setting Name="Port" Type="System.Decimal" Scope="User">
       <Value Profile="(Default)">18250</Value>

@@ -92,8 +92,9 @@ namespace TruckRemoteServer
                         OnHelloFromController(receivedMessage, remoteEndPoint);
                         udpClient.Client.ReceiveTimeout = 3000;
                     }
-                    else if (receivedMessage.Equals("TruckRemoteHelloFromPanel"))
+                    else if (receivedMessage.Equals("TruckPanelRemoteHello"))
                     {
+                        Console.WriteLine("Hello From Panel!!!");
                         OnHelloFromPanel(receivedMessage, remoteEndPoint);
                         udpClient.Client.ReceiveTimeout = 3000;
                     }
@@ -139,6 +140,8 @@ namespace TruckRemoteServer
 
             byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
             udpClient.Send(bytesToAnswer, bytesToAnswer.Length, remoteEndPoint);
+
+            panelEndPoint = remoteEndPoint;
 
             UpdateUiState();
         }

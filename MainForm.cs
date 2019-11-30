@@ -77,7 +77,7 @@ namespace TruckRemoteServer
 
         private void SensitivityTrackBar_Scroll(object sender, EventArgs e)
         {
-            PCController.Sensitivity = sensitivityTrackBar.Value;
+            PCController.SteeringSensitivity = sensitivityTrackBar.Value;
             labelSensitivity.Text = (sensitivityTrackBar.Value).ToString();
 
             Properties.Settings.Default.Sensitivity = sensitivityTrackBar.Value;

@@ -8,8 +8,6 @@ namespace TruckRemoteServer
     {
 
         private static vJoy joyStick;
-        private static vJoy.JoystickState iReport;
-
         private static uint joyId = 1;
 
         public static bool InitJoy()
@@ -30,10 +28,9 @@ namespace TruckRemoteServer
             }
         }
 
-        public static void MoveXAxis(double accelerometerValue)
+        public static void MoveXAxis(int xAxisValue)
         {
-            //Can be from 0 to 32768
-            int xAxisValue = 16384 + (int)(accelerometerValue * 33.5 * PCController.Sensitivity);
+            //xAxisValue can be from 0 to 32768
             joyStick.SetAxis(xAxisValue, joyId, HID_USAGES.HID_USAGE_X);
         }
 

@@ -113,7 +113,7 @@
             // 
             // sensitivityTrackBar
             // 
-            this.sensitivityTrackBar.Location = new System.Drawing.Point(163, 85);
+            this.sensitivityTrackBar.Location = new System.Drawing.Point(163, 93);
             this.sensitivityTrackBar.Maximum = 100;
             this.sensitivityTrackBar.Minimum = 1;
             this.sensitivityTrackBar.Name = "sensitivityTrackBar";
@@ -129,15 +129,15 @@
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label3.Location = new System.Drawing.Point(169, 13);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(61, 20);
+            this.label3.Size = new System.Drawing.Size(73, 20);
             this.label3.TabIndex = 8;
-            this.label3.Text = "Mouse:";
+            this.label3.Text = "Steering:";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label4.Location = new System.Drawing.Point(170, 66);
+            this.label4.Location = new System.Drawing.Point(170, 74);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(71, 16);
             this.label4.TabIndex = 9;
@@ -181,7 +181,7 @@
             this.labelSensitivity.AutoSize = true;
             this.labelSensitivity.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelSensitivity.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelSensitivity.Location = new System.Drawing.Point(222, 114);
+            this.labelSensitivity.Location = new System.Drawing.Point(222, 122);
             this.labelSensitivity.Name = "labelSensitivity";
             this.labelSensitivity.Size = new System.Drawing.Size(22, 16);
             this.labelSensitivity.TabIndex = 13;

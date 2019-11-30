@@ -4,9 +4,9 @@ namespace TruckRemoteServer
 {
     class PCController
     {
-        public static int Sensitivity = 50;
-
         //Controller
+        public static int SteeringSensitivity = 50;
+        public int prevXAxisValue;
         private bool prevBreakClicked, prevGasClicked;
         private bool prevLeftSignal, prevRightSignal;
         private bool wasParkingBreakEnabled;
@@ -53,7 +53,10 @@ namespace TruckRemoteServer
 
         public void updateAccelerometerValue(double accelerometerValue)
         {
-            InputEmulator.MoveXAxis(accelerometerValue);
+            int roughValue = 16384 + (int)(accelerometerValue * 33.5 * SteeringSensitivity);
+            int newXAxisValue = (int)(prevXAxisValue + 0.7 * (roughValue - prevXAxisValue));
+            prevXAxisValue = newXAxisValue;
+            InputEmulator.MoveXAxis(newXAxisValue);
         }
 
         public void updateBreakGasState(bool breakClicked, bool gasClicked)
@@ -265,7 +268,7 @@ namespace TruckRemoteServer
 
         private int getNewCursorOffset(double accelerometerValue)
         {
-            return (int)(accelerometerValue * (Sensitivity * 1.5));
+            return (int)(accelerometerValue * (SteeringSensitivity * 1.5));
         }
 
         /* Panel */

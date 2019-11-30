@@ -15,7 +15,8 @@ namespace TruckRemoteServer
         public int port = 18250;
 
         public bool enabled = true;
-        public static bool controllerPaused, panelPaused;
+        public bool controllerPaused, panelPaused;
+        public long lastControllerMsgTime, lastPanelMsgTime;
 
         private UdpClient udpClient;
         private IPEndPoint controllerEndPoint, panelEndPoint;
@@ -44,9 +45,7 @@ namespace TruckRemoteServer
             enabled = true;
             try
             {
-                IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-                IPAddress ipAddress = IPAddress.Parse("0.0.0.0");
-                IPEndPoint localIpEndPoint = new IPEndPoint(ipAddress, port);
+                IPEndPoint localIpEndPoint = new IPEndPoint(IPAddress.Any, port);
 
                 udpClient = new UdpClient(localIpEndPoint);
 
@@ -78,10 +77,14 @@ namespace TruckRemoteServer
 
                     if (remoteEndPoint.Equals(controllerEndPoint))
                     {
+                        lastControllerMsgTime = getUnixTime();
+                        CheckTimeDifferences();
                         OnMessageFromController(receivedMessage);
                     }
                     else if (remoteEndPoint.Equals(panelEndPoint))
                     {
+                        lastPanelMsgTime = getUnixTime();
+                        CheckTimeDifferences();
                         OnMessageFromPanel(receivedMessage);
                     }
                     else if (receivedMessage.Contains("TruckRemoteHello"))
@@ -94,11 +97,11 @@ namespace TruckRemoteServer
                         OnHelloFromPanel(receivedMessage, remoteEndPoint);
                         udpClient.Client.ReceiveTimeout = 3000;
                     }
+
                 }
             }
             catch (SocketException e)
             {
-                Console.WriteLine(e.ToString());
                 if (e.SocketErrorCode == SocketError.TimedOut)
                 {
                     Stop();
@@ -144,8 +147,11 @@ namespace TruckRemoteServer
         {
             if (message.Contains("paused"))
             {
-                controllerPaused = true;
-                UpdateUiState();
+                if (!controllerPaused)
+                {
+                    controllerPaused = true;
+                    UpdateUiState();
+                }
                 return;
             }
             else if (controllerPaused)
@@ -177,8 +183,11 @@ namespace TruckRemoteServer
         {
             if (message.Contains("paused"))
             {
-                panelPaused = true;
-                UpdateUiState();
+                if(!panelPaused)
+                {
+                    panelPaused = true;
+                    UpdateUiState();
+                }
                 return;
             }
             else if (panelPaused)
@@ -208,23 +217,47 @@ namespace TruckRemoteServer
             }
         }
 
+        private void CheckTimeDifferences()
+        {
+            long currentTime = getUnixTime();
+            if (controllerEndPoint != null && currentTime - lastControllerMsgTime > 3000)
+            {
+                controllerEndPoint = null;
+                controllerPaused = false;
+            }
+            else if(panelEndPoint != null && currentTime - lastPanelMsgTime > 3000)
+            {
+                panelEndPoint = null;
+                panelPaused = false;
+            }
+        }
 
         private void UpdateUiState()
         {
             if (enabled)
             {
                 SetButtonsIsListening(true);
+                //All devices connected
                 if (controllerEndPoint != null && panelEndPoint != null)
                 {
-                    if (controllerPaused)
+                    if (controllerPaused && panelPaused)
                     {
-                        ShowStatus("Controller paused & Panel connected", Color.ForestGreen);
+                        ShowStatus("Devices paused", Color.ForestGreen);
+                    }
+                    else if(controllerPaused)
+                    {
+                        ShowStatus("Panel active & Controller paused", Color.ForestGreen);
+                    }
+                    else if(panelPaused)
+                    {
+                        ShowStatus("Controller active & Panel paused", Color.ForestGreen);
                     }
                     else
                     {
-                        ShowStatus("Controller & Panel connected", Color.ForestGreen);
+                        ShowStatus("Devices active", Color.ForestGreen);
                     }
                 }
+                //Connected only controller
                 else if (controllerEndPoint != null)
                 {
                     if (controllerPaused)
@@ -233,12 +266,20 @@ namespace TruckRemoteServer
                     }
                     else
                     {
-                        ShowStatus("Controller connected", Color.ForestGreen);
+                        ShowStatus("Controller active", Color.ForestGreen);
                     }
                 }
+                //Connected only panel
                 else if (panelEndPoint != null)
                 {
-                    ShowStatus("Panel connected", Color.ForestGreen);
+                    if(panelPaused)
+                    {
+                        ShowStatus("Panel paused", Color.ForestGreen);
+                    }
+                    else
+                    {
+                        ShowStatus("Panel active", Color.ForestGreen);
+                    }
                 }
                 else
                 {
@@ -256,8 +297,8 @@ namespace TruckRemoteServer
         {
             labelStatus.BeginInvoke((MethodInvoker)delegate ()
             {
-                this.labelStatus.Text = labelText;
-                this.labelStatus.ForeColor = color;
+                labelStatus.Text = labelText;
+                labelStatus.ForeColor = color;
             });
         }
 
@@ -265,12 +306,17 @@ namespace TruckRemoteServer
         {
             buttonStop.BeginInvoke((MethodInvoker)delegate ()
             {
-                this.buttonStop.Enabled = isConnected;
+                buttonStop.Enabled = isConnected;
             });
             buttonStart.BeginInvoke((MethodInvoker)delegate ()
             {
-                this.buttonStart.Enabled = !isConnected;
+                buttonStart.Enabled = !isConnected;
             });
+        }
+
+        private long getUnixTime()
+        {
+            return DateTimeOffset.Now.ToUnixTimeMilliseconds();
         }
     }
 }

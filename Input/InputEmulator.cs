@@ -7,17 +7,18 @@ namespace TruckRemoteServer
     public static class InputEmulator
     {
 
-        private static vJoy joystick;
+        private static vJoy joyStick;
         private static vJoy.JoystickState iReport;
+        private static long maxValue;
 
         private static uint joyId = 1;
 
         public static bool InitJoy()
         {
-            joystick = new vJoy();
-            VjdStat status = joystick.GetVJDStatus(joyId);
+            joyStick = new vJoy();
+            VjdStat status = joyStick.GetVJDStatus(joyId);
 
-            if ((status == VjdStat.VJD_STAT_OWN) || ((status == VjdStat.VJD_STAT_FREE) && (!joystick.AcquireVJD(joyId))))
+            if ((status == VjdStat.VJD_STAT_OWN) || ((status == VjdStat.VJD_STAT_FREE) && (!joyStick.AcquireVJD(joyId))))
             {
                 Console.WriteLine("Failed to acquire vJoy device number {0}.\n", joyId);
                 return false;
@@ -25,15 +26,24 @@ namespace TruckRemoteServer
             else
             {
                 Console.WriteLine("Acquired: vJoy device number {0}.\n", joyId);
-                joystick.ResetVJD(joyId);
+                joyStick.ResetVJD(joyId);
+                joyStick.GetVJDAxisMax(joyId, HID_USAGES.HID_USAGE_X, ref maxValue);
                 return true;
             }
         }
 
-        public static void MoveTo(int xAxis)
+        public static void MoveXAxis(double accelerometerValue)
         {
-            Console.WriteLine("SetAxisX" + joystick.SetAxis(xAxis, joyId, HID_USAGES.HID_USAGE_X));
-            joystick.UpdateVJD(joyId, ref iReport);
+            int xAxisValue;
+            if (accelerometerValue < 0)
+            {
+                xAxisValue = 20;//(int) maxValue - (int) (Math.Abs(accelerometerValue) / 10 * PCController.Sensitivity);
+            }
+            else
+            {
+                xAxisValue = 40; //(int) maxValue + (int)(Math.Abs(accelerometerValue) / 10 * PCController.Sensitivity);
+            }
+            joyStick.SetAxis(16500, joyId, HID_USAGES.HID_USAGE_X);
         }
 
         public static void KeyClick(short scanCode)

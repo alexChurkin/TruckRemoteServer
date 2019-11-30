@@ -6,8 +6,6 @@ namespace TruckRemoteServer
     {
         public static int Sensitivity = 30;
 
-        private int prevMovement;
-
         //Controller
         private bool prevBreakClicked, prevGasClicked;
         private bool prevLeftSignal, prevRightSignal;
@@ -55,15 +53,7 @@ namespace TruckRemoteServer
 
         public void updateAccelerometerValue(double accelerometerValue)
         {
-            int xAxisValue;
-            if(accelerometerValue < 0)
-            {
-                xAxisValue = 16384 - (int) (Math.Abs(accelerometerValue) / 10 * Sensitivity);
-            } else
-            {
-                xAxisValue = 16384 + (int) (Math.Abs(accelerometerValue) / 10 * Sensitivity);
-            }
-            InputEmulator.MoveTo(xAxisValue);
+            InputEmulator.MoveXAxis(accelerometerValue);
         }
 
         public void updateBreakGasState(bool breakClicked, bool gasClicked)

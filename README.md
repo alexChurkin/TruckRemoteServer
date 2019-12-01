@@ -5,10 +5,19 @@ Server app for Truck Remote Control/Panel written on C# (Windows Forms). View [T
 ### [DOWNLOAD THE LATEST VERSION](https://drive.google.com/drive/folders/1eZuEEp7o_r0iVNS5q6rrBKuBrt6ZjRUL?usp=sharing)
 
 ## How to use
-ATTENTION: Do not delete files from the program folder. It's necessary for correct Server work.
-1) If you want to use **Truck Remote Control**: install **vJoy** on your PC by launching **vJoySetup.exe**
-2) Launch **TruckRemoteServer.exe**
-3) Enjoy using!
+ATTENTION: Do not delete files from the **TruckRemoteControl** folder. It's important for correct Server work.
+
+Launching with **Truck Remote Control**:
+1) Install **vJoy** on your PC by launching **vJoySetup.exe**
+2) Open **Configure vjoy**, configure 1-st virtual joystick as on this screenshot:
+![Screenshot](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
+3) Сopy the **TruckRemoteControl** folder wherever you want
+4) Launch **TruckRemoteServer.exe**
+
+Launching with **Truck Remote Panel**:
+If you will not use **Truck Remote Control**, please follow only steps 3-4 from the list above.
+
+Enjoy using!
 
 ![Screenshot](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot.png)
 

@@ -178,14 +178,14 @@
             // 
             // labelSensitivity
             // 
-            this.labelSensitivity.AutoSize = true;
             this.labelSensitivity.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelSensitivity.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelSensitivity.Location = new System.Drawing.Point(222, 122);
+            this.labelSensitivity.Location = new System.Drawing.Point(212, 122);
             this.labelSensitivity.Name = "labelSensitivity";
-            this.labelSensitivity.Size = new System.Drawing.Size(22, 16);
+            this.labelSensitivity.Size = new System.Drawing.Size(40, 16);
             this.labelSensitivity.TabIndex = 13;
             this.labelSensitivity.Text = "50";
+            this.labelSensitivity.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // MainForm
             // 

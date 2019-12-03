@@ -15,6 +15,7 @@ namespace TruckRemoteServer
             decimal port = Properties.Settings.Default.Port;
             sensitivityTrackBar.Value = sensitivity;
             labelSensitivity.Text = sensitivity.ToString();
+            PCController.SteeringSensitivity = sensitivity;
             numericUpPort.Value = port;
 
             ShowIpInLabel();

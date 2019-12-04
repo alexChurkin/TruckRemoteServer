@@ -54,9 +54,9 @@ namespace TruckRemoteServer
         public void updateAccelerometerValue(double accelerometerValue)
         {
             int roughValue = 16384 + (int)(accelerometerValue * 33.5 * SteeringSensitivity);
-            int newXAxisValue = (int)(prevXAxisValue + 0.7 * (roughValue - prevXAxisValue));
+            int newXAxisValue = (int)(prevXAxisValue + 0.6 * (roughValue - prevXAxisValue));
             prevXAxisValue = newXAxisValue;
-            InputEmulator.MoveXAxis(newXAxisValue);
+            InputEmulator.SetXAxis(newXAxisValue);
         }
 
         public void updateBreakGasState(bool breakClicked, bool gasClicked)
@@ -264,11 +264,6 @@ namespace TruckRemoteServer
                 }
                 prevHornState = isHorn;
             }
-        }
-
-        private int getNewCursorOffset(double accelerometerValue)
-        {
-            return (int)(accelerometerValue * (SteeringSensitivity * 1.5));
         }
 
         /* Panel */

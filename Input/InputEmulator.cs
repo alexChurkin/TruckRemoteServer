@@ -28,7 +28,7 @@ namespace TruckRemoteServer
             }
         }
 
-        public static void MoveXAxis(int xAxisValue)
+        public static void SetXAxis(int xAxisValue)
         {
             //xAxisValue can be from 0 to 32768
             joyStick.SetAxis(xAxisValue, joyId, HID_USAGES.HID_USAGE_X);

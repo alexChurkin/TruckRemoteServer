@@ -13,7 +13,7 @@ Launching with **Truck Remote Control**:
 
     ![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
 	
-3) Сopy the **TruckRemoteControl** folder wherever you want
+3) Сopy the **TruckRemoteServer** folder wherever you want
 4) Launch **TruckRemoteServer.exe**
 
 

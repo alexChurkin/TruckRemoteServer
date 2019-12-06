@@ -12,7 +12,6 @@ Launching with **Truck Remote Control**:
 2) Open **Configure vjoy**, configure 1-st virtual joystick as on this screenshot:
 
     ![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
-	(vJoy configuration)
 	
 3) Сopy the **TruckRemoteControl** folder wherever you want
 4) Launch **TruckRemoteServer.exe**

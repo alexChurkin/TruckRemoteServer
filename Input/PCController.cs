@@ -53,7 +53,7 @@ namespace TruckRemoteServer
 
         public void updateAccelerometerValue(double accelerometerValue)
         {
-            int roughValue = 16384 + (int)(accelerometerValue * 33.5 * SteeringSensitivity);
+            int roughValue = 16384 + (int)(accelerometerValue * 34 * SteeringSensitivity);
             int newXAxisValue = (int)(prevXAxisValue + 0.6 * (roughValue - prevXAxisValue));
             prevXAxisValue = newXAxisValue;
             InputEmulator.SetXAxis(newXAxisValue);

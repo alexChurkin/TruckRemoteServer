@@ -310,5 +310,10 @@ namespace TruckRemoteServer
                 InputEmulator.KeyClick(DIK_O_SCAN);
             }
         }
+
+        public void Release()
+        {
+            InputEmulator.ReleaseJoy();
+        }
     }
 }

@@ -88,6 +88,7 @@ namespace TruckRemoteServer
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             server.Stop();
+            InputEmulator.ReleaseJoy();
         }
 
         private void BackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)

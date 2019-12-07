@@ -28,6 +28,14 @@ namespace TruckRemoteServer
             }
         }
 
+        public static void ReleaseJoy()
+        {
+            if(joyStick != null)
+            {
+                joyStick.RelinquishVJD(joyId);
+            }
+        }
+
         public static void SetXAxis(int xAxisValue)
         {
             //xAxisValue can be from 0 to 32768

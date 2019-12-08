@@ -2,6 +2,8 @@ Truck Remote Server
 ====================
 Server app for Truck Remote Control/Panel written on C# (Windows Forms). View [Truck Remote Control](https://github.com/alexChurkin/TruckRemoteControl) and [Truck Remote Panel](https://github.com/alexChurkin/TruckRemotePanel) for more details.
 
+#### [Russian guide](README_ru.md)
+
 ### [DOWNLOAD THE LATEST VERSION](https://drive.google.com/drive/folders/1eZuEEp7o_r0iVNS5q6rrBKuBrt6ZjRUL?usp=sharing)
 
 ## How to use

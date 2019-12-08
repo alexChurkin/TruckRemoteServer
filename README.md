@@ -7,7 +7,7 @@ Server app for Truck Remote Control/Panel written on C# (Windows Forms). View [T
 ### [DOWNLOAD THE LATEST VERSION](https://drive.google.com/drive/folders/1eZuEEp7o_r0iVNS5q6rrBKuBrt6ZjRUL?usp=sharing)
 
 ## How to use
-ATTENTION: Do not delete files from the **TruckRemoteControl** folder. It's important for correct Server work.
+ATTENTION: Do not delete files from the **TruckRemoteServer** folder. It's important for correct Server work.
 
 Launching with **Truck Remote Control**:
 1) Install **vJoy** on your PC by launching **vJoySetup.exe**

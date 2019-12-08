@@ -5,7 +5,7 @@ Truck Remote Server
 ### [ЗАГРУЗИТЬ ПОСЛЕДНЮЮ ВЕРСИЮ](https://drive.google.com/drive/folders/1eZuEEp7o_r0iVNS5q6rrBKuBrt6ZjRUL?usp=sharing)
 
 ## Как использовать
-ВНИМАНИЕ: Не удаляйте файлы из папки **TruckRemoteControl**. Они необходимы для корректной работы сервера.
+ВНИМАНИЕ: Не удаляйте файлы из папки **TruckRemoteServer**. Они необходимы для корректной работы сервера.
 
 Запуск с **Truck Remote Control**:
 1) Установите **vJoy** на ваш ПК/ноутбук, запустив **vJoySetup.exe**

@@ -181,6 +181,7 @@ namespace TruckRemoteServer
             bool parkingBrakeEnabled = bool.Parse(msgParts[5]);
             int lightsState = int.Parse(msgParts[6]);
             bool isHorn = bool.Parse(msgParts[7]);
+            bool isCruise = bool.Parse(msgParts[8]);
 
             pcController.updateAccelerometerValue(accelerometerValue);
             pcController.updateBreakGasState(breakClicked, gasClicked);
@@ -188,6 +189,7 @@ namespace TruckRemoteServer
             pcController.updateParkingBrake(parkingBrakeEnabled);
             pcController.updateLights(lightsState);
             pcController.updateHorn(isHorn);
+            pcController.updateCruise(isCruise);
         }
 
         private void OnMessageFromPanel(string message)

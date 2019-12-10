@@ -12,6 +12,7 @@ namespace TruckRemoteServer
         private bool wasParkingBreakEnabled;
         private int prevLightsState;
         private bool prevHornState;
+        private bool prevCruise;
 
         private int lastConditionNumber = -1;
 
@@ -24,6 +25,7 @@ namespace TruckRemoteServer
         private byte DIK_L_SCAN = 0x26;
         private byte DIK_K_SCAN = 0x25;
         private byte DIK_H_SCAN = 0x23;
+        private byte DIK_C_SCAN = 0x2E;
 
         //Panel
         private bool prevDiffBlock;
@@ -260,9 +262,24 @@ namespace TruckRemoteServer
                 } else
                 {
                     InputEmulator.KeyRelease(DIK_H_SCAN);
-                    Console.WriteLine("released H");
                 }
                 prevHornState = isHorn;
+            }
+        }
+
+        public void updateCruise(bool isCruise)
+        {
+            if (isCruise != prevCruise)
+            {
+                if (isCruise)
+                {
+                    InputEmulator.KeyPress(DIK_C_SCAN);
+                }
+                else
+                {
+                    InputEmulator.KeyRelease(DIK_C_SCAN);
+                }
+                prevCruise = isCruise;
             }
         }
 

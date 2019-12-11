@@ -269,17 +269,10 @@ namespace TruckRemoteServer
 
         public void updateCruise(bool isCruise)
         {
-            if (isCruise != prevCruise)
+            if (prevCruise != isCruise)
             {
-                if (isCruise)
-                {
-                    InputEmulator.KeyPress(DIK_C_SCAN);
-                }
-                else
-                {
-                    InputEmulator.KeyRelease(DIK_C_SCAN);
-                }
                 prevCruise = isCruise;
+                InputEmulator.KeyClick(DIK_C_SCAN);
             }
         }
 

@@ -320,11 +320,14 @@ namespace TruckRemoteServer
 
         private void ShowStatus(string labelText, Color color)
         {
-            labelStatus.BeginInvoke((MethodInvoker)delegate ()
+            try
             {
-                labelStatus.Text = labelText;
-                labelStatus.ForeColor = color;
-            });
+                labelStatus.BeginInvoke((MethodInvoker)delegate ()
+                {
+                    labelStatus.Text = labelText;
+                    labelStatus.ForeColor = color;
+                });
+            } catch(Exception) { }
         }
 
         private void SetButtonsIsListening(bool isConnected)

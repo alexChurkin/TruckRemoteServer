@@ -43,7 +43,10 @@ namespace TruckRemoteServer
         /* Controller */
         public void initializeJoy()
         {
-            InputEmulator.InitJoy();
+            if (!InputEmulator.IsJoyInitialized())
+            {
+                InputEmulator.InitJoy();
+            }
         }
 
         public void setControllerStartValues(bool leftSignal, bool rightSignal, bool isParking, int lightsState)

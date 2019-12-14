@@ -10,6 +10,11 @@ namespace TruckRemoteServer
         private static vJoy joyStick;
         private static uint joyId = 1;
 
+        public static bool IsJoyInitialized()
+        {
+            return joyStick != null;
+        }
+
         public static bool InitJoy()
         {
             joyStick = new vJoy();

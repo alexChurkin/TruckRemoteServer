@@ -11,7 +11,7 @@ namespace TruckRemoteServer
         private bool prevLeftSignal, prevRightSignal;
         private bool wasParkingBreakEnabled;
         private int prevLightsState;
-        private bool prevHornState;
+        private int prevHornState;
         private bool prevCruise;
 
         private int lastConditionNumber = -1;
@@ -25,6 +25,7 @@ namespace TruckRemoteServer
         private byte DIK_L_SCAN = 0x26;
         private byte DIK_K_SCAN = 0x25;
         private byte DIK_H_SCAN = 0x23;
+        private byte DIK_N_SCAN = 0x31;
         private byte DIK_C_SCAN = 0x2E;
 
         //Panel
@@ -252,18 +253,24 @@ namespace TruckRemoteServer
             }
         }
 
-        public void updateHorn(bool isHorn)
+        public void updateHorn(int hornState)
         {
-            if(isHorn != prevHornState)
+            if(hornState != prevHornState)
             {
-                if(isHorn)
+                switch(hornState)
                 {
-                    InputEmulator.KeyPress(DIK_H_SCAN);
-                } else
-                {
-                    InputEmulator.KeyRelease(DIK_H_SCAN);
+                    case 2:
+                        InputEmulator.KeyPress(DIK_N_SCAN);
+                        break;
+                    case 1:
+                        InputEmulator.KeyPress(DIK_H_SCAN);
+                        break;
+                    default:
+                        InputEmulator.KeyRelease(DIK_H_SCAN);
+                        InputEmulator.KeyRelease(DIK_N_SCAN);
+                        break;
                 }
-                prevHornState = isHorn;
+                prevHornState = hornState;
             }
         }
 

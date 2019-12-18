@@ -24,14 +24,14 @@ namespace TruckRemoteServer
         private PCController pcController = new PCController();
 
         private Label labelStatus;
-        private Button buttonStop;
-        private Button buttonStart;
+        //private Button buttonStop;
+        //private Button buttonStart;
 
-        public UDPServer(Label labelStatus, Button buttonStop, Button buttonStart)
+        public UDPServer(Label labelStatus)
         {
             this.labelStatus = labelStatus;
-            this.buttonStart = buttonStart;
-            this.buttonStop = buttonStop;
+            //this.buttonStart = buttonStart;
+            //this.buttonStop = buttonStop;
         }
 
         public void Start()
@@ -55,7 +55,7 @@ namespace TruckRemoteServer
             {
                 Console.WriteLine(e.ToString());
                 ShowStatus("Disabled", Color.OrangeRed);
-                SetButtonsIsListening(false);
+                //SetButtonsIsListening(false);
                 controllerEndPoint = null;
                 panelEndPoint = null;
             }
@@ -64,7 +64,7 @@ namespace TruckRemoteServer
         private void StartListeningForMessages()
         {
             ShowStatus("Enabled", Color.ForestGreen);
-            SetButtonsIsListening(true);
+            //SetButtonsIsListening(true);
 
             IPEndPoint remoteEndPoint = null;
 
@@ -261,7 +261,7 @@ namespace TruckRemoteServer
         {
             if (enabled)
             {
-                SetButtonsIsListening(true);
+                //SetButtonsIsListening(true);
                 //All devices connected
                 if (controllerEndPoint != null && panelEndPoint != null)
                 {
@@ -313,7 +313,7 @@ namespace TruckRemoteServer
             }
             else
             {
-                SetButtonsIsListening(false);
+                //SetButtonsIsListening(false);
                 ShowStatus("Disabled", Color.OrangeRed);
             }
         }
@@ -330,6 +330,7 @@ namespace TruckRemoteServer
             } catch(Exception) { }
         }
 
+        /*
         private void SetButtonsIsListening(bool isConnected)
         {
             buttonStop.BeginInvoke((MethodInvoker)delegate ()
@@ -341,6 +342,7 @@ namespace TruckRemoteServer
                 buttonStart.Enabled = !isConnected;
             });
         }
+        */
 
         private long getUnixTime()
         {

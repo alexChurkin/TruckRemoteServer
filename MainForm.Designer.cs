@@ -40,15 +40,20 @@
             this.label7 = new System.Windows.Forms.Label();
             this.labelIp = new System.Windows.Forms.Label();
             this.labelSensitivity = new System.Windows.Forms.Label();
+            this.menuStripMainMenu = new System.Windows.Forms.MenuStrip();
+            this.programToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.controlMappingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).BeginInit();
+            this.menuStripMainMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(16, 144);
+            this.label1.Location = new System.Drawing.Point(12, 167);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(35, 16);
             this.label1.TabIndex = 1;
@@ -58,7 +63,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label2.Location = new System.Drawing.Point(15, 71);
+            this.label2.Location = new System.Drawing.Point(11, 94);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(107, 20);
             this.label2.TabIndex = 2;
@@ -67,7 +72,7 @@
             // numericUpPort
             // 
             this.numericUpPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.numericUpPort.Location = new System.Drawing.Point(57, 142);
+            this.numericUpPort.Location = new System.Drawing.Point(53, 165);
             this.numericUpPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -91,7 +96,7 @@
             // buttonStop
             // 
             this.buttonStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonStop.Location = new System.Drawing.Point(15, 179);
+            this.buttonStop.Location = new System.Drawing.Point(178, 222);
             this.buttonStop.Name = "buttonStop";
             this.buttonStop.Size = new System.Drawing.Size(125, 33);
             this.buttonStop.TabIndex = 5;
@@ -113,7 +118,7 @@
             // 
             // sensitivityTrackBar
             // 
-            this.sensitivityTrackBar.Location = new System.Drawing.Point(163, 93);
+            this.sensitivityTrackBar.Location = new System.Drawing.Point(159, 116);
             this.sensitivityTrackBar.Maximum = 100;
             this.sensitivityTrackBar.Minimum = 1;
             this.sensitivityTrackBar.Name = "sensitivityTrackBar";
@@ -127,7 +132,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label3.Location = new System.Drawing.Point(169, 13);
+            this.label3.Location = new System.Drawing.Point(165, 36);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(73, 20);
             this.label3.TabIndex = 8;
@@ -137,7 +142,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label4.Location = new System.Drawing.Point(170, 74);
+            this.label4.Location = new System.Drawing.Point(166, 97);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(71, 16);
             this.label4.TabIndex = 9;
@@ -148,7 +153,7 @@
             this.labelStatus.AutoSize = true;
             this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-            this.labelStatus.Location = new System.Drawing.Point(16, 98);
+            this.labelStatus.Location = new System.Drawing.Point(12, 121);
             this.labelStatus.Name = "labelStatus";
             this.labelStatus.Size = new System.Drawing.Size(59, 16);
             this.labelStatus.TabIndex = 10;
@@ -159,7 +164,7 @@
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label7.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.label7.Location = new System.Drawing.Point(16, 13);
+            this.label7.Location = new System.Drawing.Point(12, 36);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(78, 20);
             this.label7.TabIndex = 11;
@@ -170,7 +175,7 @@
             this.labelIp.AutoSize = true;
             this.labelIp.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelIp.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelIp.Location = new System.Drawing.Point(16, 39);
+            this.labelIp.Location = new System.Drawing.Point(12, 62);
             this.labelIp.Name = "labelIp";
             this.labelIp.Size = new System.Drawing.Size(80, 16);
             this.labelIp.TabIndex = 12;
@@ -180,12 +185,45 @@
             // 
             this.labelSensitivity.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelSensitivity.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelSensitivity.Location = new System.Drawing.Point(212, 122);
+            this.labelSensitivity.Location = new System.Drawing.Point(208, 145);
             this.labelSensitivity.Name = "labelSensitivity";
             this.labelSensitivity.Size = new System.Drawing.Size(40, 16);
             this.labelSensitivity.TabIndex = 13;
             this.labelSensitivity.Text = "50";
             this.labelSensitivity.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // menuStripMainMenu
+            // 
+            this.menuStripMainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.programToolStripMenuItem});
+            this.menuStripMainMenu.Location = new System.Drawing.Point(0, 0);
+            this.menuStripMainMenu.Name = "menuStripMainMenu";
+            this.menuStripMainMenu.Size = new System.Drawing.Size(315, 24);
+            this.menuStripMainMenu.TabIndex = 14;
+            this.menuStripMainMenu.Text = "menuStrip1";
+            // 
+            // programToolStripMenuItem
+            // 
+            this.programToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.settingsToolStripMenuItem,
+            this.controlMappingToolStripMenuItem});
+            this.programToolStripMenuItem.Name = "programToolStripMenuItem";
+            this.programToolStripMenuItem.Size = new System.Drawing.Size(65, 20);
+            this.programToolStripMenuItem.Text = "Program";
+            // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.settingsToolStripMenuItem.Text = "Settings";
+            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
+            // 
+            // controlMappingToolStripMenuItem
+            // 
+            this.controlMappingToolStripMenuItem.Name = "controlMappingToolStripMenuItem";
+            this.controlMappingToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.controlMappingToolStripMenuItem.Text = "Control mapping";
+            this.controlMappingToolStripMenuItem.Click += new System.EventHandler(this.controlMappingToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -204,7 +242,9 @@
             this.Controls.Add(this.numericUpPort);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
+            this.Controls.Add(this.menuStripMainMenu);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MainMenuStrip = this.menuStripMainMenu;
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.ShowIcon = false;
@@ -213,6 +253,8 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).EndInit();
+            this.menuStripMainMenu.ResumeLayout(false);
+            this.menuStripMainMenu.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -231,6 +273,10 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label labelIp;
         private System.Windows.Forms.Label labelSensitivity;
+        private System.Windows.Forms.MenuStrip menuStripMainMenu;
+        private System.Windows.Forms.ToolStripMenuItem programToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem controlMappingToolStripMenuItem;
     }
 }
 

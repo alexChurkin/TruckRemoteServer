@@ -91,7 +91,13 @@ namespace TruckRemoteServer
             InputEmulator.ReleaseJoy();
         }
 
-        private void BackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        private void controlMappingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ControlMapping controlMappingForm = new ControlMapping();
+            controlMappingForm.Show();
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }

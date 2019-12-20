@@ -11,18 +11,34 @@ namespace TruckRemoteServer
         public MainForm()
         {
             InitializeComponent();
+            InitialSetup();
+        }
+
+        private void InitialSetup()
+        {
+            ShowIpInLabel();
+
             int sensitivity = Properties.Settings.Default.Sensitivity;
-            decimal port = Properties.Settings.Default.Port;
+
             sensitivityTrackBar.Value = sensitivity;
             labelSensitivity.Text = sensitivity.ToString();
             PCController.SteeringSensitivity = sensitivity;
+
+            decimal port = Properties.Settings.Default.Port;
             numericUpPort.Value = port;
 
-            ShowIpInLabel();
 
             server = new UDPServer(labelStatus, buttonStop, buttonStart);
-            server.port = (int) port;
-            server.Start();
+            server.port = (int)port;
+
+            if (Properties.Settings.Default.StartServerOnStartup)
+            {
+                server.Start();
+            }
+
+            if (Properties.Settings.Default.StartMinimized)
+                this.WindowState = FormWindowState.Minimized;
+
         }
 
         public void ShowIpInLabel()
@@ -93,13 +109,19 @@ namespace TruckRemoteServer
 
         private void controlMappingToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ControlMapping controlMappingForm = new ControlMapping();
+            ControlMappingForm controlMappingForm = new ControlMappingForm();
             controlMappingForm.Show();
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            ProgramSettingsForm Form = new ProgramSettingsForm();
+            Form.ShowDialog();
+        }
 
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            server.UpdateUiState();
         }
     }
 }

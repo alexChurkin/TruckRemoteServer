@@ -1,6 +1,6 @@
 ﻿namespace TruckRemoteServer
 {
-    partial class ControlMapping
+    partial class ControlMappingForm
     {
         /// <summary>
         /// Required designer variable.

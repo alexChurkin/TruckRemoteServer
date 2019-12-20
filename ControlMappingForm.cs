@@ -12,9 +12,9 @@ using System.Windows.Input;
 
 namespace TruckRemoteServer
 {
-    public partial class ControlMapping : Form
+    public partial class ControlMappingForm : Form
     {
-        public ControlMapping()
+        public ControlMappingForm()
         {
             InitializeComponent();
         }

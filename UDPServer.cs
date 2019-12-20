@@ -14,7 +14,7 @@ namespace TruckRemoteServer
     {
         public int port = 18250;
 
-        public bool enabled = true;
+        public bool enabled = Properties.Settings.Default.StartServerOnStartup;//true;
         public bool controllerPaused, panelPaused;
         public long lastControllerMsgTime, lastPanelMsgTime;
 
@@ -257,7 +257,7 @@ namespace TruckRemoteServer
             }
         }
 
-        private void UpdateUiState()
+        public void UpdateUiState()
         {
             if (enabled)
             {

@@ -33,19 +33,14 @@
             this.numericUpPort = new System.Windows.Forms.NumericUpDown();
             this.buttonStop = new System.Windows.Forms.Button();
             this.buttonStart = new System.Windows.Forms.Button();
-            this.sensitivityTrackBar = new System.Windows.Forms.TrackBar();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
             this.labelStatus = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.labelIp = new System.Windows.Forms.Label();
-            this.labelSensitivity = new System.Windows.Forms.Label();
             this.menuStripMainMenu = new System.Windows.Forms.MenuStrip();
             this.programToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.controlMappingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).BeginInit();
             this.menuStripMainMenu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -53,7 +48,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(12, 167);
+            this.label1.Location = new System.Drawing.Point(136, 39);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(35, 16);
             this.label1.TabIndex = 1;
@@ -72,7 +67,7 @@
             // numericUpPort
             // 
             this.numericUpPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.numericUpPort.Location = new System.Drawing.Point(53, 165);
+            this.numericUpPort.Location = new System.Drawing.Point(139, 56);
             this.numericUpPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -106,7 +101,6 @@
             // 
             // buttonStart
             // 
-            this.buttonStart.Enabled = false;
             this.buttonStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.buttonStart.Location = new System.Drawing.Point(15, 222);
             this.buttonStart.Name = "buttonStart";
@@ -116,48 +110,16 @@
             this.buttonStart.UseVisualStyleBackColor = true;
             this.buttonStart.Click += new System.EventHandler(this.ButtonStart_Click);
             // 
-            // sensitivityTrackBar
-            // 
-            this.sensitivityTrackBar.Location = new System.Drawing.Point(159, 116);
-            this.sensitivityTrackBar.Maximum = 100;
-            this.sensitivityTrackBar.Minimum = 1;
-            this.sensitivityTrackBar.Name = "sensitivityTrackBar";
-            this.sensitivityTrackBar.Size = new System.Drawing.Size(141, 45);
-            this.sensitivityTrackBar.TabIndex = 7;
-            this.sensitivityTrackBar.TickFrequency = 5;
-            this.sensitivityTrackBar.Value = 50;
-            this.sensitivityTrackBar.Scroll += new System.EventHandler(this.SensitivityTrackBar_Scroll);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label3.Location = new System.Drawing.Point(165, 36);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(73, 20);
-            this.label3.TabIndex = 8;
-            this.label3.Text = "Steering:";
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label4.Location = new System.Drawing.Point(166, 97);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(71, 16);
-            this.label4.TabIndex = 9;
-            this.label4.Text = "Sensitivity:";
-            // 
             // labelStatus
             // 
             this.labelStatus.AutoSize = true;
             this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.labelStatus.ForeColor = System.Drawing.Color.Fuchsia;
             this.labelStatus.Location = new System.Drawing.Point(12, 121);
             this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Size = new System.Drawing.Size(59, 16);
+            this.labelStatus.Size = new System.Drawing.Size(60, 16);
             this.labelStatus.TabIndex = 10;
-            this.labelStatus.Text = "Enabled";
+            this.labelStatus.Text = "unknown";
             // 
             // label7
             // 
@@ -180,17 +142,6 @@
             this.labelIp.Size = new System.Drawing.Size(80, 16);
             this.labelIp.TabIndex = 12;
             this.labelIp.Text = "192.168.0.16";
-            // 
-            // labelSensitivity
-            // 
-            this.labelSensitivity.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelSensitivity.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelSensitivity.Location = new System.Drawing.Point(208, 145);
-            this.labelSensitivity.Name = "labelSensitivity";
-            this.labelSensitivity.Size = new System.Drawing.Size(40, 16);
-            this.labelSensitivity.TabIndex = 13;
-            this.labelSensitivity.Text = "50";
-            this.labelSensitivity.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // menuStripMainMenu
             // 
@@ -230,13 +181,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(315, 264);
-            this.Controls.Add(this.labelSensitivity);
             this.Controls.Add(this.labelIp);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.labelStatus);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.sensitivityTrackBar);
             this.Controls.Add(this.buttonStart);
             this.Controls.Add(this.buttonStop);
             this.Controls.Add(this.numericUpPort);
@@ -251,8 +198,8 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Truck Remote Server";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).EndInit();
             this.menuStripMainMenu.ResumeLayout(false);
             this.menuStripMainMenu.PerformLayout();
             this.ResumeLayout(false);
@@ -266,13 +213,9 @@
         private System.Windows.Forms.NumericUpDown numericUpPort;
         private System.Windows.Forms.Button buttonStop;
         private System.Windows.Forms.Button buttonStart;
-        private System.Windows.Forms.TrackBar sensitivityTrackBar;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label labelStatus;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label labelIp;
-        private System.Windows.Forms.Label labelSensitivity;
         private System.Windows.Forms.MenuStrip menuStripMainMenu;
         private System.Windows.Forms.ToolStripMenuItem programToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;

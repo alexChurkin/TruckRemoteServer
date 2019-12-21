@@ -46,9 +46,7 @@ namespace TruckRemoteServer
             try
             {
                 IPEndPoint localIpEndPoint = new IPEndPoint(IPAddress.Any, port);
-
                 udpClient = new UdpClient(localIpEndPoint);
-
                 StartListeningForMessages();
             }
             catch (Exception e)
@@ -119,12 +117,12 @@ namespace TruckRemoteServer
             Debug.WriteLine("Hello from controller received!");
 
             string[] dataParts = initMessage.Substring(initMessage.IndexOf("\n") + 1).Split(',');
-            pcController.setControllerStartValues(
+            pcController.SetControllerStartValues(
                 bool.Parse(dataParts[0]),
                 bool.Parse(dataParts[1]),
                 bool.Parse(dataParts[2]),
                 int.Parse(dataParts[3]));
-            pcController.initializeJoy();
+            pcController.InitializeJoyIfNeccessary();
 
             byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
             udpClient.Send(bytesToAnswer, bytesToAnswer.Length, remoteEndPoint);
@@ -140,7 +138,7 @@ namespace TruckRemoteServer
             Console.WriteLine("Hello from panel received!");
 
             string[] dataParts = initMessage.Substring(initMessage.IndexOf("\n") + 1).Split(',');
-            pcController.setPanelStartValues(
+            pcController.SetPanelStartValues(
                 bool.Parse(dataParts[0]),
                 int.Parse(dataParts[1]),
                 bool.Parse(dataParts[2]),
@@ -183,13 +181,13 @@ namespace TruckRemoteServer
             int hornState = int.Parse(msgParts[7]);
             bool isCruise = bool.Parse(msgParts[8]);
 
-            pcController.updateAccelerometerValue(accelerometerValue);
-            pcController.updateBreakGasState(breakClicked, gasClicked);
-            pcController.updateTurnSignals(leftSignalEnabled, rightSignalEnabled);
-            pcController.updateParkingBrake(parkingBrakeEnabled);
-            pcController.updateLights(lightsState);
-            pcController.updateHorn(hornState);
-            pcController.updateCruise(isCruise);
+            pcController.UpdateAccelerometerValue(accelerometerValue);
+            pcController.UpdateBreakGasState(breakClicked, gasClicked);
+            pcController.UpdateTurnSignals(leftSignalEnabled, rightSignalEnabled);
+            pcController.UpdateParkingBrake(parkingBrakeEnabled);
+            pcController.UpdateLights(lightsState);
+            pcController.UpdateHorn(hornState);
+            pcController.UpdateCruise(isCruise);
         }
 
         private void OnMessageFromPanel(string message)
@@ -216,10 +214,10 @@ namespace TruckRemoteServer
             bool liftingAxle = bool.Parse(msgParts[2]);
             bool flashingBeacon = bool.Parse(msgParts[3]);
 
-            pcController.updateDiffBlock(diffBlock);
-            pcController.updateWipers(wipersState);
-            pcController.updateLiftingAxle(liftingAxle);
-            pcController.updateFlashingBeacon(flashingBeacon);
+            pcController.UpdateDiffBlock(diffBlock);
+            pcController.UpdateWipers(wipersState);
+            pcController.UpdateLiftingAxle(liftingAxle);
+            pcController.UpdateFlashingBeacon(flashingBeacon);
         }
 
         public void Stop()

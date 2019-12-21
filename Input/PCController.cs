@@ -16,8 +16,8 @@ namespace TruckRemoteServer
 
         private int lastConditionNumber = -1;
 
-        private const int DIK_S_SCAN = 0x1F;
-        private byte DIK_W_SCAN = 0x11;
+        private byte DIK_UP_ARROW_SCAN = 0xC8;
+        private const int DIK_DOWN_ARROW_SCAN = 0xD0;
         private byte DIK_OPEN_BRACKET_SCAN = 0x1A;
         private byte DIK_CLOSE_BRACKET_SCAN = 0x1B;
         private byte DIK_F_SCAN = 0x21;
@@ -41,7 +41,7 @@ namespace TruckRemoteServer
 
 
         /* Controller */
-        public void initializeJoy()
+        public void InitializeJoyIfNeccessary()
         {
             if (!InputEmulator.IsJoyInitialized())
             {
@@ -49,7 +49,7 @@ namespace TruckRemoteServer
             }
         }
 
-        public void setControllerStartValues(bool leftSignal, bool rightSignal, bool isParking, int lightsState)
+        public void SetControllerStartValues(bool leftSignal, bool rightSignal, bool isParking, int lightsState)
         {
             prevLeftSignal = leftSignal;
             prevRightSignal = rightSignal;
@@ -57,7 +57,7 @@ namespace TruckRemoteServer
             prevLightsState = lightsState;
         }
 
-        public void updateAccelerometerValue(double accelerometerValue)
+        public void UpdateAccelerometerValue(double accelerometerValue)
         {
             int roughValue = 16384 + (int)(accelerometerValue * 34 * SteeringSensitivity);
             int newXAxisValue = (int)(prevXAxisValue + 0.6 * (roughValue - prevXAxisValue));
@@ -65,17 +65,17 @@ namespace TruckRemoteServer
             InputEmulator.SetXAxis(newXAxisValue);
         }
 
-        public void updateBreakGasState(bool breakClicked, bool gasClicked)
+        public void UpdateBreakGasState(bool breakClicked, bool gasClicked)
         {
             if (breakClicked != prevBreakClicked)
             {
                 if (breakClicked)
                 {
-                    InputEmulator.KeyPress(DIK_S_SCAN);
+                    InputEmulator.KeyPress(DIK_DOWN_ARROW_SCAN);
                 }
                 else
                 {
-                    InputEmulator.KeyRelease(DIK_S_SCAN);
+                    InputEmulator.KeyRelease(DIK_DOWN_ARROW_SCAN);
                 }
                 prevBreakClicked = breakClicked;
             }
@@ -84,17 +84,17 @@ namespace TruckRemoteServer
             {
                 if (gasClicked)
                 {
-                    InputEmulator.KeyPress(DIK_W_SCAN);
+                    InputEmulator.KeyPress(DIK_UP_ARROW_SCAN);
                 }
                 else
                 {
-                    InputEmulator.KeyRelease(DIK_W_SCAN);
+                    InputEmulator.KeyRelease(DIK_UP_ARROW_SCAN);
                 }
                 prevGasClicked = gasClicked;
             }
         }
 
-        public void updateTurnSignals(bool leftSignal, bool rightSignal)
+        public void UpdateTurnSignals(bool leftSignal, bool rightSignal)
         {
             //All was disabled
             if (!prevLeftSignal && !prevRightSignal)
@@ -104,7 +104,7 @@ namespace TruckRemoteServer
                 {
                     if (lastConditionNumber != 0)
                     {
-                        toggleEmergencySignal();
+                        ToggleEmergencySignal();
                         lastConditionNumber = 0;
                     }
                 }
@@ -113,7 +113,7 @@ namespace TruckRemoteServer
                 {
                     if (lastConditionNumber != 1)
                     {
-                        toggleLeftTurnSignal();
+                        ToggleLeftTurnSignal();
                         lastConditionNumber = 1;
                     }
                 }
@@ -122,7 +122,7 @@ namespace TruckRemoteServer
                 {
                     if (lastConditionNumber != 2)
                     {
-                        toggleRightTurnSignal();
+                        ToggleRightTurnSignal();
                         lastConditionNumber = 2;
                     }
                 }
@@ -136,7 +136,7 @@ namespace TruckRemoteServer
                 {
                     if (lastConditionNumber != 3)
                     {
-                        toggleEmergencySignal();
+                        ToggleEmergencySignal();
                         lastConditionNumber = 3;
                     }
                 }
@@ -149,8 +149,8 @@ namespace TruckRemoteServer
                 {
                     if (lastConditionNumber != 4)
                     {
-                        toggleLeftTurnSignal();
-                        toggleEmergencySignal();
+                        ToggleLeftTurnSignal();
+                        ToggleEmergencySignal();
                         lastConditionNumber = 4;
                     }
                 }
@@ -159,7 +159,7 @@ namespace TruckRemoteServer
                 {
                     if (lastConditionNumber != 5)
                     {
-                        toggleRightTurnSignal();
+                        ToggleRightTurnSignal();
                         lastConditionNumber = 5;
                     }
                 }
@@ -168,7 +168,7 @@ namespace TruckRemoteServer
                 {
                     if (lastConditionNumber != 6)
                     {
-                        toggleLeftTurnSignal();
+                        ToggleLeftTurnSignal();
                         lastConditionNumber = 6;
                     }
                 }
@@ -180,8 +180,8 @@ namespace TruckRemoteServer
                 {
                     if (lastConditionNumber != 7)
                     {
-                        toggleRightTurnSignal();
-                        toggleEmergencySignal();
+                        ToggleRightTurnSignal();
+                        ToggleEmergencySignal();
                         lastConditionNumber = 7;
                     }
                 }
@@ -189,7 +189,7 @@ namespace TruckRemoteServer
                 {
                     if (lastConditionNumber != 8)
                     {
-                        toggleLeftTurnSignal();
+                        ToggleLeftTurnSignal();
                         lastConditionNumber = 8;
                     }
                 }
@@ -197,7 +197,7 @@ namespace TruckRemoteServer
                 {
                     if (lastConditionNumber != 9)
                     {
-                        toggleRightTurnSignal();
+                        ToggleRightTurnSignal();
                         lastConditionNumber = 9;
                     }
                 }
@@ -207,22 +207,22 @@ namespace TruckRemoteServer
             prevRightSignal = rightSignal;
         }
 
-        private void toggleLeftTurnSignal()
+        private void ToggleLeftTurnSignal()
         {
             InputEmulator.KeyClick(DIK_OPEN_BRACKET_SCAN);
         }
 
-        private void toggleRightTurnSignal()
+        private void ToggleRightTurnSignal()
         {
             InputEmulator.KeyClick(DIK_CLOSE_BRACKET_SCAN);
         }
 
-        private void toggleEmergencySignal()
+        private void ToggleEmergencySignal()
         {
             InputEmulator.KeyClick(DIK_F_SCAN);
         }
 
-        public void updateParkingBrake(bool isParkingBrakeEnabled)
+        public void UpdateParkingBrake(bool isParkingBrakeEnabled)
         {
             if (wasParkingBreakEnabled != isParkingBrakeEnabled)
             {
@@ -231,7 +231,7 @@ namespace TruckRemoteServer
             }
         }
 
-        public void updateLights(int lightsState)
+        public void UpdateLights(int lightsState)
         {
             if(lightsState != prevLightsState)
             {
@@ -256,7 +256,7 @@ namespace TruckRemoteServer
             }
         }
 
-        public void updateHorn(int hornState)
+        public void UpdateHorn(int hornState)
         {
             if(hornState != prevHornState)
             {
@@ -277,7 +277,7 @@ namespace TruckRemoteServer
             }
         }
 
-        public void updateCruise(bool isCruise)
+        public void UpdateCruise(bool isCruise)
         {
             if (prevCruise != isCruise)
             {
@@ -287,7 +287,7 @@ namespace TruckRemoteServer
         }
 
         /* Panel */
-        public void setPanelStartValues(bool diffBlock, int wipersState, bool liftingAxle, bool flashingBeacon)
+        public void SetPanelStartValues(bool diffBlock, int wipersState, bool liftingAxle, bool flashingBeacon)
         {
             prevDiffBlock = diffBlock;
             prevWipersState = wipersState;
@@ -295,7 +295,7 @@ namespace TruckRemoteServer
             prevFlashingBeacon = flashingBeacon;
         }
 
-        public void updateDiffBlock(bool diffBlock)
+        public void UpdateDiffBlock(bool diffBlock)
         {
             if(prevDiffBlock != diffBlock)
             {
@@ -304,7 +304,7 @@ namespace TruckRemoteServer
             }
         }
 
-        public void updateWipers(int wipersState)
+        public void UpdateWipers(int wipersState)
         {
             if (prevWipersState != wipersState)
             {
@@ -313,7 +313,7 @@ namespace TruckRemoteServer
             }
         }
 
-        public void updateLiftingAxle(bool liftingAxle)
+        public void UpdateLiftingAxle(bool liftingAxle)
         {
             if (prevLiftingAxle != liftingAxle)
             {
@@ -322,7 +322,7 @@ namespace TruckRemoteServer
             }
         }
 
-        public void updateFlashingBeacon(bool flashingBeacon)
+        public void UpdateFlashingBeacon(bool flashingBeacon)
         {
             if (prevFlashingBeacon != flashingBeacon)
             {

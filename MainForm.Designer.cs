@@ -28,20 +28,25 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.numericUpPort = new System.Windows.Forms.NumericUpDown();
-            this.buttonStop = new System.Windows.Forms.Button();
-            this.buttonStart = new System.Windows.Forms.Button();
             this.labelStatus = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.labelIp = new System.Windows.Forms.Label();
+            this.notifyIconTray = new System.Windows.Forms.NotifyIcon(this.components);
+            this.buttonStartStopServer = new System.Windows.Forms.Button();
+            this.contextMenuStripNotifyIconTray = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.StartStopServerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMainMenu = new System.Windows.Forms.MenuStrip();
             this.programToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.controlMappingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).BeginInit();
             this.menuStripMainMenu.SuspendLayout();
+            this.contextMenuStripNotifyIconTray.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -50,7 +55,7 @@
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label1.Location = new System.Drawing.Point(136, 39);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 16);
+            this.label1.Size = new System.Drawing.Size(42, 20);
             this.label1.TabIndex = 1;
             this.label1.Text = "Port:";
             // 
@@ -79,7 +84,7 @@
             0,
             0});
             this.numericUpPort.Name = "numericUpPort";
-            this.numericUpPort.Size = new System.Drawing.Size(83, 22);
+            this.numericUpPort.Size = new System.Drawing.Size(68, 22);
             this.numericUpPort.TabIndex = 3;
             this.numericUpPort.Value = new decimal(new int[] {
             18250,
@@ -87,28 +92,6 @@
             0,
             0});
             this.numericUpPort.ValueChanged += new System.EventHandler(this.NumericUpPort_ValueChanged);
-            // 
-            // buttonStop
-            // 
-            this.buttonStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonStop.Location = new System.Drawing.Point(178, 222);
-            this.buttonStop.Name = "buttonStop";
-            this.buttonStop.Size = new System.Drawing.Size(125, 33);
-            this.buttonStop.TabIndex = 5;
-            this.buttonStop.Text = "Stop";
-            this.buttonStop.UseVisualStyleBackColor = true;
-            this.buttonStop.Click += new System.EventHandler(this.ButtonStop_Click);
-            // 
-            // buttonStart
-            // 
-            this.buttonStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonStart.Location = new System.Drawing.Point(15, 222);
-            this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(125, 33);
-            this.buttonStart.TabIndex = 6;
-            this.buttonStart.Text = "Start";
-            this.buttonStart.UseVisualStyleBackColor = true;
-            this.buttonStart.Click += new System.EventHandler(this.ButtonStart_Click);
             // 
             // labelStatus
             // 
@@ -176,16 +159,47 @@
             this.controlMappingToolStripMenuItem.Text = "Control mapping";
             this.controlMappingToolStripMenuItem.Click += new System.EventHandler(this.controlMappingToolStripMenuItem_Click);
             // 
+            // notifyIconTray
+            // 
+            this.notifyIconTray.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIconTray.Icon")));
+            this.notifyIconTray.Text = "Truck Remote Server";
+            this.notifyIconTray.Visible = true;
+            this.notifyIconTray.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIconTray_MouseClick);
+            // 
+            // buttonStartStopServer
+            // 
+            this.buttonStartStopServer.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.buttonStartStopServer.Location = new System.Drawing.Point(12, 219);
+            this.buttonStartStopServer.Name = "buttonStartStopServer";
+            this.buttonStartStopServer.Size = new System.Drawing.Size(291, 33);
+            this.buttonStartStopServer.TabIndex = 14;
+            this.buttonStartStopServer.Text = "Stop";
+            this.buttonStartStopServer.UseVisualStyleBackColor = true;
+            this.buttonStartStopServer.Click += new System.EventHandler(this.ButtonStop_Click);
+            // 
+            // contextMenuStripNotifyIconTray
+            // 
+            this.contextMenuStripNotifyIconTray.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.StartStopServerToolStripMenuItem});
+            this.contextMenuStripNotifyIconTray.Name = "contextMenuStripNotifyIconTray";
+            this.contextMenuStripNotifyIconTray.Size = new System.Drawing.Size(181, 48);
+            // 
+            // StartStopServerToolStripMenuItem
+            // 
+            this.StartStopServerToolStripMenuItem.Name = "StartStopServerToolStripMenuItem";
+            this.StartStopServerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.StartStopServerToolStripMenuItem.Text = "Stop Server";
+            this.StartStopServerToolStripMenuItem.Click += new System.EventHandler(this.ButtonStop_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(315, 264);
+            this.Controls.Add(this.buttonStartStopServer);
             this.Controls.Add(this.labelIp);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.labelStatus);
-            this.Controls.Add(this.buttonStart);
-            this.Controls.Add(this.buttonStop);
             this.Controls.Add(this.numericUpPort);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -199,9 +213,12 @@
             this.Text = "Truck Remote Server";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
+            this.Resize += new System.EventHandler(this.MainForm_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).EndInit();
             this.menuStripMainMenu.ResumeLayout(false);
             this.menuStripMainMenu.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).EndInit();
+            this.contextMenuStripNotifyIconTray.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -211,11 +228,13 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.NumericUpDown numericUpPort;
-        private System.Windows.Forms.Button buttonStop;
-        private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.Label labelStatus;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label labelIp;
+        private System.Windows.Forms.NotifyIcon notifyIconTray;
+        private System.Windows.Forms.Button buttonStartStopServer;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripNotifyIconTray;
+        private System.Windows.Forms.ToolStripMenuItem StartStopServerToolStripMenuItem;
         private System.Windows.Forms.MenuStrip menuStripMainMenu;
         private System.Windows.Forms.ToolStripMenuItem programToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;

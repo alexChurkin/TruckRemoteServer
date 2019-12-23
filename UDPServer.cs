@@ -14,14 +14,14 @@ namespace TruckRemoteServer
     {
         public int port = 18250;
 
-        public bool enabled = true;
+        public bool enabled = Properties.Settings.Default.StartServerOnStartup;//true;
         public bool controllerPaused, panelPaused;
         public long lastControllerMsgTime, lastPanelMsgTime;
 
         private UdpClient udpClient;
         private IPEndPoint controllerEndPoint, panelEndPoint;
 
-        private PCController pcController = new PCController();
+        internal PCController pcController = new PCController();
 
         private Label labelStatus;
         private Button buttonStop;
@@ -32,6 +32,8 @@ namespace TruckRemoteServer
             this.labelStatus = labelStatus;
             this.buttonStart = buttonStart;
             this.buttonStop = buttonStop;
+
+            pcController.initializeKeyMapping();
         }
 
         public void Start()
@@ -255,7 +257,7 @@ namespace TruckRemoteServer
             }
         }
 
-        private void UpdateUiState()
+        public void UpdateUiState()
         {
             if (enabled)
             {

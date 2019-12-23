@@ -1,29 +1,40 @@
 ﻿using System;
 using System.Net;
+using System.Linq;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace TruckRemoteServer
 {
+
     public partial class MainForm : Form
     {
-        private UDPServer server;
+        public UDPServer server;
 
         public MainForm()
         {
             InitializeComponent();
-            int sensitivity = Properties.Settings.Default.Sensitivity;
-            decimal port = Properties.Settings.Default.Port;
-            sensitivityTrackBar.Value = sensitivity;
-            labelSensitivity.Text = sensitivity.ToString();
-            PCController.SteeringSensitivity = sensitivity;
-            numericUpPort.Value = port;
+            InitialSetup();
+        }
 
+        private void InitialSetup()
+        {
             ShowIpInLabel();
 
+            decimal port = Properties.Settings.Default.Port;
+            numericUpPort.Value = port;
+
             server = new UDPServer(labelStatus, buttonStop, buttonStart);
-            server.port = (int) port;
-            server.Start();
-        }
+            server.port = (int)port;
+
+            if (Properties.Settings.Default.StartServerOnStartup)
+            {
+                server.Start();
+            }
+
+            if (Properties.Settings.Default.StartMinimized)
+                this.WindowState = FormWindowState.Minimized;
+    }
 
         public void ShowIpInLabel()
         {
@@ -75,25 +86,28 @@ namespace TruckRemoteServer
             server.port = (int) numericUpPort.Value;
             server.Start();
         }
-
-        private void SensitivityTrackBar_Scroll(object sender, EventArgs e)
-        {
-            PCController.SteeringSensitivity = sensitivityTrackBar.Value;
-            labelSensitivity.Text = (sensitivityTrackBar.Value).ToString();
-
-            Properties.Settings.Default.Sensitivity = sensitivityTrackBar.Value;
-            Properties.Settings.Default.Save();
-        }
-
+        
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             server.Stop();
             InputEmulator.ReleaseJoy();
         }
 
-        private void BackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        private void controlMappingToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            ControlMappingForm controlMappingForm = new ControlMappingForm();
+            controlMappingForm.ShowDialog();
+        }
 
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ProgramSettingsForm Form = new ProgramSettingsForm();
+            Form.ShowDialog();
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            server.UpdateUiState();
         }
     }
 }

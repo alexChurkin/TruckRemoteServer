@@ -21,7 +21,7 @@ namespace TruckRemoteServer
         private UdpClient udpClient;
         private IPEndPoint controllerEndPoint, panelEndPoint;
 
-        private PCController pcController = new PCController();
+        internal PCController pcController = new PCController();
 
         private Label labelStatus;
         private Button buttonStop;
@@ -32,6 +32,8 @@ namespace TruckRemoteServer
             this.labelStatus = labelStatus;
             this.buttonStart = buttonStart;
             this.buttonStop = buttonStop;
+
+            pcController.initializeKeyMapping();
         }
 
         public void Start()

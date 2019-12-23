@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TruckRemoteServer
 {
     class PCController
     {
+        public Dictionary<string, short> ControlMapping = new Dictionary<string, short>();
+
         //Controller
         public static int SteeringSensitivity = 50;
         public int prevXAxisValue;
@@ -16,7 +19,7 @@ namespace TruckRemoteServer
 
         private int lastConditionNumber = -1;
 
-        private const int DIK_S_SCAN = 0x1F;
+        private byte DIK_S_SCAN = 0x1F;
         private byte DIK_W_SCAN = 0x11;
         private byte DIK_OPEN_BRACKET_SCAN = 0x1A;
         private byte DIK_CLOSE_BRACKET_SCAN = 0x1B;
@@ -49,6 +52,23 @@ namespace TruckRemoteServer
             }
         }
 
+        public void initializeKeyMapping()
+        {
+            ControlMapping.Add("Throttle", 0x48);
+            ControlMapping.Add("Brake", 0x50);
+            ControlMapping.Add("ParkingBrake", 0x39);
+            ControlMapping.Add("LeftIndicator", 0x1A);
+            ControlMapping.Add("RightIndicator", 0x1B);
+            ControlMapping.Add("HazardLight", 0x21);
+            ControlMapping.Add("LightModes", 0x26);
+            ControlMapping.Add("HighBeam", 0x25);
+            ControlMapping.Add("AirHorn", 0x31);
+            ControlMapping.Add("Horn", 0x23);
+            ControlMapping.Add("CruiseControl", 0x2E);
+            //ControlMapping.Add("", );
+
+        }
+
         public void setControllerStartValues(bool leftSignal, bool rightSignal, bool isParking, int lightsState)
         {
             prevLeftSignal = leftSignal;
@@ -71,11 +91,11 @@ namespace TruckRemoteServer
             {
                 if (breakClicked)
                 {
-                    InputEmulator.KeyPress(DIK_S_SCAN);
+                    InputEmulator.KeyPress(ControlMapping["Brake"], true);
                 }
                 else
                 {
-                    InputEmulator.KeyRelease(DIK_S_SCAN);
+                    InputEmulator.KeyRelease(ControlMapping["Brake"],true);
                 }
                 prevBreakClicked = breakClicked;
             }
@@ -84,11 +104,11 @@ namespace TruckRemoteServer
             {
                 if (gasClicked)
                 {
-                    InputEmulator.KeyPress(DIK_W_SCAN);
+                    InputEmulator.KeyPress(ControlMapping["Throttle"], true);
                 }
                 else
                 {
-                    InputEmulator.KeyRelease(DIK_W_SCAN);
+                    InputEmulator.KeyRelease(ControlMapping["Throttle"], true);
                 }
                 prevGasClicked = gasClicked;
             }
@@ -209,12 +229,12 @@ namespace TruckRemoteServer
 
         private void toggleLeftTurnSignal()
         {
-            InputEmulator.KeyClick(DIK_OPEN_BRACKET_SCAN);
+            InputEmulator.KeyClick(ControlMapping["LeftIndicator"]);
         }
 
         private void toggleRightTurnSignal()
         {
-            InputEmulator.KeyClick(DIK_CLOSE_BRACKET_SCAN);
+            InputEmulator.KeyClick(ControlMapping["RightIndicator"]);
         }
 
         private void toggleEmergencySignal()
@@ -240,17 +260,17 @@ namespace TruckRemoteServer
                 switch(lightsState)
                 {
                     case 0:
-                        InputEmulator.KeyClick(DIK_K_SCAN);
-                        InputEmulator.KeyClick(DIK_L_SCAN);
+                        InputEmulator.KeyClick(ControlMapping["HighBeam"]);
+                        InputEmulator.KeyClick(ControlMapping["LightModes"]);
                         break;
                     case 1:
-                        InputEmulator.KeyClick(DIK_L_SCAN);
+                        InputEmulator.KeyClick(ControlMapping["LightModes"]);
                         break;
                     case 2:
-                        InputEmulator.KeyClick(DIK_L_SCAN);
+                        InputEmulator.KeyClick(ControlMapping["LightModes"]);
                         break;
                     case 3:
-                        InputEmulator.KeyClick(DIK_K_SCAN);
+                        InputEmulator.KeyClick(ControlMapping["HighBeam"]);
                         break;
                 }
             }
@@ -263,14 +283,14 @@ namespace TruckRemoteServer
                 switch(hornState)
                 {
                     case 2:
-                        InputEmulator.KeyPress(DIK_N_SCAN);
+                        InputEmulator.KeyPress(ControlMapping["AirHorn"], false); 
                         break;
                     case 1:
-                        InputEmulator.KeyPress(DIK_H_SCAN);
+                        InputEmulator.KeyPress(ControlMapping["Horn"],false); 
                         break;
                     default:
-                        InputEmulator.KeyRelease(DIK_H_SCAN);
-                        InputEmulator.KeyRelease(DIK_N_SCAN);
+                        InputEmulator.KeyRelease(ControlMapping["Horn"], false); 
+                        InputEmulator.KeyRelease(ControlMapping["AirHorn"], false); 
                         break;
                 }
                 prevHornState = hornState;

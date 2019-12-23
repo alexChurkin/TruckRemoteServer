@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Net;
+using System.Linq;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace TruckRemoteServer
 {
+
     public partial class MainForm : Form
     {
-        private UDPServer server;
+        public UDPServer server;
 
         public MainForm()
         {
@@ -18,15 +21,8 @@ namespace TruckRemoteServer
         {
             ShowIpInLabel();
 
-            int sensitivity = Properties.Settings.Default.Sensitivity;
-
-            sensitivityTrackBar.Value = sensitivity;
-            labelSensitivity.Text = sensitivity.ToString();
-            PCController.SteeringSensitivity = sensitivity;
-
             decimal port = Properties.Settings.Default.Port;
             numericUpPort.Value = port;
-
 
             server = new UDPServer(labelStatus, buttonStop, buttonStart);
             server.port = (int)port;
@@ -38,8 +34,7 @@ namespace TruckRemoteServer
 
             if (Properties.Settings.Default.StartMinimized)
                 this.WindowState = FormWindowState.Minimized;
-
-        }
+    }
 
         public void ShowIpInLabel()
         {
@@ -91,16 +86,7 @@ namespace TruckRemoteServer
             server.port = (int) numericUpPort.Value;
             server.Start();
         }
-
-        private void SensitivityTrackBar_Scroll(object sender, EventArgs e)
-        {
-            PCController.SteeringSensitivity = sensitivityTrackBar.Value;
-            labelSensitivity.Text = (sensitivityTrackBar.Value).ToString();
-
-            Properties.Settings.Default.Sensitivity = sensitivityTrackBar.Value;
-            Properties.Settings.Default.Save();
-        }
-
+        
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             server.Stop();
@@ -110,7 +96,7 @@ namespace TruckRemoteServer
         private void controlMappingToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ControlMappingForm controlMappingForm = new ControlMappingForm();
-            controlMappingForm.Show();
+            controlMappingForm.ShowDialog();
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)

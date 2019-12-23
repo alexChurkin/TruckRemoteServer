@@ -49,43 +49,38 @@ namespace TruckRemoteServer
 
         public static void KeyClick(short scanCode)
         {
-            INPUT input1 = new INPUT();
-            input1.type = (int)InputType.INPUT_KEYBOARD;
-            input1.ki.dwFlags = (int)KEYEVENTF.SCANCODE;
-            input1.ki.wScan = scanCode;
-
-            INPUT input2 = new INPUT();
-            input2.type = (int)InputType.INPUT_KEYBOARD;
-            input2.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
-            input2.ki.wScan = scanCode;
-
-            INPUT[] pInputs = new INPUT[] { input1, input2 };
-
-            SendInput(2, pInputs, Marshal.SizeOf(input1));
+            KeyPress(scanCode, false);
+            KeyRelease(scanCode, false);
         }
 
-        public static void KeyPress(short scanCode)
+        public static void KeyPress(short scanCode, bool extended) 
         {
             INPUT input = new INPUT();
             input.type = (int)InputType.INPUT_KEYBOARD;
             input.ki.dwFlags = (int)KEYEVENTF.SCANCODE;
             input.ki.wScan = scanCode;
+            
+            if (extended)            
+                input.ki.dwFlags = (int)KEYEVENTF.SCANCODE | (int)KEYEVENTF.EXTENDEDKEY; //For extended scan codes
 
             INPUT[] pInputs = new INPUT[] { input };
 
-            SendInput(1, pInputs, Marshal.SizeOf(input));
+            SendInput((uint)pInputs.Length, pInputs, Marshal.SizeOf(input));
         }
 
-        public static void KeyRelease(short scanCode)
+        public static void KeyRelease(short scanCode, bool extended)
         {
             INPUT input = new INPUT();
             input.type = (int)InputType.INPUT_KEYBOARD;
             input.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
             input.ki.wScan = scanCode;
 
+            if (extended)            
+                input.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.EXTENDEDKEY; //For extended scan codes
+
             INPUT[] pInputs = new INPUT[] { input };
 
-            SendInput(1, pInputs, Marshal.SizeOf(input));
+            SendInput((uint)pInputs.Length, pInputs, Marshal.SizeOf(input));
         }
 
 

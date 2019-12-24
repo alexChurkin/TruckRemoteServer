@@ -6,7 +6,6 @@ namespace TruckRemoteServer
 {
     public static class InputEmulator
     {
-
         private static vJoy joyStick;
         private static uint joyId = 1;
 
@@ -47,19 +46,20 @@ namespace TruckRemoteServer
             joyStick.SetAxis(xAxisValue, joyId, HID_USAGES.HID_USAGE_X);
         }
 
-        public static void KeyClick(short scanCode)
+        public static void KeyClick(short[] scanCode)
         {
-            KeyPress(scanCode, false);
-            KeyRelease(scanCode, false);
+            KeyPress(scanCode);
+            KeyRelease(scanCode);
         }
 
-        public static void KeyPress(short scanCode, bool extended) 
+        public static void KeyPress(short[] scanCode) 
         {
             INPUT input = new INPUT();
             input.type = (int)InputType.INPUT_KEYBOARD;
             input.ki.dwFlags = (int)KEYEVENTF.SCANCODE;
-            input.ki.wScan = scanCode;
-            
+            input.ki.wScan = scanCode[1];
+
+            bool extended = Convert.ToBoolean(scanCode[0]);
             if (extended)            
                 input.ki.dwFlags = (int)KEYEVENTF.SCANCODE | (int)KEYEVENTF.EXTENDEDKEY; //For extended scan codes
 
@@ -68,13 +68,14 @@ namespace TruckRemoteServer
             SendInput((uint)pInputs.Length, pInputs, Marshal.SizeOf(input));
         }
 
-        public static void KeyRelease(short scanCode, bool extended)
+        public static void KeyRelease(short[] scanCode)
         {
             INPUT input = new INPUT();
             input.type = (int)InputType.INPUT_KEYBOARD;
             input.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
-            input.ki.wScan = scanCode;
+            input.ki.wScan = scanCode[1];
 
+            bool extended = Convert.ToBoolean(scanCode[0]);
             if (extended)            
                 input.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.EXTENDEDKEY; //For extended scan codes
 

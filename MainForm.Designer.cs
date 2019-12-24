@@ -175,7 +175,6 @@
             this.buttonStartStopServer.TabIndex = 14;
             this.buttonStartStopServer.Text = "Stop";
             this.buttonStartStopServer.UseVisualStyleBackColor = true;
-            this.buttonStartStopServer.Click += new System.EventHandler(this.ButtonStop_Click);
             // 
             // contextMenuStripNotifyIconTray
             // 
@@ -217,7 +216,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).EndInit();
             this.menuStripMainMenu.ResumeLayout(false);
             this.menuStripMainMenu.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).EndInit();
             this.contextMenuStripNotifyIconTray.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();

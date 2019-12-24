@@ -7,11 +7,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Linq;
 
 namespace TruckRemoteServer
 {
     public class UDPServer
     {
+        MainForm Main_Form = Application.OpenForms.OfType<MainForm>().Single(); //Acessing Main Form
         public int port = 18250;
 
         public bool enabled = Properties.Settings.Default.StartServerOnStartup;//true;
@@ -24,25 +26,25 @@ namespace TruckRemoteServer
         internal PCController pcController = new PCController();
 
         private Label labelStatus;
-        //private Button buttonStop;
-        //private Button buttonStart;
+        private Button buttonStartStop;
 
-        public UDPServer(Label labelStatus)
+        public UDPServer(Label labelStatus, Button buttonStartStop)
         {
             this.labelStatus = labelStatus;
-            //this.buttonStart = buttonStart;
-            //this.buttonStop = buttonStop;
+            this.buttonStartStop = buttonStartStop;
+            pcController.initializeKeyMapping();
         }
 
         public void Start()
         {
+            enabled = true;
+            Main_Form.StartStopButtonProperties();
             Thread thread = new Thread(LaunchServer);
             thread.Start();
         }
 
         public void LaunchServer()
         {
-            enabled = true;
             try
             {
                 IPEndPoint localIpEndPoint = new IPEndPoint(IPAddress.Any, port);
@@ -53,7 +55,6 @@ namespace TruckRemoteServer
             {
                 Console.WriteLine(e.ToString());
                 ShowStatus("Disabled", Color.OrangeRed);
-                //SetButtonsIsListening(false);
                 controllerEndPoint = null;
                 panelEndPoint = null;
             }
@@ -62,8 +63,6 @@ namespace TruckRemoteServer
         private void StartListeningForMessages()
         {
             ShowStatus("Enabled", Color.ForestGreen);
-            //SetButtonsIsListening(true);
-
             IPEndPoint remoteEndPoint = null;
 
             try
@@ -105,7 +104,7 @@ namespace TruckRemoteServer
             {
                 if (e.SocketErrorCode == SocketError.TimedOut)
                 {
-                    Stop();
+                    StopServer();
                     LaunchServer();
                 }
             }
@@ -223,6 +222,12 @@ namespace TruckRemoteServer
         public void Stop()
         {
             enabled = false;
+            Main_Form.StartStopButtonProperties();
+            StopServer();
+        }
+
+        public void StopServer() //Prevent cross thread access on disconnect
+        {
             try
             {
                 udpClient.Close();
@@ -259,7 +264,6 @@ namespace TruckRemoteServer
         {
             if (enabled)
             {
-                //SetButtonsIsListening(true);
                 //All devices connected
                 if (controllerEndPoint != null && panelEndPoint != null)
                 {
@@ -311,7 +315,6 @@ namespace TruckRemoteServer
             }
             else
             {
-                //SetButtonsIsListening(false);
                 ShowStatus("Disabled", Color.OrangeRed);
             }
         }
@@ -319,7 +322,7 @@ namespace TruckRemoteServer
         private void ShowStatus(string labelText, Color color)
         {
             try
-            {
+            {   
                 labelStatus.BeginInvoke((MethodInvoker)delegate ()
                 {
                     labelStatus.Text = labelText;
@@ -327,21 +330,7 @@ namespace TruckRemoteServer
                 });
             } catch(Exception) { }
         }
-
-        /*
-        private void SetButtonsIsListening(bool isConnected)
-        {
-            buttonStop.BeginInvoke((MethodInvoker)delegate ()
-            {
-                buttonStop.Enabled = isConnected;
-            });
-            buttonStart.BeginInvoke((MethodInvoker)delegate ()
-            {
-                buttonStart.Enabled = !isConnected;
-            });
-        }
-        */
-
+        
         private long getUnixTime()
         {
             return DateTimeOffset.Now.ToUnixTimeMilliseconds();

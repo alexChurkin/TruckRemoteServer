@@ -5,7 +5,7 @@ namespace TruckRemoteServer
 {
     class PCController
     {
-        public Dictionary<string, short> ControlMapping = new Dictionary<string, short>();
+        public Dictionary<string, short[]> ControlMapping = new Dictionary<string, short[]>();
 
         //Controller
         public static int SteeringSensitivity = 50;
@@ -18,29 +18,17 @@ namespace TruckRemoteServer
         private bool prevCruise;
 
         private int lastConditionNumber = -1;
-
-        private byte DIK_UP_ARROW_SCAN = 0xC8;
-        private const int DIK_DOWN_ARROW_SCAN = 0xD0;
-        private byte DIK_OPEN_BRACKET_SCAN = 0x1A;
-        private byte DIK_CLOSE_BRACKET_SCAN = 0x1B;
-        private byte DIK_F_SCAN = 0x21;
-        private byte DIK_SPACE_SCAN = 0x39;
-        private byte DIK_L_SCAN = 0x26;
-        private byte DIK_K_SCAN = 0x25;
-        private byte DIK_H_SCAN = 0x23;
-        private byte DIK_N_SCAN = 0x31;
-        private byte DIK_C_SCAN = 0x2E;
-
+        
         //Panel
         private bool prevDiffBlock;
         private int prevWipersState;
         private bool prevLiftingAxle;
         private bool prevFlashingBeacon;
 
-        private const int DIK_V_SCAN = 0x2F;
-        private const int DIK_P_SCAN = 0x19;
-        private const int DIK_U_SCAN = 0x16;
-        private const int DIK_O_SCAN = 0x18;
+        private short[] DIK_V_SCAN = { 0, 0x2F };
+        private short[] DIK_P_SCAN = { 0, 0x19 };
+        private short[] DIK_U_SCAN = { 0, 0x16 };
+        private short[] DIK_O_SCAN = { 0, 0x18 };
 
 
         /* Controller */
@@ -54,19 +42,18 @@ namespace TruckRemoteServer
 
         public void initializeKeyMapping()
         {
-            ControlMapping.Add("Throttle", 0x48);
-            ControlMapping.Add("Brake", 0x50);
-            ControlMapping.Add("ParkingBrake", 0x39);
-            ControlMapping.Add("LeftIndicator", 0x1A);
-            ControlMapping.Add("RightIndicator", 0x1B);
-            ControlMapping.Add("HazardLight", 0x21);
-            ControlMapping.Add("LightModes", 0x26);
-            ControlMapping.Add("HighBeam", 0x25);
-            ControlMapping.Add("AirHorn", 0x31);
-            ControlMapping.Add("Horn", 0x23);
-            ControlMapping.Add("CruiseControl", 0x2E);
+            ControlMapping.Add("Throttle", new short[] {1, 0x48 });
+            ControlMapping.Add("Brake", new short[] { 1, 0x50 });
+            ControlMapping.Add("ParkingBrake", new short[] { 0, 0x39 });
+            ControlMapping.Add("LeftIndicator", new short[] { 0, 0x1A });
+            ControlMapping.Add("RightIndicator", new short[] { 0, 0x1B });
+            ControlMapping.Add("HazardLight", new short[] { 0, 0x21 });
+            ControlMapping.Add("LightModes", new short[] { 0, 0x26 });
+            ControlMapping.Add("HighBeam", new short[] { 0, 0x25 });
+            ControlMapping.Add("AirHorn", new short[] { 0, 0x31 });
+            ControlMapping.Add("Horn", new short[] { 0, 0x23 });
+            ControlMapping.Add("CruiseControl", new short[] { 0, 0x2E });
             //ControlMapping.Add("", );
-
         }
                 
         public void SetControllerStartValues(bool leftSignal, bool rightSignal, bool isParking, int lightsState)
@@ -91,11 +78,11 @@ namespace TruckRemoteServer
             {
                 if (breakClicked)
                 {
-                    InputEmulator.KeyPress(ControlMapping["Brake"], true);
+                    InputEmulator.KeyPress(ControlMapping["Brake"]);
                 }
                 else
                 {
-                    InputEmulator.KeyRelease(ControlMapping["Brake"],true);
+                    InputEmulator.KeyRelease(ControlMapping["Brake"]);
                 }
                 prevBreakClicked = breakClicked;
             }
@@ -104,11 +91,11 @@ namespace TruckRemoteServer
             {
                 if (gasClicked)
                 {
-                    InputEmulator.KeyPress(ControlMapping["Throttle"], true);
+                    InputEmulator.KeyPress(ControlMapping["Throttle"]);
                 }
                 else
                 {
-                    InputEmulator.KeyRelease(ControlMapping["Throttle"], true);
+                    InputEmulator.KeyRelease(ControlMapping["Throttle"]);
                 }
                 prevGasClicked = gasClicked;
             }
@@ -239,7 +226,7 @@ namespace TruckRemoteServer
 
         private void ToggleEmergencySignal()
         {
-            InputEmulator.KeyClick(DIK_F_SCAN);
+            InputEmulator.KeyClick(ControlMapping["HazardLight"]);
         }
 
         public void UpdateParkingBrake(bool isParkingBrakeEnabled)
@@ -247,7 +234,7 @@ namespace TruckRemoteServer
             if (wasParkingBreakEnabled != isParkingBrakeEnabled)
             {
                 wasParkingBreakEnabled = isParkingBrakeEnabled;
-                InputEmulator.KeyClick(DIK_SPACE_SCAN);
+                InputEmulator.KeyClick(ControlMapping["ParkingBrake"]);
             }
         }
 
@@ -283,14 +270,14 @@ namespace TruckRemoteServer
                 switch(hornState)
                 {
                     case 2:
-                        InputEmulator.KeyPress(ControlMapping["AirHorn"], false); 
+                        InputEmulator.KeyPress(ControlMapping["AirHorn"]); 
                         break;
                     case 1:
-                        InputEmulator.KeyPress(ControlMapping["Horn"],false); 
+                        InputEmulator.KeyPress(ControlMapping["Horn"]); 
                         break;
                     default:
-                        InputEmulator.KeyRelease(ControlMapping["Horn"], false); 
-                        InputEmulator.KeyRelease(ControlMapping["AirHorn"], false); 
+                        InputEmulator.KeyRelease(ControlMapping["Horn"]); 
+                        InputEmulator.KeyRelease(ControlMapping["AirHorn"]); 
                         break;
                 }
                 prevHornState = hornState;
@@ -302,7 +289,7 @@ namespace TruckRemoteServer
             if (prevCruise != isCruise)
             {
                 prevCruise = isCruise;
-                InputEmulator.KeyClick(DIK_C_SCAN);
+                InputEmulator.KeyClick(ControlMapping["CruiseControl"]);
             }
         }
 

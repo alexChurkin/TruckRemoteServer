@@ -24,6 +24,8 @@ namespace TruckRemoteServer
             checkBoxStartServerOnStartup.Checked = Properties.Settings.Default.StartServerOnStartup;
             //Start Minimized
             checkBoxStartMinimized.Checked = Properties.Settings.Default.StartMinimized;
+            //Minimize To Tray
+            checkBoxMinimizeToTray.Checked = Properties.Settings.Default.MinimizeToTray;
             //Sensitivity
             int sensitivity = Properties.Settings.Default.Sensitivity;
             sensitivityTrackBar.Value = sensitivity;
@@ -36,7 +38,8 @@ namespace TruckRemoteServer
             Properties.Settings.Default.StartServerOnStartup = checkBoxStartServerOnStartup.Checked;
             //Start Minimized
             Properties.Settings.Default.StartMinimized = checkBoxStartMinimized.Checked;
-
+            //Minimize To Tray
+            Properties.Settings.Default.MinimizeToTray = checkBoxMinimizeToTray.Checked;
             //Sensitivity
             PCController.SteeringSensitivity = sensitivityTrackBar.Value;
             Properties.Settings.Default.Sensitivity = sensitivityTrackBar.Value;

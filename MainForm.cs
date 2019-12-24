@@ -13,7 +13,6 @@ namespace TruckRemoteServer
         public MainForm()
         {
             InitializeComponent();
-            InitialSetup();
         }
 
         private void InitialSetup()
@@ -26,17 +25,21 @@ namespace TruckRemoteServer
             notifyIconTray.Visible = false;
             notifyIconTray.ContextMenuStrip = contextMenuStripNotifyIconTray;
 
-            server = new UDPServer(labelStatus);
+            server = new UDPServer(labelStatus, buttonStartStopServer);
             server.port = (int)port;
 
             if (Properties.Settings.Default.StartServerOnStartup)
             {
+                buttonStartStopServer.Text = "Start";
                 server.Start();
             }
+                
 
             if (Properties.Settings.Default.StartMinimized)
                 this.WindowState = FormWindowState.Minimized;
-    }
+
+            StartStopButtonProperties();
+        }
 
         public void ShowIpInLabel()
         {
@@ -76,34 +79,41 @@ namespace TruckRemoteServer
             Properties.Settings.Default.Save();
         }
 
-        private void ButtonStop_Click(object sender, EventArgs e)
+        internal void ButtonStop_Click(object sender, EventArgs e)
         {
             server.Stop();
-            //buttonStop.Enabled = false;
-            //buttonStart.Enabled = true;
-            buttonStartStopServer.Text = "Start";
-            buttonStartStopServer.Click -= ButtonStop_Click;
-            buttonStartStopServer.Click += ButtonStart_Click;
-
-            StartStopServerToolStripMenuItem.Text = "Start Server";
-            StartStopServerToolStripMenuItem.Click -= ButtonStop_Click;
-            StartStopServerToolStripMenuItem.Click += ButtonStart_Click;
         }
-
-        private void ButtonStart_Click(object sender, EventArgs e)
+        internal void ButtonStart_Click(object sender, EventArgs e)
         {
             server.port = (int) numericUpPort.Value;
             server.Start();
-
-            buttonStartStopServer.Text = "Stop";
-            buttonStartStopServer.Click -= ButtonStart_Click;
-            buttonStartStopServer.Click += ButtonStop_Click;
-
-            StartStopServerToolStripMenuItem.Text = "Stop Server";
-            StartStopServerToolStripMenuItem.Click -= ButtonStart_Click;
-            StartStopServerToolStripMenuItem.Click += ButtonStop_Click;
         }
-        
+
+        internal void StartStopButtonProperties()
+        {
+            if (server.enabled && buttonStartStopServer.Text == "Start")
+            {
+                buttonStartStopServer.Text = "Stop";
+                buttonStartStopServer.Click -= ButtonStart_Click;
+                buttonStartStopServer.Click += ButtonStop_Click;
+
+                StartStopServerToolStripMenuItem.Text = "Stop Server";
+                StartStopServerToolStripMenuItem.Click -= ButtonStart_Click;
+                StartStopServerToolStripMenuItem.Click += ButtonStop_Click;
+            }
+            else if (!server.enabled && buttonStartStopServer.Text == "Stop")
+            {
+                buttonStartStopServer.Text = "Start";
+                buttonStartStopServer.Click -= ButtonStop_Click;
+                buttonStartStopServer.Click += ButtonStart_Click;
+
+                StartStopServerToolStripMenuItem.Text = "Start Server";
+                StartStopServerToolStripMenuItem.Click -= ButtonStop_Click;
+                StartStopServerToolStripMenuItem.Click += ButtonStart_Click;
+            }
+        }
+
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             server.Stop();
@@ -124,16 +134,17 @@ namespace TruckRemoteServer
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            InitialSetup();
             server.UpdateUiState();
         }
 
         private void MainForm_Resize(object sender, EventArgs e)
         {
-            if (this.WindowState == FormWindowState.Minimized)
+            if (this.WindowState == FormWindowState.Minimized && Properties.Settings.Default.MinimizeToTray)
             {
                 Hide();
                 notifyIconTray.Visible = true;
-                //this.ShowInTaskbar = false;
+                this.ShowInTaskbar = false;
             }
         }
 
@@ -149,7 +160,7 @@ namespace TruckRemoteServer
                 Show();
                 this.WindowState = FormWindowState.Normal;
                 notifyIconTray.Visible = false;
-                //this.ShowInTaskbar = true;
+                this.ShowInTaskbar = true;
             }
         }
     }

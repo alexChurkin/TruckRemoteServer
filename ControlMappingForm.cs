@@ -15,7 +15,7 @@ namespace TruckRemoteServer
     public partial class ControlMappingForm : Form
     {
         MainForm Main_Form = Application.OpenForms.OfType<MainForm>().Single(); //Acessing Main Form
-        Dictionary<string, short> localControlMapping;
+        Dictionary<string, short[]> localControlMapping;
 
         public ControlMappingForm()
         {
@@ -25,14 +25,14 @@ namespace TruckRemoteServer
             LoadControlMapping(); //Loading existing Controll Mapping
         }
 
-        private void SetKey(string _KeyName, short _keySacanCode) //Saving
+        private void SetKey(string _KeyName, short[] _keySacanCode) //Saving
         {
             localControlMapping[_KeyName] = _keySacanCode; //Saving Scan code
         }
 
         private void CreateFormControls()
         {
-            localControlMapping = new Dictionary<string, short>(Main_Form.server.pcController.ControlMapping);
+            localControlMapping = new Dictionary<string, short[]>(Main_Form.server.pcController.ControlMapping);
             List<string> keyList = new List<string>(localControlMapping.Keys);
             int row = 0;
 
@@ -55,8 +55,7 @@ namespace TruckRemoteServer
 
         private void LoadControlMapping() //
         {
-
-            foreach (KeyValuePair<string, short> CurrentPair in localControlMapping)
+            foreach (KeyValuePair<string, short[]> CurrentPair in localControlMapping)
             {
                 Button CurrentButton = this.Controls.Find("button" + CurrentPair.Key, true)[0] as Button;
                 //local
@@ -66,14 +65,14 @@ namespace TruckRemoteServer
                 keyboardLanguage = locale.ToString().Substring(0, locale.Length);
 
                 IntPtr KeyboardLayout = LoadKeyboardLayout(keyboardLanguage, KLF_ACTIVATE);
-                uint tempVK = MapVirtualKeyEx(Convert.ToUInt32(CurrentPair.Value), MAPVK_VSC_TO_VK_EX, KeyboardLayout);
+                uint tempVK = MapVirtualKeyEx(Convert.ToUInt32(CurrentPair.Value[1]), MAPVK_VSC_TO_VK_EX, KeyboardLayout);
 
                 Key tempKeyVK = KeyInterop.KeyFromVirtualKey((int)tempVK);
 
-                CurrentButton.Text = "Key " + tempKeyVK.ToString() + " (" + CurrentPair.Value.ToString() + ")";
+                CurrentButton.Text = "Key " + tempKeyVK.ToString() + " (" + CurrentPair.Value[1].ToString() + ")";
             }
         }
-
+        //----------------------------------// Replace with Custom Button ↓↓↓
         private void buttonGetKeyCode_Click(object sender, EventArgs e)
         {
             Button SenderButton = sender as Button;
@@ -117,7 +116,11 @@ namespace TruckRemoteServer
 
             string buttonName = _inputButton.Name.Substring(6);
 
-            SetKey(buttonName, (short)scanCode);
+            short extended = 0;
+            if (scanCode == 45 || scanCode == 46 || scanCode == 144 || (33 <= scanCode && scanCode <= 40))
+                extended = 1;
+
+            SetKey(buttonName, new short[] { extended, (short)scanCode});
         }
 
         private void button1_KeyUp(object sender, KeyEventArgs e)
@@ -125,10 +128,11 @@ namespace TruckRemoteServer
             Button SenderButton = sender as Button;
 
             label1.Focus(); //remove focus
-            //Readd events
+            //ReAdd events
             SenderButton.KeyUp -= button1_KeyUp;
             SenderButton.Click += buttonGetKeyCode_Click;
         }
+        //----------------------------------// Replace with Custom Button ↑↑↑
 
         private void buttonControlMappingSave_Click(object sender, EventArgs e)
         {

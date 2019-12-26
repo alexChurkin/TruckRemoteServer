@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Input;
 using System.Globalization;
 
 namespace TruckRemoteServer
@@ -37,24 +32,48 @@ namespace TruckRemoteServer
             ControlsGroups.Add("Hud", new string[] {  });
             ControlsGroups.Add("Camera", new string[] {  });
             ControlsGroups.Add("Other", new string[] {  });
+            //Labels
+            Dictionary<string, string> labelsList = new Dictionary<string, string>();
+            labelsList.Add("Throttle", "Throttle");
+            labelsList.Add("Brake","Brake / Revers");
+            labelsList.Add("ParkingBrake", "Parking Brake");
+            labelsList.Add("LeftIndicator", "Left-Turn Indicator");
+            labelsList.Add("RightIndicator", "Right-Turn Indicator");
+            labelsList.Add("HazardLight", "Hazard Warning");
+            labelsList.Add("LightModes", "Light Modes");
+            labelsList.Add("HighBeam", "High Beam Headlights");
+            labelsList.Add("AirHorn", "Air Horn");
+            labelsList.Add("Horn", "Horn");
+            labelsList.Add("CruiseControl", "Cruise Control");
+
 
             foreach (TabPage tempTab in tabControlControlSections.TabPages)
             {
-                //Create Table layout!
-                //Here
-                //
                 string PageName = tempTab.Name.Substring(7, tempTab.Name.Length - 7);
-                if( ControlsGroups[PageName].Length > 0)
+                //Create Table layout
+                TableLayoutPanel tempTableLayout = new TableLayoutPanel();
+                tempTableLayout.Name = "tableLayoutPanelControls" + PageName;
+                tempTableLayout.AutoScroll = true;
+                tempTableLayout.ColumnCount = 2;
+                tempTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+                tempTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+                tempTableLayout.Dock = DockStyle.Fill;
+                tempTab.Controls.Add(tempTableLayout);
+                //
+                if ( ControlsGroups[PageName].Length > 0)
                 {
                     foreach (string Key in ControlsGroups[PageName])
                     {
-                        //Create label!
+                        tempTableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+                        //Create label
+                        Label tempLabel = new Label();
+                        tempLabel.Name = "label" + Key;
+                        tempLabel.Text = labelsList[Key];
+                        tempTableLayout.Controls.Add(tempLabel, 0, row);
 
                         //Creating Button
                         ControlMappingButton tempButton = new ControlMappingButton();
                         tempButton.Text = "New";
-
-                        //Style
                         tempButton.Name = "button" + Key;
                         tempButton.Text = row.ToString();
                         tempButton.Dock = DockStyle.Fill;
@@ -62,10 +81,12 @@ namespace TruckRemoteServer
                         //Actions
                         tempButton.Click += buttonGetKeyCode_Click;
 
-                        tableLayoutPanelTruckControls.Controls.Add(tempButton, 1, row); //Add
+                        tempTableLayout.Controls.Add(tempButton, 1, row); //Add
 
                         row++;
                     }
+                    tempTableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F)); //Extra row for looks
+                    tempTableLayout.RowCount = ++row;
                 }
             }
         }
@@ -79,7 +100,6 @@ namespace TruckRemoteServer
                     CurrentButton.Text = "";
                 else
                     CurrentButton.Text = "Ex";
-
 
                 int scanCode = CurrentPair.Value[1];  // Get Scan code
                 uint virtualCode = MapVirtualKey(Convert.ToUInt32(scanCode), MAPVK_VSC_TO_VK); // Get Virtual code
@@ -119,14 +139,14 @@ namespace TruckRemoteServer
         {
             ControlMappingButton SenderButton = sender as ControlMappingButton;
 
-            label1.Focus(); //remove focus
+            buttonControlMappingSave.Focus(); //remove focus
             //ReAdd events
             SenderButton.KeyUp -= button1_KeyUp;
             SenderButton.Click += buttonGetKeyCode_Click;
             ProcessKeyDetection(SenderButton);
         }
 
-        private void ProcessKeyDetection(ControlMappingButton _inputButton)//, uint _VKcode)
+        private void ProcessKeyDetection(ControlMappingButton _inputButton)
         {
             string buttonName = _inputButton.Name.Substring(6);
             SetKey(buttonName, _inputButton.ScanCodes );

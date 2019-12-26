@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Globalization;
 
 namespace TruckRemoteServer
 {
@@ -25,32 +26,48 @@ namespace TruckRemoteServer
             LoadControlMapping(); //Loading existing Controll Mapping
         }
 
-        private void SetKey(string _KeyName, short[] _keySacanCode) //Saving
-        {
-            localControlMapping[_KeyName] = _keySacanCode; //Saving Scan code
-        }
-
         private void CreateFormControls()
         {
             localControlMapping = new Dictionary<string, short[]>(Main_Form.server.pcController.ControlMapping);
             List<string> keyList = new List<string>(localControlMapping.Keys);
             int row = 0;
+            //Sorting controls between Pages and top-down
+            Dictionary<string, string[]> ControlsGroups = new Dictionary<string, string[]>();
+            ControlsGroups.Add("Truck", new string[] { "Throttle", "Brake", "ParkingBrake", "LeftIndicator", "RightIndicator", "HazardLight", "LightModes", "HighBeam", "AirHorn", "Horn", "CruiseControl" });
+            ControlsGroups.Add("Hud", new string[] {  });
+            ControlsGroups.Add("Camera", new string[] {  });
+            ControlsGroups.Add("Other", new string[] {  });
 
-            foreach (string Key in keyList)
+            foreach (TabPage tempTab in tabControlControlSections.TabPages)
             {
-                Button tempButton = new Button(); // new button
-                //Style
-                tempButton.Name = "button" + Key;
-                tempButton.Text = row.ToString();
-                tempButton.Dock = DockStyle.Fill;
-                tempButton.Margin = new Padding(0);
-                //Actions
-                tempButton.Click += buttonGetKeyCode_Click;
-                
-                tableLayoutPanelTruckControls.Controls.Add(tempButton, 1, row); //Add
+                //Create Table layout!
+                //Here
+                //
+                string PageName = tempTab.Name.Substring(7, tempTab.Name.Length - 7);
+                if( ControlsGroups[PageName].Length > 0)
+                {
+                    foreach (string Key in ControlsGroups[PageName])
+                    {
+                        //Create label!
 
-                row++;
-            }            
+                        //Creating Button
+                        ControlMappingButton tempButton = new ControlMappingButton();
+                        tempButton.Text = "New";
+
+                        //Style
+                        tempButton.Name = "button" + Key;
+                        tempButton.Text = row.ToString();
+                        tempButton.Dock = DockStyle.Fill;
+                        tempButton.Margin = new Padding(0);
+                        //Actions
+                        tempButton.Click += buttonGetKeyCode_Click;
+
+                        tableLayoutPanelTruckControls.Controls.Add(tempButton, 1, row); //Add
+
+                        row++;
+                    }
+                }
+            }
         }
 
         private void LoadControlMapping() //
@@ -58,81 +75,67 @@ namespace TruckRemoteServer
             foreach (KeyValuePair<string, short[]> CurrentPair in localControlMapping)
             {
                 Button CurrentButton = this.Controls.Find("button" + CurrentPair.Key, true)[0] as Button;
-                //local
-                StringBuilder locale = new StringBuilder(new string(' ', 256));
-                string keyboardLanguage = InputLanguage.CurrentInputLanguage.LayoutName;
-                GetKeyboardLayoutName(locale);
-                keyboardLanguage = locale.ToString().Substring(0, locale.Length);
+                if (CurrentPair.Value[0] == 0)
+                    CurrentButton.Text = "";
+                else
+                    CurrentButton.Text = "Ex";
 
-                IntPtr KeyboardLayout = LoadKeyboardLayout(keyboardLanguage, KLF_ACTIVATE);
-                uint tempVK = MapVirtualKeyEx(Convert.ToUInt32(CurrentPair.Value[1]), MAPVK_VSC_TO_VK_EX, KeyboardLayout);
 
-                Key tempKeyVK = KeyInterop.KeyFromVirtualKey((int)tempVK);
+                int scanCode = CurrentPair.Value[1];  // Get Scan code
+                uint virtualCode = MapVirtualKey(Convert.ToUInt32(scanCode), MAPVK_VSC_TO_VK); // Get Virtual code
 
-                CurrentButton.Text = "Key " + tempKeyVK.ToString() + " (" + CurrentPair.Value[1].ToString() + ")";
+                byte[] kbState = new byte[256]; 
+                GetKeyboardState(kbState); //Keyboard state
+                //Letters
+                StringBuilder buffer = new StringBuilder(new string(' ', 256));
+                int ToUnicodeExFlag = ToUnicodeEx(virtualCode, (uint)scanCode, kbState, buffer, 256, 0, 0); // get char in Current Layout/language
+                string keyName = buffer.ToString().ToUpper(); // Convert to string
+                //Other keys
+                int lParam = 0;
+                string slParam = "c" + CurrentPair.Value[0].ToString() + scanCode.ToString("x2") + "0001"; //lParam
+                int.TryParse(slParam, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out lParam); //converting to int
+
+                if (ToUnicodeExFlag == 0 || virtualCode == 32 || virtualCode == 9 || virtualCode == 8 | virtualCode == 13 || virtualCode == 27) // Not characters and Space, Mod keys ...
+                {
+                    var sb = new StringBuilder(256);
+                    GetKeyNameText(lParam, sb, 256);
+                    keyName = sb.ToString();
+                }
+
+                CurrentButton.Text += "SC = 0x" + CurrentPair.Value[1].ToString("X2") + " | Key " + keyName + " (0x" + virtualCode.ToString("X2") + ")"; // Resulting text
             }
         }
-        //----------------------------------// Replace with Custom Button ↓↓↓
+
         private void buttonGetKeyCode_Click(object sender, EventArgs e)
         {
             Button SenderButton = sender as Button;
             SenderButton.Text = "Waiting for Input";
-            //Adding actions
-            SenderButton.KeyDown += buttonGetKeyCode_KeyDown;
+            //ReAdd events
             SenderButton.KeyUp += button1_KeyUp;
-            SenderButton.PreviewKeyDown += button1_PreviewKeyDown;
-            //Preventing from looping and extra clicks
             SenderButton.Click -= buttonGetKeyCode_Click;
-        }
-
-        private void buttonGetKeyCode_KeyDown(object sender, KeyEventArgs e)
-        {
-            Button SenderButton = sender as Button;
-            uint VKcode = (uint)e.KeyCode;
-
-            ProcessKeyDetection(SenderButton, VKcode);
-
-            SenderButton.KeyDown -= buttonGetKeyCode_KeyDown;
-            SenderButton.PreviewKeyDown -= button1_PreviewKeyDown;
-        }
-
-        private void button1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            Button SenderButton = sender as Button;
-            uint VKcode = (uint)e.KeyCode;
-
-            ProcessKeyDetection(SenderButton, VKcode);
-
-            SenderButton.PreviewKeyDown -= button1_PreviewKeyDown;
-            SenderButton.KeyDown -= buttonGetKeyCode_KeyDown;
-        }
-
-        private void ProcessKeyDetection(Button _inputButton, uint _VKcode)
-        {            
-            uint scanCode = MapVirtualKey(_VKcode, MAPVK_VK_TO_VSC); //Scan code            
-            Key tempKey = KeyInterop.KeyFromVirtualKey((int)_VKcode); //Key
-
-            _inputButton.Text = "Key " + tempKey.ToString() + " (" + scanCode.ToString() + ")";
-
-            string buttonName = _inputButton.Name.Substring(6);
-
-            short extended = 0;
-            if (scanCode == 45 || scanCode == 46 || scanCode == 144 || (33 <= scanCode && scanCode <= 40))
-                extended = 1;
-
-            SetKey(buttonName, new short[] { extended, (short)scanCode});
         }
 
         private void button1_KeyUp(object sender, KeyEventArgs e)
         {
-            Button SenderButton = sender as Button;
+            ControlMappingButton SenderButton = sender as ControlMappingButton;
 
             label1.Focus(); //remove focus
             //ReAdd events
             SenderButton.KeyUp -= button1_KeyUp;
             SenderButton.Click += buttonGetKeyCode_Click;
+            ProcessKeyDetection(SenderButton);
         }
-        //----------------------------------// Replace with Custom Button ↑↑↑
+
+        private void ProcessKeyDetection(ControlMappingButton _inputButton)//, uint _VKcode)
+        {
+            string buttonName = _inputButton.Name.Substring(6);
+            SetKey(buttonName, _inputButton.ScanCodes );
+        }
+
+        private void SetKey(string _KeyName, short[] _keySacanCode) //Saving
+        {
+            localControlMapping[_KeyName] = _keySacanCode; //Saving Scan code
+        }
 
         private void buttonControlMappingSave_Click(object sender, EventArgs e)
         {
@@ -143,28 +146,19 @@ namespace TruckRemoteServer
         //----------------------------------//
         //Import 
         //Flags
-        private const uint MAPVK_VK_TO_VSC = 0;
-        private const uint MAPVK_VSC_TO_VK_EX = 3;
+        private const uint MAPVK_VSC_TO_VK = 1;
         //
-        private const uint KLF_ACTIVATE = 0x00000001;
-
-        [DllImport("user32.dll", CallingConvention = CallingConvention.StdCall,
-            CharSet = CharSet.Unicode, EntryPoint = "MapVirtualKey",
-            SetLastError = true, ThrowOnUnmappableChar = false)]
-
+        [DllImport("user32.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, EntryPoint = "MapVirtualKey", SetLastError = true, ThrowOnUnmappableChar = false)]
         private static extern uint MapVirtualKey(uint uCode, uint uMapType);
         //
-        [DllImport("user32.dll", CallingConvention = CallingConvention.StdCall,
-        CharSet = CharSet.Unicode, EntryPoint = "MapVirtualKeyEx",
-        SetLastError = true, ThrowOnUnmappableChar = false)]
-
-        internal static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern bool GetKeyboardState(byte[] lpKeyState);
         //
-        [DllImport("user32.dll")]
-        private static extern IntPtr LoadKeyboardLayout(string pwszKLID, uint Flags);
+        [DllImport("user32.dll", EntryPoint = "GetKeyNameTextW", CharSet = CharSet.Unicode)]
+        private static extern int GetKeyNameText(int lParam, [MarshalAs(UnmanagedType.LPWStr), Out] StringBuilder str, int size);
         //
-        [DllImport("user32.dll")]
-        static extern bool GetKeyboardLayoutName([Out] StringBuilder pwszKLID);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern int ToUnicodeEx(uint virtualKeyCode, uint scanCode, byte[] keyboardState, [Out, MarshalAs(UnmanagedType.LPWStr, SizeParamIndex = 256)] StringBuilder receivingBuffer, int bufferSize, uint flags, int dwhkl);
         //
         //----------------------------------//
 

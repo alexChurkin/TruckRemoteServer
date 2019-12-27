@@ -47,10 +47,12 @@ namespace TruckRemoteServer
 
                 int scanCode = (lParam >> 16) & 0x000000ff; // Get Scan code from bit 16-23
                 int ext = (lParam >> 24) & 0x00000001; // bit 24
+
+                bool extSC = false;
                 if (ext == 1)
                 {
+                    extSC = true;
                     this.ScanCodes[0] = 0x01;
-                    this.Text = "Ex"; // Indicating
                 }
                 else
                     this.ScanCodes[0] = 0x00;
@@ -71,7 +73,11 @@ namespace TruckRemoteServer
                     keyName = sb.ToString();
                 }
 
-                this.Text += "SC = 0x" + scanCode.ToString("X2") + " | Key " + keyName + " (0x" + virtualCode.ToString("X2") + ")"; // Output
+                this.Text = "Key " + keyName + " (0x" + virtualCode.ToString("X2") + ") | ";
+                if (extSC)
+                    this.Text += "Ex";
+                this.Text += "SC = 0x" + scanCode.ToString("X2");
+
                 this.ScanCodes[1] = (short)scanCode;
             }
 

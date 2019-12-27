@@ -10,6 +10,7 @@ namespace TruckRemoteServer
 {
     public partial class ControlMappingForm : Form
     {
+        ControlMappingRW ControlMapping = new ControlMappingRW();
         MainForm Main_Form = Application.OpenForms.OfType<MainForm>().Single(); //Acessing Main Form
         Dictionary<string, short[]> localControlMapping;
 
@@ -96,10 +97,9 @@ namespace TruckRemoteServer
             foreach (KeyValuePair<string, short[]> CurrentPair in localControlMapping)
             {
                 Button CurrentButton = this.Controls.Find("button" + CurrentPair.Key, true)[0] as Button;
-                if (CurrentPair.Value[0] == 0)
-                    CurrentButton.Text = "";
-                else
-                    CurrentButton.Text = "Ex";
+                bool extSC = false;
+                if (CurrentPair.Value[0] == 1)
+                    extSC = true;
 
                 int scanCode = CurrentPair.Value[1];  // Get Scan code
                 uint virtualCode = MapVirtualKey(Convert.ToUInt32(scanCode), MAPVK_VSC_TO_VK); // Get Virtual code
@@ -122,7 +122,10 @@ namespace TruckRemoteServer
                     keyName = sb.ToString();
                 }
 
-                CurrentButton.Text += "SC = 0x" + CurrentPair.Value[1].ToString("X2") + " | Key " + keyName + " (0x" + virtualCode.ToString("X2") + ")"; // Resulting text
+                CurrentButton.Text = "Key " + keyName + " (0x" + virtualCode.ToString("X2") + ") | ";
+                if (extSC)
+                    CurrentButton.Text += "Ex";
+                CurrentButton.Text += "SC = 0x" + CurrentPair.Value[1].ToString("X2"); // Resulting text
             }
         }
 
@@ -160,6 +163,8 @@ namespace TruckRemoteServer
         private void buttonControlMappingSave_Click(object sender, EventArgs e)
         {
             Main_Form.server.pcController.ControlMapping = localControlMapping;
+
+            ControlMapping.SaveControlMapping(); //Save to file
         }
 
 

@@ -26,14 +26,15 @@ namespace TruckRemoteServer
             notifyIconTray.ContextMenuStrip = contextMenuStripNotifyIconTray;
 
             server = new UDPServer(labelStatus, buttonStartStopServer);
+            ControlMappingRW ControlMapping = new ControlMappingRW();
+            ControlMapping.LoadControlMapping();
             server.port = (int)port;
 
             if (Properties.Settings.Default.StartServerOnStartup)
             {
                 buttonStartStopServer.Text = "Start";
                 server.Start();
-            }
-                
+            }                
 
             if (Properties.Settings.Default.StartMinimized)
                 this.WindowState = FormWindowState.Minimized;

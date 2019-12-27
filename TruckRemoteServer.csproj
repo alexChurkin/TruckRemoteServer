@@ -69,6 +69,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ReadWrite\ControlMappingRW.cs" />
     <Compile Include="CustomControls\ClassControlMappingButton.cs">
       <SubType>Component</SubType>
     </Compile>

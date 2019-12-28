@@ -3,118 +3,130 @@ using System.Text;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net;
-using System.Diagnostics;
 using System.Globalization;
-using System.Windows.Forms;
-using System.Drawing;
 
 namespace TruckRemoteServer
 {
-    public class UDPServer
+    public class UDPServer : IFfbListener
     {
-        public int port = 18250;
+        public interface IStatusListener
+        {
+            void OnStatusUpdate(bool isEnabled,
+                bool controllerConnected, bool panelConnected,
+                bool controllerPaused, bool panelPaused);
+        }
+
+        private const int RECEIVE_TIMEOUT = 800;
+
+        public int port;
+        private Socket serverSocket;
+        private IPEndPoint localIpEndPoint;
+        private IPEndPoint controllerEndPoint, panelEndPoint;
+        private IStatusListener statusListener;
 
         public bool enabled = true;
         public bool controllerPaused, panelPaused;
         public long lastControllerMsgTime, lastPanelMsgTime;
 
-        private UdpClient udpClient;
-        private IPEndPoint controllerEndPoint, panelEndPoint;
+        private volatile uint effectDuration = 0;
 
-        private PCController pcController = new PCController();
+        private PCController pcController;
 
-        private Label labelStatus;
-        private Button buttonStop;
-        private Button buttonStart;
-
-        public UDPServer(Label labelStatus, Button buttonStop, Button buttonStart)
+        public UDPServer(IStatusListener listener, int port)
         {
-            this.labelStatus = labelStatus;
-            this.buttonStart = buttonStart;
-            this.buttonStop = buttonStop;
+            this.port = port;
+            statusListener = listener;
+            pcController = new PCController(this);
         }
 
         public void Start()
         {
-            Thread thread = new Thread(LaunchServer);
+            Thread thread = new Thread(Launch);
             thread.Start();
         }
 
-        public void LaunchServer()
+        public void Launch()
         {
             enabled = true;
+            localIpEndPoint = new IPEndPoint(IPAddress.Any, port);
+            serverSocket = new Socket(localIpEndPoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+            serverSocket.Bind(localIpEndPoint);
+
+            Thread receiverThread = new Thread(StartReceivingMessages);
+            receiverThread.Start();
+        }
+
+        public void OnFfbEffect(uint effectDuration)
+        {
+            this.effectDuration = effectDuration;
+        }
+
+        /* ................................. <Receiver thread> .............................*/
+        private void StartReceivingMessages()
+        {
+            PostStatusUpdate();
+
             try
             {
-                IPEndPoint localIpEndPoint = new IPEndPoint(IPAddress.Any, port);
-                udpClient = new UdpClient(localIpEndPoint);
-                StartListeningForMessages();
+                EndPoint endPoint = localIpEndPoint;
+
+                while (true)
+                {
+                    byte[] receivedBytes = new byte[128];
+                    int bytesCount = serverSocket.ReceiveFrom(receivedBytes, ref endPoint);
+                    string receivedMessage = Encoding.UTF8.GetString(receivedBytes, 0, bytesCount);
+                    OnMessageReceived((IPEndPoint)endPoint, receivedMessage);
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
-                ShowStatus("Disabled", Color.OrangeRed);
-                SetButtonsIsListening(false);
-                controllerEndPoint = null;
-                panelEndPoint = null;
+                Console.WriteLine("INFO: Receiving exception handled");
+                Console.WriteLine("INFO: " + e.ToString());
+                Shutdown();
+
+                if (e is SocketException)
+                {
+                    if (((SocketException)e).SocketErrorCode == SocketError.TimedOut)
+                    {
+                        Shutdown();
+                        Launch();
+                    }
+                }
             }
         }
 
-        private void StartListeningForMessages()
+        private void OnMessageReceived(IPEndPoint endPoint, string message)
         {
-            ShowStatus("Enabled", Color.ForestGreen);
-            SetButtonsIsListening(true);
-
-            IPEndPoint remoteEndPoint = null;
-
-            try
+            if (endPoint.Equals(controllerEndPoint))
             {
-                while (true)
-                {
-                    byte[] receivedBytes = udpClient.Receive(ref remoteEndPoint);
-                    string receivedMessage = Encoding.UTF8.GetString(receivedBytes);
-
-                    if (remoteEndPoint.Equals(controllerEndPoint))
-                    {
-                        lastControllerMsgTime = getUnixTime();
-                        CheckTimeDifferences();
-                        OnMessageFromController(receivedMessage);
-                    }
-                    else if (remoteEndPoint.Equals(panelEndPoint))
-                    {
-                        lastPanelMsgTime = getUnixTime();
-                        CheckTimeDifferences();
-                        OnMessageFromPanel(receivedMessage);
-                        Console.WriteLine(receivedMessage);
-                    }
-                    else if (receivedMessage.Contains("TruckRemoteHello"))
-                    {
-                        lastControllerMsgTime = getUnixTime();
-                        OnHelloFromController(receivedMessage, remoteEndPoint);
-                        udpClient.Client.ReceiveTimeout = 3000;
-                    }
-                    else if (receivedMessage.Contains("TruckPanelRemoteHello"))
-                    {
-                        lastPanelMsgTime = getUnixTime();
-                        OnHelloFromPanel(receivedMessage, remoteEndPoint);
-                        udpClient.Client.ReceiveTimeout = 3000;
-                    }
-
-                }
+                lastControllerMsgTime = TimeUtil.GetCurrentUnixTime();
+                CheckTimeDifferences();
+                OnMessageFromController(message);
             }
-            catch (SocketException e)
+            else if (endPoint.Equals(panelEndPoint))
             {
-                if (e.SocketErrorCode == SocketError.TimedOut)
-                {
-                    Stop();
-                    LaunchServer();
-                }
+                lastPanelMsgTime = TimeUtil.GetCurrentUnixTime();
+                CheckTimeDifferences();
+                OnMessageFromPanel(message);
+            }
+            else if (message.Contains("TruckRemoteHello"))
+            {
+                lastControllerMsgTime = TimeUtil.GetCurrentUnixTime();
+                OnHelloFromController(message, endPoint);
+                serverSocket.ReceiveTimeout = RECEIVE_TIMEOUT;
+            }
+            else if (message.Contains("TruckPanelRemoteHello"))
+            {
+                lastPanelMsgTime = TimeUtil.GetCurrentUnixTime();
+                OnHelloFromPanel(message, endPoint);
+                serverSocket.ReceiveTimeout = RECEIVE_TIMEOUT;
             }
         }
 
         private void OnHelloFromController(string initMessage, IPEndPoint remoteEndPoint)
         {
             if (controllerEndPoint != null) return;
-            Debug.WriteLine("Hello from controller received!");
+            Console.WriteLine("Hello from controller received!");
 
             string[] dataParts = initMessage.Substring(initMessage.IndexOf("\n") + 1).Split(',');
             pcController.SetControllerStartValues(
@@ -122,14 +134,17 @@ namespace TruckRemoteServer
                 bool.Parse(dataParts[1]),
                 bool.Parse(dataParts[2]),
                 int.Parse(dataParts[3]));
-            pcController.InitializeJoyIfNeccessary();
+            pcController.OnRemoteControlConnected();
 
             byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
-            udpClient.Send(bytesToAnswer, bytesToAnswer.Length, remoteEndPoint);
+            serverSocket.SendTo(bytesToAnswer, remoteEndPoint);
 
             controllerEndPoint = remoteEndPoint;
 
-            UpdateUiState();
+            PostStatusUpdate();
+
+            Thread controllerSender = new Thread(StartSendToController);
+            controllerSender.Start();
         }
 
         private void OnHelloFromPanel(string initMessage, IPEndPoint remoteEndPoint)
@@ -145,11 +160,11 @@ namespace TruckRemoteServer
                 bool.Parse(dataParts[3]));
 
             byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
-            udpClient.Send(bytesToAnswer, bytesToAnswer.Length, remoteEndPoint);
+            serverSocket.SendTo(bytesToAnswer, remoteEndPoint);
 
             panelEndPoint = remoteEndPoint;
 
-            UpdateUiState();
+            PostStatusUpdate();
         }
 
         private void OnMessageFromController(string message)
@@ -159,14 +174,21 @@ namespace TruckRemoteServer
                 if (!controllerPaused)
                 {
                     controllerPaused = true;
-                    UpdateUiState();
+                    PostStatusUpdate();
                 }
                 return;
             }
             else if (controllerPaused)
             {
                 controllerPaused = false;
-                UpdateUiState();
+                PostStatusUpdate();
+            }
+            else if (message.Contains("goodbye"))
+            {
+                controllerEndPoint = null;
+                controllerPaused = false;
+                PostStatusUpdate();
+                return;
             }
 
             string[] msgParts = message.Split(',');
@@ -194,17 +216,24 @@ namespace TruckRemoteServer
         {
             if (message.Contains("paused"))
             {
-                if(!panelPaused)
+                if (!panelPaused)
                 {
                     panelPaused = true;
-                    UpdateUiState();
+                    PostStatusUpdate();
                 }
                 return;
             }
             else if (panelPaused)
             {
                 panelPaused = false;
-                UpdateUiState();
+                PostStatusUpdate();
+            }
+            else if (message.Contains("goodbye"))
+            {
+                panelEndPoint = null;
+                panelPaused = false;
+                PostStatusUpdate();
+                return;
             }
 
             string[] msgParts = message.Split(',');
@@ -220,129 +249,80 @@ namespace TruckRemoteServer
             pcController.UpdateFlashingBeacon(flashingBeacon);
         }
 
-        public void Stop()
+        private void CheckTimeDifferences()
+        {
+            //Connected only one device
+            if ((controllerEndPoint != null) != (panelEndPoint != null))
+            {
+                return;
+            }
+
+            long currentTime = TimeUtil.GetCurrentUnixTime();
+
+            if (controllerEndPoint != null && currentTime - lastControllerMsgTime > RECEIVE_TIMEOUT*2)
+            {
+                controllerEndPoint = null;
+                controllerPaused = false;
+                PostStatusUpdate();
+            }
+            else if (panelEndPoint != null && currentTime - lastPanelMsgTime > RECEIVE_TIMEOUT*2)
+            {
+                panelEndPoint = null;
+                panelPaused = false;
+                PostStatusUpdate();
+            }
+        }
+
+        /* ................................. </Receiver thread> .............................*/
+
+
+        /* ................................. <Sender thread> .............................*/
+
+        private void StartSendToController()
+        {
+            try
+            {
+                while (controllerEndPoint != null)
+                {
+                    byte[] messageToControllerBytes = Encoding.UTF8.GetBytes("" + effectDuration);
+                    effectDuration = 0;
+                    serverSocket.SendTo(messageToControllerBytes, controllerEndPoint);
+
+                    if (controllerPaused) Thread.Sleep(50);
+                    else Thread.Sleep(20);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("INFO: Send exception handled");
+                Console.WriteLine("INFO: " + e.ToString());
+            }
+        }
+
+        /* ................................. </Sender thread> .............................*/
+
+
+        public void Shutdown()
         {
             enabled = false;
             try
             {
-                udpClient.Close();
+                serverSocket.Close();
             }
-            catch (Exception)
-            {
-            }
+            catch (Exception) { }
             finally
             {
                 controllerEndPoint = null;
                 panelEndPoint = null;
-                ShowStatus("Disabled", Color.OrangeRed);
+                PostStatusUpdate();
             }
         }
 
-        private void CheckTimeDifferences()
+        private void PostStatusUpdate()
         {
-            long currentTime = getUnixTime();
-            if (controllerEndPoint != null && currentTime - lastControllerMsgTime > 3000)
-            {
-                controllerEndPoint = null;
-                controllerPaused = false;
-                UpdateUiState();
-            }
-            else if(panelEndPoint != null && currentTime - lastPanelMsgTime > 3000)
-            {
-                panelEndPoint = null;
-                panelPaused = false;
-                UpdateUiState();
-            }
-        }
-
-        private void UpdateUiState()
-        {
-            if (enabled)
-            {
-                SetButtonsIsListening(true);
-                //All devices connected
-                if (controllerEndPoint != null && panelEndPoint != null)
-                {
-                    if (controllerPaused && panelPaused)
-                    {
-                        ShowStatus("All devices paused", Color.ForestGreen);
-                    }
-                    else if(controllerPaused)
-                    {
-                        ShowStatus("Controller: paused\nPanel: active", Color.ForestGreen);
-                    }
-                    else if(panelPaused)
-                    {
-                        ShowStatus("Controller: active\nPanel: paused", Color.ForestGreen);
-                    }
-                    else
-                    {
-                        ShowStatus("All devices active", Color.ForestGreen);
-                    }
-                }
-                //Connected only controller
-                else if (controllerEndPoint != null)
-                {
-                    if (controllerPaused)
-                    {
-                        ShowStatus("Controller paused", Color.ForestGreen);
-                    }
-                    else
-                    {
-                        ShowStatus("Controller active", Color.ForestGreen);
-                    }
-                }
-                //Connected only panel
-                else if (panelEndPoint != null)
-                {
-                    if(panelPaused)
-                    {
-                        ShowStatus("Panel paused", Color.ForestGreen);
-                    }
-                    else
-                    {
-                        ShowStatus("Panel active", Color.ForestGreen);
-                    }
-                }
-                else
-                {
-                    ShowStatus("Enabled", Color.ForestGreen);
-                }
-            }
-            else
-            {
-                SetButtonsIsListening(false);
-                ShowStatus("Disabled", Color.OrangeRed);
-            }
-        }
-
-        private void ShowStatus(string labelText, Color color)
-        {
-            try
-            {
-                labelStatus.BeginInvoke((MethodInvoker)delegate ()
-                {
-                    labelStatus.Text = labelText;
-                    labelStatus.ForeColor = color;
-                });
-            } catch(Exception) { }
-        }
-
-        private void SetButtonsIsListening(bool isConnected)
-        {
-            buttonStop.BeginInvoke((MethodInvoker)delegate ()
-            {
-                buttonStop.Enabled = isConnected;
-            });
-            buttonStart.BeginInvoke((MethodInvoker)delegate ()
-            {
-                buttonStart.Enabled = !isConnected;
-            });
-        }
-
-        private long getUnixTime()
-        {
-            return DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            statusListener.OnStatusUpdate(enabled,
+                controllerEndPoint != null, panelEndPoint != null,
+                controllerPaused, panelPaused);
         }
     }
 }

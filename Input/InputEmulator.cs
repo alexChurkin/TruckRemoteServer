@@ -6,18 +6,20 @@ namespace TruckRemoteServer
 {
     public static class InputEmulator
     {
-
         private static vJoy joyStick;
         private static uint joyId = 1;
+
+        private static IFfbListener ffbListener;
 
         public static bool IsJoyInitialized()
         {
             return joyStick != null;
         }
 
-        public static bool InitJoy()
+        public static bool InitJoy(IFfbListener listener)
         {
             joyStick = new vJoy();
+            ffbListener = listener;
             VjdStat status = joyStick.GetVJDStatus(joyId);
 
             if ((status == VjdStat.VJD_STAT_OWN) || ((status == VjdStat.VJD_STAT_FREE) && (!joyStick.AcquireVJD(joyId))))
@@ -29,13 +31,24 @@ namespace TruckRemoteServer
             {
                 Console.WriteLine("Acquired: vJoy device number {0}.\n", joyId);
                 joyStick.ResetVJD(joyId);
+                joyStick.FfbRegisterGenCB(OnFFBEvent, joyId);
                 return true;
             }
         }
 
+        private static void OnFFBEvent(IntPtr data, object userData)
+        {
+            vJoy.FFB_EFF_PERIOD effectInfo = new vJoy.FFB_EFF_PERIOD();
+            if (joyStick.Ffb_h_Eff_Period(data, ref effectInfo) != 0)
+            {
+                return;
+            }
+            ffbListener.OnFfbEffect(effectInfo.Period);
+        }
+
         public static void ReleaseJoy()
         {
-            if(joyStick != null)
+            if (joyStick != null)
             {
                 joyStick.RelinquishVJD(joyId);
             }

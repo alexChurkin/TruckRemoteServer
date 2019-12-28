@@ -1,60 +1,140 @@
 ﻿using System;
+using System.Drawing;
 using System.Net;
 using System.Windows.Forms;
 
 namespace TruckRemoteServer
 {
-    public partial class MainForm : Form
+    public partial class MainForm : Form, UDPServer.IStatusListener
     {
-        private UDPServer server;
+        private readonly UDPServer server;
 
         public MainForm()
         {
             InitializeComponent();
             int sensitivity = Properties.Settings.Default.Sensitivity;
-            decimal port = Properties.Settings.Default.Port;
+            int port = (int)Properties.Settings.Default.Port;
             sensitivityTrackBar.Value = sensitivity;
             labelSensitivity.Text = sensitivity.ToString();
             PCController.SteeringSensitivity = sensitivity;
             numericUpPort.Value = port;
+            server = new UDPServer(this, port);
+        }
 
+        protected override void OnShown(EventArgs e)
+        {
             ShowIpInLabel();
-
-            server = new UDPServer(labelStatus, buttonStop, buttonStart);
-            server.port = (int) port;
             server.Start();
         }
 
         public void ShowIpInLabel()
         {
-            IPHostEntry ipEntry = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress[] addr = ipEntry.AddressList;
-
-            string addr192String = string.Empty;
-
-            foreach (IPAddress address in addr)
+            IPAddress ip = NetworkUtil.GetLocalIp();
+            if (ip != null)
             {
-                string addressString = address.ToString();
-                if (addressString.StartsWith("192"))
-                {
-                    addr192String = addressString;
-                    break;
-                }
-            }
-
-            if (addr192String != string.Empty)
-            {
-                labelIp.Text = addr192String;
+                labelIp.Text = ip.ToString();
             }
             else
             {
-                labelIp.Text = addr[0].ToString();
+                labelIp.Text = "Not exist!";
             }
+        }
+
+        public void OnStatusUpdate(bool isEnabled,
+            bool controllerConnected, bool panelConnected,
+            bool controllerPaused, bool panelPaused)
+        {
+            if (isEnabled)
+            {
+                SetButtonsIsListening(true);
+                //All devices connected
+                if (controllerConnected && panelConnected)
+                {
+                    if (controllerPaused && panelPaused)
+                    {
+                        ShowStatus("All devices paused", Color.ForestGreen);
+                    }
+                    else if (controllerPaused)
+                    {
+                        ShowStatus("Controller: paused\nPanel: active", Color.ForestGreen);
+                    }
+                    else if (panelPaused)
+                    {
+                        ShowStatus("Controller: active\nPanel: paused", Color.ForestGreen);
+                    }
+                    else
+                    {
+                        ShowStatus("All devices active", Color.ForestGreen);
+                    }
+                }
+                //Connected only controller
+                else if (controllerConnected)
+                {
+                    if (controllerPaused)
+                    {
+                        ShowStatus("Controller paused", Color.ForestGreen);
+                    }
+                    else
+                    {
+                        ShowStatus("Controller active", Color.ForestGreen);
+                    }
+                }
+                //Connected only panel
+                else if (panelConnected)
+                {
+                    if (panelPaused)
+                    {
+                        ShowStatus("Panel paused", Color.ForestGreen);
+                    }
+                    else
+                    {
+                        ShowStatus("Panel active", Color.ForestGreen);
+                    }
+                }
+                else
+                {
+                    ShowStatus("Enabled", Color.ForestGreen);
+                }
+            }
+            else
+            {
+                SetButtonsIsListening(false);
+                ShowStatus("Disabled", Color.OrangeRed);
+            }
+        }
+
+        private void ShowStatus(string labelText, Color color)
+        {
+            try
+            {
+                labelStatus.BeginInvoke((MethodInvoker)delegate ()
+                {
+                    labelStatus.Text = labelText;
+                    labelStatus.ForeColor = color;
+                });
+            }
+            catch (Exception) { }
+        }
+
+        private void SetButtonsIsListening(bool isConnected)
+        {
+            try
+            {
+                buttonStop.BeginInvoke((MethodInvoker)delegate ()
+            {
+                buttonStop.Enabled = isConnected;
+            });
+                buttonStart.BeginInvoke((MethodInvoker)delegate ()
+                {
+                    buttonStart.Enabled = !isConnected;
+                });
+            }
+            catch (Exception) { }
         }
 
         private void NumericUpPort_ValueChanged(object sender, EventArgs e)
         {
-            if(numericUpPort.Text.Trim() == "" || numericUpPort.Text.Trim() == "0")
+            if (numericUpPort.Text.Trim() == "" || numericUpPort.Text.Trim() == "0")
             {
                 numericUpPort.ResetText();
                 Properties.Settings.Default.Port = 18250;
@@ -65,14 +145,14 @@ namespace TruckRemoteServer
 
         private void ButtonStop_Click(object sender, EventArgs e)
         {
-            server.Stop();
+            server.Shutdown();
             buttonStop.Enabled = false;
             buttonStart.Enabled = true;
         }
 
         private void ButtonStart_Click(object sender, EventArgs e)
         {
-            server.port = (int) numericUpPort.Value;
+            server.port = (int)numericUpPort.Value;
             server.Start();
         }
 
@@ -87,13 +167,8 @@ namespace TruckRemoteServer
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            server.Stop();
+            server.Shutdown();
             InputEmulator.ReleaseJoy();
-        }
-
-        private void BackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        {
-
         }
     }
 }

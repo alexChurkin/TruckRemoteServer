@@ -14,6 +14,9 @@ namespace TruckRemoteServer
         private int prevHornState;
         private bool prevCruise;
 
+        private IFfbListener ffbListener;
+
+
         private int lastConditionNumber = -1;
 
         private byte DIK_UP_ARROW_SCAN = 0xC8;
@@ -39,13 +42,17 @@ namespace TruckRemoteServer
         private const int DIK_U_SCAN = 0x16;
         private const int DIK_O_SCAN = 0x18;
 
+        public PCController(IFfbListener ffbListener)
+        {
+            this.ffbListener = ffbListener;
+        }
 
         /* Controller */
-        public void InitializeJoyIfNeccessary()
+        public void OnRemoteControlConnected()
         {
             if (!InputEmulator.IsJoyInitialized())
             {
-                InputEmulator.InitJoy();
+                InputEmulator.InitJoy(ffbListener);
             }
         }
 
@@ -59,7 +66,7 @@ namespace TruckRemoteServer
 
         public void UpdateAccelerometerValue(double accelerometerValue)
         {
-            int roughValue = 16384 + (int)(accelerometerValue * 34 * SteeringSensitivity);
+            int roughValue = 16384 + (int)(accelerometerValue * 34.7 * SteeringSensitivity);
             int newXAxisValue = (int)(prevXAxisValue + 0.6 * (roughValue - prevXAxisValue));
             prevXAxisValue = newXAxisValue;
             InputEmulator.SetXAxis(newXAxisValue);

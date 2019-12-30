@@ -46,5 +46,29 @@ namespace TruckRemoteServer.Properties {
                 this["Port"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Program Files\\Steam\\SteamApps\\Common\\Euro Truck Simulator 2")]
+        public string ETSPath {
+            get {
+                return ((string)(this["ETSPath"]));
+            }
+            set {
+                this["ETSPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Program Files\\Steam\\SteamApps\\Common\\American Truck Simulator")]
+        public string ATSPath {
+            get {
+                return ((string)(this["ATSPath"]));
+            }
+            set {
+                this["ATSPath"] = value;
+            }
+        }
     }
 }

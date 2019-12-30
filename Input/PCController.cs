@@ -1,23 +1,24 @@
 ﻿using System;
+using TruckRemoteServer.Data;
 
 namespace TruckRemoteServer
 {
     class PCController
     {
-        //Controller
         public static int SteeringSensitivity = 50;
+
+        //Controller-dependent previous data
         public int prevXAxisValue;
-        private bool prevBreakClicked, prevGasClicked;
-        private bool prevLeftSignal, prevRightSignal;
-        private bool wasParkingBreakEnabled;
-        private int prevLightsState;
+        private bool prevBreakPressed, prevGasPressed;
         private int prevHornState;
-        private bool prevCruise;
+        private bool prevParkingBreakState;
+        private bool prevCruiseState;
+        private bool prevLightsState;
+        private bool prevLeftSignalState, prevRightSignalState;
+        private bool prevEmergencyState;
 
-        private IFfbListener ffbListener;
-
-
-        private int lastConditionNumber = -1;
+        private volatile IEts2TelemetryData telemetry;
+        private readonly IFfbListener ffbListener;
 
         private byte DIK_UP_ARROW_SCAN = 0xC8;
         private const int DIK_DOWN_ARROW_SCAN = 0xD0;
@@ -56,12 +57,9 @@ namespace TruckRemoteServer
             }
         }
 
-        public void SetControllerStartValues(bool leftSignal, bool rightSignal, bool isParking, int lightsState)
+        public void UpdateTelemetryData(IEts2TelemetryData telemetry)
         {
-            prevLeftSignal = leftSignal;
-            prevRightSignal = rightSignal;
-            wasParkingBreakEnabled = isParking;
-            prevLightsState = lightsState;
+            this.telemetry = telemetry;
         }
 
         public void UpdateAccelerometerValue(double accelerometerValue)
@@ -72,11 +70,11 @@ namespace TruckRemoteServer
             InputEmulator.SetXAxis(newXAxisValue);
         }
 
-        public void UpdateBreakGasState(bool breakClicked, bool gasClicked)
+        public void UpdateBreakGasState(bool breakPressed, bool gasPressed)
         {
-            if (breakClicked != prevBreakClicked)
+            if (breakPressed != prevBreakPressed)
             {
-                if (breakClicked)
+                if (breakPressed)
                 {
                     InputEmulator.KeyPress(DIK_DOWN_ARROW_SCAN);
                 }
@@ -84,12 +82,12 @@ namespace TruckRemoteServer
                 {
                     InputEmulator.KeyRelease(DIK_DOWN_ARROW_SCAN);
                 }
-                prevBreakClicked = breakClicked;
+                prevBreakPressed = breakPressed;
             }
             //Gas
-            if (gasClicked != prevGasClicked)
+            if (gasPressed != prevGasPressed)
             {
-                if (gasClicked)
+                if (gasPressed)
                 {
                     InputEmulator.KeyPress(DIK_UP_ARROW_SCAN);
                 }
@@ -97,168 +95,88 @@ namespace TruckRemoteServer
                 {
                     InputEmulator.KeyRelease(DIK_UP_ARROW_SCAN);
                 }
-                prevGasClicked = gasClicked;
+                prevGasPressed = gasPressed;
             }
         }
 
-        public void UpdateTurnSignals(bool leftSignal, bool rightSignal)
+        public void UpdateTurnSignals(bool leftSignal, bool rightSignal, bool emergencySignal)
         {
-            //All was disabled
-            if (!prevLeftSignal && !prevRightSignal)
+            //Left signal click
+            if (leftSignal != prevLeftSignalState)
             {
-                //Enabling emergency signal
-                if (leftSignal && rightSignal)
-                {
-                    if (lastConditionNumber != 0)
-                    {
-                        ToggleEmergencySignal();
-                        lastConditionNumber = 0;
-                    }
-                }
-                //Enabling left
-                else if (leftSignal)
-                {
-                    if (lastConditionNumber != 1)
-                    {
-                        ToggleLeftTurnSignal();
-                        lastConditionNumber = 1;
-                    }
-                }
-                //Enabling right
-                else if (rightSignal)
-                {
-                    if (lastConditionNumber != 2)
-                    {
-                        ToggleRightTurnSignal();
-                        lastConditionNumber = 2;
-                    }
-                }
-
-            }
-            //All was enabled
-            else if (prevLeftSignal && prevRightSignal)
-            {
-                //Disabling emergency signal
-                if (!leftSignal && !rightSignal)
-                {
-                    if (lastConditionNumber != 3)
-                    {
-                        ToggleEmergencySignal();
-                        lastConditionNumber = 3;
-                    }
-                }
-            }
-            //Left was enabled
-            else if (prevLeftSignal)
-            {
-                //Enabling emergency signal with disabling turn signal
-                if (leftSignal && rightSignal)
-                {
-                    if (lastConditionNumber != 4)
-                    {
-                        ToggleLeftTurnSignal();
-                        ToggleEmergencySignal();
-                        lastConditionNumber = 4;
-                    }
-                }
-                //Enabling right
-                else if (rightSignal)
-                {
-                    if (lastConditionNumber != 5)
-                    {
-                        ToggleRightTurnSignal();
-                        lastConditionNumber = 5;
-                    }
-                }
-                //Disabling left
-                else if (!leftSignal)
-                {
-                    if (lastConditionNumber != 6)
-                    {
-                        ToggleLeftTurnSignal();
-                        lastConditionNumber = 6;
-                    }
-                }
-            }
-            //Right was enabled
-            else
-            {
-                if (leftSignal && rightSignal)
-                {
-                    if (lastConditionNumber != 7)
-                    {
-                        ToggleRightTurnSignal();
-                        ToggleEmergencySignal();
-                        lastConditionNumber = 7;
-                    }
-                }
-                else if (leftSignal)
-                {
-                    if (lastConditionNumber != 8)
-                    {
-                        ToggleLeftTurnSignal();
-                        lastConditionNumber = 8;
-                    }
-                }
-                else if (!rightSignal)
-                {
-                    if (lastConditionNumber != 9)
-                    {
-                        ToggleRightTurnSignal();
-                        lastConditionNumber = 9;
-                    }
-                }
+                prevLeftSignalState = leftSignal;
+                ClickLeftTurnSignal();
             }
 
-            prevLeftSignal = leftSignal;
-            prevRightSignal = rightSignal;
+            //Right signal click
+            if (rightSignal != prevRightSignalState)
+            {
+                prevRightSignalState = rightSignal;
+                ClickRightTurnSignal();
+            }
+
+            //Emergency click
+            if(emergencySignal != prevEmergencyState)
+            {
+                prevEmergencyState = emergencySignal;
+                ClickEmergencySignal();
+            }
         }
 
-        private void ToggleLeftTurnSignal()
+        private void ClickLeftTurnSignal()
         {
             InputEmulator.KeyClick(DIK_OPEN_BRACKET_SCAN);
         }
 
-        private void ToggleRightTurnSignal()
+        private void ClickRightTurnSignal()
         {
             InputEmulator.KeyClick(DIK_CLOSE_BRACKET_SCAN);
         }
 
-        private void ToggleEmergencySignal()
+        private void ClickEmergencySignal()
         {
             InputEmulator.KeyClick(DIK_F_SCAN);
         }
 
         public void UpdateParkingBrake(bool isParkingBrakeEnabled)
         {
-            if (wasParkingBreakEnabled != isParkingBrakeEnabled)
+            if (prevParkingBreakState != isParkingBrakeEnabled)
             {
-                wasParkingBreakEnabled = isParkingBrakeEnabled;
+                prevParkingBreakState = isParkingBrakeEnabled;
                 InputEmulator.KeyClick(DIK_SPACE_SCAN);
             }
         }
 
-        public void UpdateLights(int lightsState)
+        public void UpdateLights(bool lightsState)
         {
-            if(lightsState != prevLightsState)
+            if (telemetry == null) return;
+
+            if (lightsState != prevLightsState)
             {
                 prevLightsState = lightsState;
 
-                switch(lightsState)
+                var truck = telemetry.Truck;
+
+                if(!truck.LightsParkingOn)
                 {
-                    case 0:
+                    InputEmulator.KeyClick(DIK_L_SCAN);
+                }
+                else if(!truck.LightsBeamLowOn)
+                {
+                    InputEmulator.KeyClick(DIK_L_SCAN);
+                    if(truck.LightsBeamHighOn)
+                    {
                         InputEmulator.KeyClick(DIK_K_SCAN);
-                        InputEmulator.KeyClick(DIK_L_SCAN);
-                        break;
-                    case 1:
-                        InputEmulator.KeyClick(DIK_L_SCAN);
-                        break;
-                    case 2:
-                        InputEmulator.KeyClick(DIK_L_SCAN);
-                        break;
-                    case 3:
-                        InputEmulator.KeyClick(DIK_K_SCAN);
-                        break;
+                    }
+                }
+                else if(!truck.LightsBeamHighOn)
+                {
+                    InputEmulator.KeyClick(DIK_K_SCAN);
+                }
+                else
+                {
+                    InputEmulator.KeyClick(DIK_K_SCAN);
+                    InputEmulator.KeyClick(DIK_L_SCAN);
                 }
             }
         }
@@ -286,20 +204,11 @@ namespace TruckRemoteServer
 
         public void UpdateCruise(bool isCruise)
         {
-            if (prevCruise != isCruise)
+            if (prevCruiseState != isCruise)
             {
-                prevCruise = isCruise;
+                prevCruiseState = isCruise;
                 InputEmulator.KeyClick(DIK_C_SCAN);
             }
-        }
-
-        /* Panel */
-        public void SetPanelStartValues(bool diffBlock, int wipersState, bool liftingAxle, bool flashingBeacon)
-        {
-            prevDiffBlock = diffBlock;
-            prevWipersState = wipersState;
-            prevLiftingAxle = liftingAxle;
-            prevFlashingBeacon = flashingBeacon;
         }
 
         public void UpdateDiffBlock(bool diffBlock)

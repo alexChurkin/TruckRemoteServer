@@ -4,6 +4,7 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Net;
 using System.Globalization;
+using TruckRemoteServer.Data;
 
 namespace TruckRemoteServer
 {
@@ -22,7 +23,7 @@ namespace TruckRemoteServer
         private Socket serverSocket;
         private IPEndPoint localIpEndPoint;
         private IPEndPoint controllerEndPoint, panelEndPoint;
-        private IStatusListener statusListener;
+        private readonly IStatusListener statusListener;
 
         public bool enabled = true;
         public bool controllerPaused, panelPaused;
@@ -72,9 +73,11 @@ namespace TruckRemoteServer
 
                 while (true)
                 {
+
                     byte[] receivedBytes = new byte[128];
                     int bytesCount = serverSocket.ReceiveFrom(receivedBytes, ref endPoint);
                     string receivedMessage = Encoding.UTF8.GetString(receivedBytes, 0, bytesCount);
+
                     OnMessageReceived((IPEndPoint)endPoint, receivedMessage);
                 }
             }
@@ -129,11 +132,6 @@ namespace TruckRemoteServer
             Console.WriteLine("Hello from controller received!");
 
             string[] dataParts = initMessage.Substring(initMessage.IndexOf("\n") + 1).Split(',');
-            pcController.SetControllerStartValues(
-                bool.Parse(dataParts[0]),
-                bool.Parse(dataParts[1]),
-                bool.Parse(dataParts[2]),
-                int.Parse(dataParts[3]));
             pcController.OnRemoteControlConnected();
 
             byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
@@ -151,13 +149,6 @@ namespace TruckRemoteServer
         {
             if (panelEndPoint != null) return;
             Console.WriteLine("Hello from panel received!");
-
-            string[] dataParts = initMessage.Substring(initMessage.IndexOf("\n") + 1).Split(',');
-            pcController.SetPanelStartValues(
-                bool.Parse(dataParts[0]),
-                int.Parse(dataParts[1]),
-                bool.Parse(dataParts[2]),
-                bool.Parse(dataParts[3]));
 
             byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
             serverSocket.SendTo(bytesToAnswer, remoteEndPoint);
@@ -194,18 +185,22 @@ namespace TruckRemoteServer
             string[] msgParts = message.Split(',');
 
             double accelerometerValue = double.Parse(msgParts[0], CultureInfo.InvariantCulture);
-            bool breakClicked = bool.Parse(msgParts[1]);
-            bool gasClicked = bool.Parse(msgParts[2]);
-            bool leftSignalEnabled = bool.Parse(msgParts[3]);
-            bool rightSignalEnabled = bool.Parse(msgParts[4]);
-            bool parkingBrakeEnabled = bool.Parse(msgParts[5]);
-            int lightsState = int.Parse(msgParts[6]);
-            int hornState = int.Parse(msgParts[7]);
-            bool isCruise = bool.Parse(msgParts[8]);
+            bool breakPressed = bool.Parse(msgParts[1]);
+            bool gasPressed = bool.Parse(msgParts[2]);
+
+            bool leftSignalClick = bool.Parse(msgParts[3]);
+            bool rightSignalClick = bool.Parse(msgParts[4]);
+            bool emergencySignalClick = bool.Parse(msgParts[5]);
+
+            bool parkingBrakeEnabled = bool.Parse(msgParts[6]);
+            bool lightsState = bool.Parse(msgParts[7]);
+
+            int hornState = int.Parse(msgParts[8]);
+            bool isCruise = bool.Parse(msgParts[9]);
 
             pcController.UpdateAccelerometerValue(accelerometerValue);
-            pcController.UpdateBreakGasState(breakClicked, gasClicked);
-            pcController.UpdateTurnSignals(leftSignalEnabled, rightSignalEnabled);
+            pcController.UpdateBreakGasState(breakPressed, gasPressed);
+            pcController.UpdateTurnSignals(leftSignalClick, rightSignalClick, emergencySignalClick);
             pcController.UpdateParkingBrake(parkingBrakeEnabled);
             pcController.UpdateLights(lightsState);
             pcController.UpdateHorn(hornState);
@@ -259,13 +254,13 @@ namespace TruckRemoteServer
 
             long currentTime = TimeUtil.GetCurrentUnixTime();
 
-            if (controllerEndPoint != null && currentTime - lastControllerMsgTime > RECEIVE_TIMEOUT*2)
+            if (controllerEndPoint != null && currentTime - lastControllerMsgTime > RECEIVE_TIMEOUT * 2)
             {
                 controllerEndPoint = null;
                 controllerPaused = false;
                 PostStatusUpdate();
             }
-            else if (panelEndPoint != null && currentTime - lastPanelMsgTime > RECEIVE_TIMEOUT*2)
+            else if (panelEndPoint != null && currentTime - lastPanelMsgTime > RECEIVE_TIMEOUT * 2)
             {
                 panelEndPoint = null;
                 panelPaused = false;
@@ -284,8 +279,56 @@ namespace TruckRemoteServer
             {
                 while (controllerEndPoint != null)
                 {
-                    byte[] messageToControllerBytes = Encoding.UTF8.GetBytes("" + effectDuration);
+                    var telemetry = Ets2TelemetryDataReader.Instance.Read();
+
+                    //Saving telemetry data to local state
+                    pcController.UpdateTelemetryData(telemetry);
+
+                    var truck = telemetry.Truck;
+
+                    //Engine and parking brake
+                    var engineOn = truck.EngineOn;
+                    var isParkingEnabled = truck.ParkBrakeOn;
+
+                    //Blinkers
+                    var leftBlinkerOn = truck.BlinkerLeftOn;
+                    var rightBlinkerOn = truck.BlinkerRightOn;
+
+                    //Lights
+                    var parkingLights = truck.LightsParkingOn;
+                    var lowBeamOn = truck.LightsBeamLowOn;
+                    var highBeamOn = truck.LightsBeamHighOn;
+
+                    var lightsState = 0;
+
+                    if (highBeamOn)
+                    {
+                        if (lowBeamOn)
+                        {
+                            lightsState = 3;
+                        }
+                        else if (parkingLights)
+                        {
+                            lightsState = 1;
+                        }
+                    }
+                    else if (lowBeamOn)
+                    {
+                        lightsState = 2;
+                    }
+                    else if (parkingLights)
+                    {
+                        lightsState = 1;
+                    }
+
+                    string msgToControl = $"{engineOn},{isParkingEnabled}," +
+                        $"{leftBlinkerOn},{rightBlinkerOn}," + $"{lightsState}," +
+                        $"{effectDuration}";
+
+                    byte[] messageToControllerBytes = Encoding.UTF8.GetBytes(msgToControl);
                     effectDuration = 0;
+
+                    //Sending data to client
                     serverSocket.SendTo(messageToControllerBytes, controllerEndPoint);
 
                     if (controllerPaused) Thread.Sleep(50);

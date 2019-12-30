@@ -180,7 +180,7 @@
             // 
             this.labelSensitivity.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelSensitivity.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelSensitivity.Location = new System.Drawing.Point(212, 122);
+            this.labelSensitivity.Location = new System.Drawing.Point(213, 122);
             this.labelSensitivity.Name = "labelSensitivity";
             this.labelSensitivity.Size = new System.Drawing.Size(40, 16);
             this.labelSensitivity.TabIndex = 13;
@@ -209,7 +209,7 @@
             this.Name = "MainForm";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Truck Remote Server 1.12";
+            this.Text = "Truck Remote Server 1.13";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).EndInit();

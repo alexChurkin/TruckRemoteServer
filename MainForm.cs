@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Net;
 using System.Windows.Forms;
+using TruckRemoteServer.Setup;
 
 namespace TruckRemoteServer
 {
@@ -23,8 +25,18 @@ namespace TruckRemoteServer
 
         protected override void OnShown(EventArgs e)
         {
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.AboveNormal;
             ShowIpInLabel();
-            server.Start();
+            PluginInstaller installer = new PluginInstaller();
+            if (installer.Status == SetupStatus.Uninstalled)
+            {
+                OnStatusUpdate(false, false, false, false, false);
+                installer.Install(this);
+                server.Start();
+            } else
+            {
+                server.Start();
+            }
         }
 
         public void ShowIpInLabel()

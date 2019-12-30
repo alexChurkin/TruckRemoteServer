@@ -8,5 +8,11 @@
     <Setting Name="Port" Type="System.Decimal" Scope="User">
       <Value Profile="(Default)">18250</Value>
     </Setting>
+    <Setting Name="ETSPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Program Files\Steam\SteamApps\Common\Euro Truck Simulator 2</Value>
+    </Setting>
+    <Setting Name="ATSPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Program Files\Steam\SteamApps\Common\American Truck Simulator</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

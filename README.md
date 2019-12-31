@@ -4,22 +4,19 @@ Server app for Truck Remote Control/Panel written on C# (Windows Forms). View [T
 
 #### [Russian guide](README_ru.md)
 
-### [DOWNLOAD THE LATEST VERSION](https://drive.google.com/drive/folders/1eZuEEp7o_r0iVNS5q6rrBKuBrt6ZjRUL?usp=sharing)
+### [DOWNLOAD THE LATEST VERSION](https://github.com/alexChurkin/TruckRemoteServer/releases)
 
 ## How to use
 ATTENTION: Do not delete files from the **TruckRemoteServer** folder. It's important for correct Server work.
 
-Launching with **Truck Remote Control**:
+Launching:
 1) Install **vJoy** on your PC by launching **vJoySetup.exe**
 2) Open **Configure vjoy**, configure 1-st virtual joystick as on this screenshot:
 
     ![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
 	
 3) Сopy the **TruckRemoteServer** folder wherever you want
-4) Launch **TruckRemoteServer.exe**
-
-
-If you will not use **Truck Remote Control**, please follow only steps 3-4 from the list above.
+4) Launch **TruckRemoteServer.exe** and agree to install the telemetry plugin for ETS2/ATS
 
 Enjoy using!
 
@@ -28,7 +25,7 @@ Enjoy using!
 
 ## License
 
-    Copyright 2019 Alex Churkin.
+    Copyright 2020 Alex Churkin.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

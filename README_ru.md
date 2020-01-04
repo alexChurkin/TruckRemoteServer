@@ -1,10 +1,20 @@
 Truck Remote Server
 ====================
-Сервер для Truck Remote Control/Panel, написанный при помощи C# (Windows Forms). Сопутствующие приложения: [Truck Remote Control](https://github.com/alexChurkin/TruckRemoteControl) и [Truck Remote Panel](https://github.com/alexChurkin/TruckRemotePanel).
+Сервер для [Truck Remote Control](https://github.com/alexChurkin/TruckRemoteControl), написанный при помощи C#.
 
 ### [ЗАГРУЗИТЬ ПОСЛЕДНЮЮ ВЕРСИЮ](https://github.com/alexChurkin/TruckRemoteServer/releases)
 
-## Как использовать
+## Как установить
+
+### Поддерживаемые ОС
+**Windows Vista, Windows 7, 8 or 10 (64-bit)**.
+Необходим **.NET Framework 4.7.2**.
+
+### Поддерживаемые игры
+
+- Euro Truck Simulator 2 (x64) версии 1.35+. Мультиплеерная версия также поддерживается.
+- American Truck Simulator версии 1.35+
+
 ВНИМАНИЕ: Не удаляйте файлы из папки **TruckRemoteServer**. Они необходимы для корректной работы сервера.
 
 Запуск:

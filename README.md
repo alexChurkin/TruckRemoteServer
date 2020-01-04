@@ -6,8 +6,6 @@ Server app for [Truck Remote Control](https://github.com/alexChurkin/TruckRemote
 
 ### [DOWNLOAD THE LATEST VERSION](https://github.com/alexChurkin/TruckRemoteServer/releases)
 
-## Setup
-
 ### Supported OS
 **Windows Vista, Windows 7, 8 or 10 (64-bit)**.
 **.NET Framework 4.7.2** is required. If it is not installed you will be prompted to install it when you run the server.
@@ -16,6 +14,8 @@ Server app for [Truck Remote Control](https://github.com/alexChurkin/TruckRemote
 
 - Euro Truck Simulator 2 (64-bit) version 1.35+. Multiplayer versions are supported as well.
 - American Truck Simulator version 1.35+
+
+## Setup
 
 ATTENTION: Do not delete files from the **TruckRemoteServer** folder. It's important for correct Server work.
 

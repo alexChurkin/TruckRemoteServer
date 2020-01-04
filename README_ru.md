@@ -4,8 +4,6 @@ Truck Remote Server
 
 ### [ЗАГРУЗИТЬ ПОСЛЕДНЮЮ ВЕРСИЮ](https://github.com/alexChurkin/TruckRemoteServer/releases)
 
-## Как установить
-
 ### Поддерживаемые ОС
 **Windows Vista, Windows 7, 8 or 10 (64-bit)**.
 Необходим **.NET Framework 4.7.2**.
@@ -14,6 +12,8 @@ Truck Remote Server
 
 - Euro Truck Simulator 2 (x64) версии 1.35+. Мультиплеерная версия также поддерживается.
 - American Truck Simulator версии 1.35+
+
+## Как установить
 
 ВНИМАНИЕ: Не удаляйте файлы из папки **TruckRemoteServer**. Они необходимы для корректной работы сервера.
 

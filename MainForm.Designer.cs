@@ -209,7 +209,7 @@
             this.Name = "MainForm";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Truck Remote Server 1.13";
+            this.Text = "Truck Remote Server 1.13.1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).EndInit();

@@ -17,7 +17,7 @@ namespace TruckRemoteServer
                 bool controllerPaused, bool panelPaused);
         }
 
-        private const int RECEIVE_TIMEOUT = 800;
+        private const int RECEIVE_TIMEOUT = 1200;
 
         public int port;
         private Socket serverSocket;
@@ -73,11 +73,9 @@ namespace TruckRemoteServer
 
                 while (true)
                 {
-
                     byte[] receivedBytes = new byte[128];
                     int bytesCount = serverSocket.ReceiveFrom(receivedBytes, ref endPoint);
                     string receivedMessage = Encoding.UTF8.GetString(receivedBytes, 0, bytesCount);
-
                     OnMessageReceived((IPEndPoint)endPoint, receivedMessage);
                 }
             }

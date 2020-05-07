@@ -4,6 +4,8 @@ Server app for [Truck Remote Control](https://github.com/alexChurkin/TruckRemote
 
 #### [Russian guide](README_ru.md)
 
+### [VIDEO INSTRUCTION](https://www.youtube.com/watch?v=qJOPYtYDHOo)
+
 ### [DOWNLOAD THE LATEST VERSION](https://github.com/alexChurkin/TruckRemoteServer/releases)
 
 ### Supported OS

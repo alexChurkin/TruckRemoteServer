@@ -2,6 +2,8 @@ Truck Remote Server
 ====================
 Сервер для [Truck Remote Control](https://github.com/alexChurkin/TruckRemoteControl), написанный при помощи C#.
 
+### [ВИДЕОИНСТРУКЦИЯ](https://www.youtube.com/watch?v=ZbeGOxA96dY)
+
 ### [ЗАГРУЗИТЬ ПОСЛЕДНЮЮ ВЕРСИЮ](https://github.com/alexChurkin/TruckRemoteServer/releases)
 
 ### Поддерживаемые ОС

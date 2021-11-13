@@ -2,10 +2,15 @@
 using System.Runtime.InteropServices;
 using vJoyInterfaceWrap;
 
+
+
 namespace TruckRemoteServer
 {
     public static class InputEmulator
     {
+        //~ OK
+        const int ERROR_SUCCESS = 0;
+
         private static vJoy joyStick;
         private static uint joyId = 1;
 
@@ -38,12 +43,16 @@ namespace TruckRemoteServer
 
         private static void OnFFBEvent(IntPtr data, object userData)
         {
-            vJoy.FFB_EFF_PERIOD effectInfo = new vJoy.FFB_EFF_PERIOD();
-            if (joyStick.Ffb_h_Eff_Period(data, ref effectInfo) != 0)
+            vJoy.FFB_EFF_CONSTANT effectInf = new vJoy.FFB_EFF_CONSTANT();
+            if (joyStick.Ffb_h_Eff_Constant(data, ref effectInf) == ERROR_SUCCESS)
             {
-                return;
+                ffbListener.OnFfbEffect((uint)Math.Abs(effectInf.Magnitude));
+                Console.WriteLine("OK, Magnitude = " + effectInf.Magnitude);
             }
-            ffbListener.OnFfbEffect(effectInfo.Period);
+            else
+            {
+                //Console.WriteLine("UNABLE");
+            }
         }
 
         public static void ReleaseJoy()

@@ -12,9 +12,7 @@ namespace TruckRemoteServer
     {
         public interface IStatusListener
         {
-            void OnStatusUpdate(bool isEnabled,
-                bool controllerConnected, bool panelConnected,
-                bool controllerPaused, bool panelPaused);
+            void OnStatusUpdate(bool isEnabled, bool controllerConnected, bool controllerPaused);
         }
 
         private const int RECEIVE_TIMEOUT = 1200;
@@ -22,12 +20,12 @@ namespace TruckRemoteServer
         public int port;
         private Socket serverSocket;
         private IPEndPoint localIpEndPoint;
-        private IPEndPoint controllerEndPoint, panelEndPoint;
+        private IPEndPoint controllerEndPoint;
         private readonly IStatusListener statusListener;
 
         public bool enabled = true;
-        public bool controllerPaused, panelPaused;
-        public long lastControllerMsgTime, lastPanelMsgTime;
+        public bool controllerPaused;
+        public long lastControllerMsgTime;
 
         private volatile uint effectDuration = 0;
 
@@ -71,6 +69,8 @@ namespace TruckRemoteServer
             {
                 EndPoint endPoint = localIpEndPoint;
 
+                Console.WriteLine("Receiving started");
+
                 while (true)
                 {
                     byte[] receivedBytes = new byte[128];
@@ -101,25 +101,12 @@ namespace TruckRemoteServer
             if (endPoint.Equals(controllerEndPoint))
             {
                 lastControllerMsgTime = TimeUtil.GetCurrentUnixTime();
-                CheckTimeDifferences();
                 OnMessageFromController(message);
-            }
-            else if (endPoint.Equals(panelEndPoint))
-            {
-                lastPanelMsgTime = TimeUtil.GetCurrentUnixTime();
-                CheckTimeDifferences();
-                OnMessageFromPanel(message);
             }
             else if (message.Contains("TruckRemoteHello"))
             {
                 lastControllerMsgTime = TimeUtil.GetCurrentUnixTime();
                 OnHelloFromController(message, endPoint);
-                serverSocket.ReceiveTimeout = RECEIVE_TIMEOUT;
-            }
-            else if (message.Contains("TruckPanelRemoteHello"))
-            {
-                lastPanelMsgTime = TimeUtil.GetCurrentUnixTime();
-                OnHelloFromPanel(message, endPoint);
                 serverSocket.ReceiveTimeout = RECEIVE_TIMEOUT;
             }
         }
@@ -141,19 +128,6 @@ namespace TruckRemoteServer
 
             Thread controllerSender = new Thread(StartSendToController);
             controllerSender.Start();
-        }
-
-        private void OnHelloFromPanel(string initMessage, IPEndPoint remoteEndPoint)
-        {
-            if (panelEndPoint != null) return;
-            Console.WriteLine("Hello from panel received!");
-
-            byte[] bytesToAnswer = Encoding.UTF8.GetBytes("Hi!");
-            serverSocket.SendTo(bytesToAnswer, remoteEndPoint);
-
-            panelEndPoint = remoteEndPoint;
-
-            PostStatusUpdate();
         }
 
         private void OnMessageFromController(string message)
@@ -203,67 +177,6 @@ namespace TruckRemoteServer
             pcController.UpdateLights(lightsState);
             pcController.UpdateHorn(hornState);
             pcController.UpdateCruise(isCruise);
-        }
-
-        private void OnMessageFromPanel(string message)
-        {
-            if (message.Contains("paused"))
-            {
-                if (!panelPaused)
-                {
-                    panelPaused = true;
-                    PostStatusUpdate();
-                }
-                return;
-            }
-            else if (panelPaused)
-            {
-                panelPaused = false;
-                PostStatusUpdate();
-            }
-            else if (message.Contains("goodbye"))
-            {
-                panelEndPoint = null;
-                panelPaused = false;
-                PostStatusUpdate();
-                return;
-            }
-
-            string[] msgParts = message.Split(',');
-
-            bool diffBlock = bool.Parse(msgParts[0]);
-            int wipersState = int.Parse(msgParts[1]);
-            bool liftingAxle = bool.Parse(msgParts[2]);
-            bool flashingBeacon = bool.Parse(msgParts[3]);
-
-            pcController.UpdateDiffBlock(diffBlock);
-            pcController.UpdateWipers(wipersState);
-            pcController.UpdateLiftingAxle(liftingAxle);
-            pcController.UpdateFlashingBeacon(flashingBeacon);
-        }
-
-        private void CheckTimeDifferences()
-        {
-            //Connected only one device
-            if ((controllerEndPoint != null) != (panelEndPoint != null))
-            {
-                return;
-            }
-
-            long currentTime = TimeUtil.GetCurrentUnixTime();
-
-            if (controllerEndPoint != null && currentTime - lastControllerMsgTime > RECEIVE_TIMEOUT * 2)
-            {
-                controllerEndPoint = null;
-                controllerPaused = false;
-                PostStatusUpdate();
-            }
-            else if (panelEndPoint != null && currentTime - lastPanelMsgTime > RECEIVE_TIMEOUT * 2)
-            {
-                panelEndPoint = null;
-                panelPaused = false;
-                PostStatusUpdate();
-            }
         }
 
         /* ................................. </Receiver thread> .............................*/
@@ -354,16 +267,13 @@ namespace TruckRemoteServer
             finally
             {
                 controllerEndPoint = null;
-                panelEndPoint = null;
                 PostStatusUpdate();
             }
         }
 
         private void PostStatusUpdate()
         {
-            statusListener.OnStatusUpdate(enabled,
-                controllerEndPoint != null, panelEndPoint != null,
-                controllerPaused, panelPaused);
+            statusListener.OnStatusUpdate(enabled, controllerEndPoint != null, controllerPaused);
         }
     }
 }

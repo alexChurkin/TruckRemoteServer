@@ -30,7 +30,7 @@ namespace TruckRemoteServer
             PluginInstaller installer = new PluginInstaller();
             if (installer.Status == SetupStatus.Uninstalled)
             {
-                OnStatusUpdate(false, false, false, false, false);
+                OnStatusUpdate(false, false, false);
                 installer.Install(this);
                 server.Start();
             } else
@@ -48,39 +48,17 @@ namespace TruckRemoteServer
             }
             else
             {
-                labelIp.Text = "Not exist!";
+                labelIp.Text = "Doesn't exist!";
             }
         }
 
-        public void OnStatusUpdate(bool isEnabled,
-            bool controllerConnected, bool panelConnected,
-            bool controllerPaused, bool panelPaused)
+        public void OnStatusUpdate(bool isEnabled, bool controllerConnected, bool controllerPaused)
         {
             if (isEnabled)
             {
                 SetButtonsIsListening(true);
-                //All devices connected
-                if (controllerConnected && panelConnected)
-                {
-                    if (controllerPaused && panelPaused)
-                    {
-                        ShowStatus("All devices paused", Color.ForestGreen);
-                    }
-                    else if (controllerPaused)
-                    {
-                        ShowStatus("Controller: paused\nPanel: active", Color.ForestGreen);
-                    }
-                    else if (panelPaused)
-                    {
-                        ShowStatus("Controller: active\nPanel: paused", Color.ForestGreen);
-                    }
-                    else
-                    {
-                        ShowStatus("All devices active", Color.ForestGreen);
-                    }
-                }
-                //Connected only controller
-                else if (controllerConnected)
+
+                if (controllerConnected)
                 {
                     if (controllerPaused)
                     {
@@ -89,18 +67,6 @@ namespace TruckRemoteServer
                     else
                     {
                         ShowStatus("Controller active", Color.ForestGreen);
-                    }
-                }
-                //Connected only panel
-                else if (panelConnected)
-                {
-                    if (panelPaused)
-                    {
-                        ShowStatus("Panel paused", Color.ForestGreen);
-                    }
-                    else
-                    {
-                        ShowStatus("Panel active", Color.ForestGreen);
                     }
                 }
                 else

@@ -47,11 +47,6 @@ namespace TruckRemoteServer
             if (joyStick.Ffb_h_Eff_Constant(data, ref effectInf) == ERROR_SUCCESS)
             {
                 ffbListener.OnFfbEffect((uint)Math.Abs(effectInf.Magnitude));
-                Console.WriteLine("OK, Magnitude = " + effectInf.Magnitude);
-            }
-            else
-            {
-                //Console.WriteLine("UNABLE");
             }
         }
 

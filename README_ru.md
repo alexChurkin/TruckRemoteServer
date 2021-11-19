@@ -7,7 +7,7 @@ Truck Remote Server
 ### [ЗАГРУЗИТЬ ПОСЛЕДНЮЮ ВЕРСИЮ](https://github.com/alexChurkin/TruckRemoteServer/releases)
 
 ### Поддерживаемые ОС
-**Windows Vista, Windows 7, 8 or 10 (64-bit)**.
+**Windows Vista, Windows 7, 8, 10 or 11 (64-bit)**.
 Необходим **.NET Framework 4.7.2**.
 
 ### Поддерживаемые игры
@@ -35,7 +35,7 @@ Truck Remote Server
 
 ## Лицензия
 
-    Copyright 2020 Alex Churkin.
+    Copyright 2021 Alex Churkin.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

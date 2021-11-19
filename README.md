@@ -9,7 +9,7 @@ Server app for [Truck Remote Control](https://github.com/alexChurkin/TruckRemote
 ### [DOWNLOAD THE LATEST VERSION](https://github.com/alexChurkin/TruckRemoteServer/releases)
 
 ### Supported OS
-**Windows Vista, Windows 7, 8 or 10 (64-bit)**.
+**Windows Vista, Windows 7, 8, 10 or 11 (64-bit)**.
 **.NET Framework 4.7.2** is required. If it is not installed you will be prompted to install it when you run the server.
 
 ### Supported games
@@ -37,7 +37,7 @@ Enjoy using!
 
 ## License
 
-    Copyright 2020 Alex Churkin.
+    Copyright 2021 Alex Churkin.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

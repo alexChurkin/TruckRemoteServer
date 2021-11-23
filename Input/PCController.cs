@@ -1,5 +1,4 @@
-﻿using System;
-using TruckRemoteServer.Data;
+﻿using TruckRemoteServer.Data;
 
 namespace TruckRemoteServer
 {

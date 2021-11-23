@@ -196,6 +196,7 @@ namespace TruckRemoteServer
                     pcController.UpdateTelemetryData(telemetry);
 
                     var truck = telemetry.Truck;
+                    var trailer = telemetry.Trailer1;
 
                     //Engine and parking brake
                     var engineOn = truck.EngineOn;
@@ -209,6 +210,29 @@ namespace TruckRemoteServer
                     var parkingLights = truck.LightsParkingOn;
                     var lowBeamOn = truck.LightsBeamLowOn;
                     var highBeamOn = truck.LightsBeamHighOn;
+
+                    //Wipers and beacon
+                    var wipersOn = truck.WipersOn;
+                    var beaconOn = truck.LightsBeaconOn;
+
+                    //Additional info
+                    var islowFuel = truck.FuelWarningOn;
+                    var fuelLevel = Math.Floor((truck.Fuel / truck.FuelCapacity) * 100);
+
+                    var truckDamage =  TruckMath.Max(
+                        Math.Floor(telemetry.Truck.WearCabin * 100),
+                        Math.Floor(telemetry.Truck.WearChassis * 100),
+                        Math.Floor(telemetry.Truck.WearEngine * 100),
+                        Math.Floor(telemetry.Truck.WearTransmission * 100),
+                        Math.Floor(telemetry.Truck.WearWheels * 100));
+
+                    var trailerAttached = trailer.Attached;
+                    var trailerDamage = TruckMath.Max(
+                        Math.Floor(trailer.WearWheels * 100),
+                        Math.Floor(trailer.WearChassis * 100));
+
+                    var cargoDamage = Math.Floor(trailer.CargoDamage * 100);
+
 
                     var lightsState = 0;
 
@@ -233,7 +257,9 @@ namespace TruckRemoteServer
                     }
 
                     string msgToControl = $"{engineOn},{isParkingEnabled}," +
-                        $"{leftBlinkerOn},{rightBlinkerOn}," + $"{lightsState}," +
+                        $"{leftBlinkerOn},{rightBlinkerOn},{lightsState}," +
+                        $"{wipersOn},{beaconOn},{islowFuel},{fuelLevel}," +
+                        $"{truckDamage},{trailerAttached},{trailerDamage},{cargoDamage}," +
                         $"{effectDuration}";
 
                     byte[] messageToControllerBytes = Encoding.UTF8.GetBytes(msgToControl);

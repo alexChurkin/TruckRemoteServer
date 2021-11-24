@@ -16,6 +16,10 @@ namespace TruckRemoteServer
         private bool prevLeftSignalState, prevRightSignalState;
         private bool prevEmergencyState;
 
+        private bool prevEngineState;
+        private bool prevWipersState;
+        private bool prevBeacon;
+
         private volatile IEts2TelemetryData telemetry;
         private readonly IFfbListener ffbListener;
 
@@ -31,16 +35,9 @@ namespace TruckRemoteServer
         private byte DIK_N_SCAN = 0x31;
         private byte DIK_C_SCAN = 0x2E;
 
-        //Panel
-        private bool prevDiffBlock;
-        private int prevWipersState;
-        private bool prevLiftingAxle;
-        private bool prevFlashingBeacon;
-
-        private const int DIK_V_SCAN = 0x2F;
-        private const int DIK_P_SCAN = 0x19;
-        private const int DIK_U_SCAN = 0x16;
-        private const int DIK_O_SCAN = 0x18;
+        private byte DIK_E_SCAN = 0x12;
+        private byte DIK_P_SCAN = 0x19;
+        private byte DIK_O_SCAN = 0x18;
 
         public PCController(IFfbListener ffbListener)
         {
@@ -210,38 +207,29 @@ namespace TruckRemoteServer
             }
         }
 
-        public void UpdateDiffBlock(bool diffBlock)
+        public void UpdateEngine(bool engine)
         {
-            if(prevDiffBlock != diffBlock)
+            if (prevEngineState != engine)
             {
-                prevDiffBlock = diffBlock;
-                InputEmulator.KeyClick(DIK_V_SCAN);
+                prevEngineState = engine;
+                InputEmulator.KeyClick(DIK_E_SCAN);
             }
         }
 
-        public void UpdateWipers(int wipersState)
+        public void UpdateWipers(bool wipers)
         {
-            if (prevWipersState != wipersState)
+            if (prevWipersState != wipers)
             {
-                prevWipersState = wipersState;
+                prevWipersState = wipers;
                 InputEmulator.KeyClick(DIK_P_SCAN);
             }
         }
 
-        public void UpdateLiftingAxle(bool liftingAxle)
+        public void UpdateBeacon(bool beacon)
         {
-            if (prevLiftingAxle != liftingAxle)
+            if (prevBeacon != beacon)
             {
-                prevLiftingAxle = liftingAxle;
-                InputEmulator.KeyClick(DIK_U_SCAN);
-            }
-        }
-
-        public void UpdateFlashingBeacon(bool flashingBeacon)
-        {
-            if (prevFlashingBeacon != flashingBeacon)
-            {
-                prevFlashingBeacon = flashingBeacon;
+                prevBeacon = beacon;
                 InputEmulator.KeyClick(DIK_O_SCAN);
             }
         }

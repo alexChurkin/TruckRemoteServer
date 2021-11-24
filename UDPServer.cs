@@ -192,6 +192,8 @@ namespace TruckRemoteServer
                 {
                     var telemetry = Ets2TelemetryDataReader.Instance.Read();
 
+                    bool telemetryActive = telemetry.Game.Connected;
+
                     //Saving telemetry data to local state
                     pcController.UpdateTelemetryData(telemetry);
 
@@ -199,39 +201,39 @@ namespace TruckRemoteServer
                     var trailer = telemetry.Trailer1;
 
                     //Engine and parking brake
-                    var engineOn = truck.EngineOn;
-                    var isParkingEnabled = truck.ParkBrakeOn;
+                    bool engineOn = truck.EngineOn;
+                    bool isParkingEnabled = truck.ParkBrakeOn;
 
                     //Blinkers
-                    var leftBlinkerOn = truck.BlinkerLeftOn;
-                    var rightBlinkerOn = truck.BlinkerRightOn;
+                    bool leftBlinkerOn = truck.BlinkerLeftOn;
+                    bool rightBlinkerOn = truck.BlinkerRightOn;
 
                     //Lights
-                    var parkingLights = truck.LightsParkingOn;
-                    var lowBeamOn = truck.LightsBeamLowOn;
-                    var highBeamOn = truck.LightsBeamHighOn;
+                    bool parkingLights = truck.LightsParkingOn;
+                    bool lowBeamOn = truck.LightsBeamLowOn;
+                    bool highBeamOn = truck.LightsBeamHighOn;
 
                     //Wipers and beacon
-                    var wipersOn = truck.WipersOn;
-                    var beaconOn = truck.LightsBeaconOn;
+                    bool wipersOn = truck.WipersOn;
+                    bool beaconOn = truck.LightsBeaconOn;
 
                     //Additional info
-                    var islowFuel = truck.FuelWarningOn;
-                    var fuelLevel = Math.Floor((truck.Fuel / truck.FuelCapacity) * 100);
+                    bool islowFuel = truck.FuelWarningOn;
+                    int fuelLevel = (int) Math.Floor((truck.Fuel / truck.FuelCapacity) * 100);
 
-                    var truckDamage =  TruckMath.Max(
+                    int truckDamage = (int) TruckMath.Max(
                         Math.Floor(telemetry.Truck.WearCabin * 100),
                         Math.Floor(telemetry.Truck.WearChassis * 100),
                         Math.Floor(telemetry.Truck.WearEngine * 100),
                         Math.Floor(telemetry.Truck.WearTransmission * 100),
                         Math.Floor(telemetry.Truck.WearWheels * 100));
 
-                    var trailerAttached = trailer.Attached;
-                    var trailerDamage = TruckMath.Max(
+                    bool trailerAttached = trailer.Attached;
+                    int trailerDamage = (int) TruckMath.Max(
                         Math.Floor(trailer.WearWheels * 100),
                         Math.Floor(trailer.WearChassis * 100));
 
-                    var cargoDamage = Math.Floor(trailer.CargoDamage * 100);
+                    int cargoDamage = (int) Math.Floor(trailer.CargoDamage * 100);
 
 
                     var lightsState = 0;
@@ -256,7 +258,7 @@ namespace TruckRemoteServer
                         lightsState = 1;
                     }
 
-                    string msgToControl = $"{engineOn},{isParkingEnabled}," +
+                    string msgToControl = $"{telemetryActive},{engineOn},{isParkingEnabled}," +
                         $"{leftBlinkerOn},{rightBlinkerOn},{lightsState}," +
                         $"{wipersOn},{beaconOn},{islowFuel},{fuelLevel}," +
                         $"{truckDamage},{trailerAttached},{trailerDamage},{cargoDamage}," +

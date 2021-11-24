@@ -20,12 +20,11 @@ namespace TruckRemoteServer
         public int port;
         private Socket serverSocket;
         private IPEndPoint localIpEndPoint;
-        private IPEndPoint controllerEndPoint;
+        private volatile IPEndPoint controllerEndPoint;
         private readonly IStatusListener statusListener;
 
         public bool enabled = true;
         public bool controllerPaused;
-        public long lastControllerMsgTime;
 
         private volatile uint effectDuration = 0;
 
@@ -100,12 +99,10 @@ namespace TruckRemoteServer
         {
             if (endPoint.Equals(controllerEndPoint))
             {
-                lastControllerMsgTime = TimeUtil.GetCurrentUnixTime();
                 OnMessageFromController(message);
             }
             else if (message.Contains("TruckRemoteHello"))
             {
-                lastControllerMsgTime = TimeUtil.GetCurrentUnixTime();
                 OnHelloFromController(message, endPoint);
                 serverSocket.ReceiveTimeout = RECEIVE_TIMEOUT;
             }
@@ -145,13 +142,6 @@ namespace TruckRemoteServer
             {
                 controllerPaused = false;
                 PostStatusUpdate();
-            }
-            else if (message.Contains("goodbye"))
-            {
-                controllerEndPoint = null;
-                controllerPaused = false;
-                PostStatusUpdate();
-                return;
             }
 
             string[] msgParts = message.Split(',');
@@ -291,7 +281,7 @@ namespace TruckRemoteServer
             {
                 serverSocket.Close();
             }
-            catch (Exception) { }
+            catch (Exception) {}
             finally
             {
                 controllerEndPoint = null;

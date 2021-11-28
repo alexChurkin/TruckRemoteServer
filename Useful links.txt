@@ -1,0 +1,2 @@
+Direct input scancodes: https://gist.github.com/tracend/912308
+vJoy Readme: http://vjoystick.sourceforge.net/site/includes/SDK_ReadMe.pdf

@@ -40,6 +40,7 @@
             this.label7 = new System.Windows.Forms.Label();
             this.labelIp = new System.Windows.Forms.Label();
             this.labelSensitivity = new System.Windows.Forms.Label();
+            this.checkBoxDebug = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).BeginInit();
             this.SuspendLayout();
@@ -70,7 +71,7 @@
             // 
             this.numericUpPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.numericUpPort.Location = new System.Drawing.Point(76, 175);
-            this.numericUpPort.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.numericUpPort.Margin = new System.Windows.Forms.Padding(4);
             this.numericUpPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -95,7 +96,7 @@
             // 
             this.buttonStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.buttonStop.Location = new System.Drawing.Point(20, 220);
-            this.buttonStop.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonStop.Margin = new System.Windows.Forms.Padding(4);
             this.buttonStop.Name = "buttonStop";
             this.buttonStop.Size = new System.Drawing.Size(167, 41);
             this.buttonStop.TabIndex = 5;
@@ -108,7 +109,7 @@
             this.buttonStart.Enabled = false;
             this.buttonStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.buttonStart.Location = new System.Drawing.Point(20, 273);
-            this.buttonStart.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonStart.Margin = new System.Windows.Forms.Padding(4);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(167, 41);
             this.buttonStart.TabIndex = 6;
@@ -119,7 +120,7 @@
             // sensitivityTrackBar
             // 
             this.sensitivityTrackBar.Location = new System.Drawing.Point(217, 114);
-            this.sensitivityTrackBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.sensitivityTrackBar.Margin = new System.Windows.Forms.Padding(4);
             this.sensitivityTrackBar.Maximum = 100;
             this.sensitivityTrackBar.Minimum = 1;
             this.sensitivityTrackBar.Name = "sensitivityTrackBar";
@@ -199,11 +200,24 @@
             this.labelSensitivity.Text = "50";
             this.labelSensitivity.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // checkBoxDebug
+            // 
+            this.checkBoxDebug.AutoSize = true;
+            this.checkBoxDebug.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.01739F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.checkBoxDebug.Location = new System.Drawing.Point(230, 220);
+            this.checkBoxDebug.Name = "checkBoxDebug";
+            this.checkBoxDebug.Size = new System.Drawing.Size(147, 24);
+            this.checkBoxDebug.TabIndex = 14;
+            this.checkBoxDebug.Text = "Режим отладки";
+            this.checkBoxDebug.UseVisualStyleBackColor = true;
+            this.checkBoxDebug.CheckedChanged += new System.EventHandler(this.checkBoxDebug_CheckedChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(420, 325);
+            this.Controls.Add(this.checkBoxDebug);
             this.Controls.Add(this.labelSensitivity);
             this.Controls.Add(this.labelIp);
             this.Controls.Add(this.label7);
@@ -217,7 +231,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.ShowIcon = false;
@@ -244,6 +258,7 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label labelIp;
         private System.Windows.Forms.Label labelSensitivity;
+        private System.Windows.Forms.CheckBox checkBoxDebug;
     }
 }
 

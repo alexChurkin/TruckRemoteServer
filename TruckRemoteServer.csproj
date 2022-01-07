@@ -67,6 +67,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Logger.cs" />
     <Compile Include="Telemetry\Data\Ets2TelemetryData.cs" />
     <Compile Include="Telemetry\Data\Ets2TelemetryDataReader.cs" />
     <Compile Include="Telemetry\Data\IEts2TelemetryData.cs" />

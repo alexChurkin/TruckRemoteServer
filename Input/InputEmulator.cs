@@ -30,11 +30,13 @@ namespace TruckRemoteServer
             if ((status == VjdStat.VJD_STAT_OWN) || ((status == VjdStat.VJD_STAT_FREE) && (!joyStick.AcquireVJD(joyId))))
             {
                 Console.WriteLine("Failed to acquire vJoy device number {0}.\n", joyId);
+                Logger.Log($"Failed to acquire vJoy device number {joyId}.");
                 return false;
             }
             else
             {
                 Console.WriteLine("Acquired: vJoy device number {0}.\n", joyId);
+                Logger.Log($"Acquired: vJoy device number {joyId}.");
                 joyStick.ResetVJD(joyId);
                 joyStick.FfbRegisterGenCB(OnFFBEvent, joyId);
                 return true;
@@ -47,6 +49,7 @@ namespace TruckRemoteServer
             if (joyStick.Ffb_h_Eff_Constant(data, ref effectInf) == ERROR_SUCCESS)
             {
                 ffbListener.OnFfbEffect((uint)Math.Abs(effectInf.Magnitude));
+                Logger.Log($"Force feedback data updated.");
             }
         }
 
@@ -55,6 +58,7 @@ namespace TruckRemoteServer
             if (joyStick != null)
             {
                 joyStick.RelinquishVJD(joyId);
+                Logger.Log($"Joy released.");
             }
         }
 
@@ -62,6 +66,7 @@ namespace TruckRemoteServer
         {
             //xAxisValue can be from 0 to 32768
             joyStick.SetAxis(xAxisValue, joyId, HID_USAGES.HID_USAGE_X);
+            Logger.Log($"Steering wheel: xAxis = {xAxisValue}");
         }
 
         public static void KeyClick(short scanCode)

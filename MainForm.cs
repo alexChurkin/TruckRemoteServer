@@ -21,6 +21,7 @@ namespace TruckRemoteServer
             PCController.SteeringSensitivity = sensitivity;
             numericUpPort.Value = port;
             server = new UDPServer(this, port);
+            Logger.ClearFile();
         }
 
         protected override void OnShown(EventArgs e)
@@ -147,6 +148,11 @@ namespace TruckRemoteServer
         {
             server.Shutdown();
             InputEmulator.ReleaseJoy();
+        }
+
+        private void checkBoxDebug_CheckedChanged(object sender, EventArgs e)
+        {
+            Logger.Enabled = checkBoxDebug.Checked;
         }
     }
 }

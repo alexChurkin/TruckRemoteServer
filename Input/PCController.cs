@@ -1,5 +1,4 @@
-﻿using System;
-using TruckRemoteServer.Data;
+﻿using TruckRemoteServer.Data;
 
 namespace TruckRemoteServer
 {
@@ -76,10 +75,12 @@ namespace TruckRemoteServer
             {
                 if (breakPressed)
                 {
+                    Logger.Log($"Break pedal: press");
                     InputEmulator.KeyPress(DIK_DOWN_ARROW_SCAN);
                 }
                 else
                 {
+                    Logger.Log($"Break pedal: release");
                     InputEmulator.KeyRelease(DIK_DOWN_ARROW_SCAN);
                 }
                 prevBreakPressed = breakPressed;
@@ -89,10 +90,12 @@ namespace TruckRemoteServer
             {
                 if (gasPressed)
                 {
+                    Logger.Log($"Gas pedal: press");
                     InputEmulator.KeyPress(DIK_UP_ARROW_SCAN);
                 }
                 else
                 {
+                    Logger.Log($"Gas pedal: release");
                     InputEmulator.KeyRelease(DIK_UP_ARROW_SCAN);
                 }
                 prevGasPressed = gasPressed;
@@ -105,6 +108,7 @@ namespace TruckRemoteServer
             if (leftSignal != prevLeftSignalState)
             {
                 prevLeftSignalState = leftSignal;
+                Logger.Log($"Left blinker: click");
                 ClickLeftTurnSignal();
             }
 
@@ -112,6 +116,7 @@ namespace TruckRemoteServer
             if (rightSignal != prevRightSignalState)
             {
                 prevRightSignalState = rightSignal;
+                Logger.Log($"Right blinker: click");
                 ClickRightTurnSignal();
             }
 
@@ -119,6 +124,7 @@ namespace TruckRemoteServer
             if(emergencySignal != prevEmergencyState)
             {
                 prevEmergencyState = emergencySignal;
+                Logger.Log($"Emergency: click");
                 ClickEmergencySignal();
             }
         }
@@ -143,6 +149,7 @@ namespace TruckRemoteServer
             if (prevParkingBreakState != isParkingBrakeEnabled)
             {
                 prevParkingBreakState = isParkingBrakeEnabled;
+                Logger.Log($"Parking brake: click");
                 InputEmulator.KeyClick(DIK_SPACE_SCAN);
             }
         }
@@ -153,6 +160,7 @@ namespace TruckRemoteServer
 
             if (lightsState != prevLightsState)
             {
+                Logger.Log($"Lights: clicked");
                 prevLightsState = lightsState;
 
                 var truck = telemetry.Truck;
@@ -185,7 +193,8 @@ namespace TruckRemoteServer
         {
             if(hornState != prevHornState)
             {
-                switch(hornState)
+                Logger.Log($"Horn: clicked");
+                switch (hornState)
                 {
                     case 2:
                         InputEmulator.KeyPress(DIK_N_SCAN);
@@ -206,6 +215,7 @@ namespace TruckRemoteServer
         {
             if (prevCruiseState != isCruise)
             {
+                Logger.Log($"Cruise control: clicked");
                 prevCruiseState = isCruise;
                 InputEmulator.KeyClick(DIK_C_SCAN);
             }
@@ -215,6 +225,7 @@ namespace TruckRemoteServer
         {
             if(prevDiffBlock != diffBlock)
             {
+                Logger.Log($"Diff block: clicked");
                 prevDiffBlock = diffBlock;
                 InputEmulator.KeyClick(DIK_V_SCAN);
             }
@@ -224,6 +235,7 @@ namespace TruckRemoteServer
         {
             if (prevWipersState != wipersState)
             {
+                Logger.Log($"Wipers: clicked");
                 prevWipersState = wipersState;
                 InputEmulator.KeyClick(DIK_P_SCAN);
             }
@@ -233,6 +245,7 @@ namespace TruckRemoteServer
         {
             if (prevLiftingAxle != liftingAxle)
             {
+                Logger.Log($"Lifting axle: clicked");
                 prevLiftingAxle = liftingAxle;
                 InputEmulator.KeyClick(DIK_U_SCAN);
             }
@@ -242,6 +255,7 @@ namespace TruckRemoteServer
         {
             if (prevFlashingBeacon != flashingBeacon)
             {
+                Logger.Log($"Flashing beacon: clicked");
                 prevFlashingBeacon = flashingBeacon;
                 InputEmulator.KeyClick(DIK_O_SCAN);
             }

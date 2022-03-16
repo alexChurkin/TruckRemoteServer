@@ -204,11 +204,11 @@
             // 
             this.checkBoxDebug.AutoSize = true;
             this.checkBoxDebug.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.01739F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.checkBoxDebug.Location = new System.Drawing.Point(230, 220);
+            this.checkBoxDebug.Location = new System.Drawing.Point(231, 228);
             this.checkBoxDebug.Name = "checkBoxDebug";
-            this.checkBoxDebug.Size = new System.Drawing.Size(147, 24);
+            this.checkBoxDebug.Size = new System.Drawing.Size(120, 24);
             this.checkBoxDebug.TabIndex = 14;
-            this.checkBoxDebug.Text = "Режим отладки";
+            this.checkBoxDebug.Text = "Debug mode";
             this.checkBoxDebug.UseVisualStyleBackColor = true;
             this.checkBoxDebug.CheckedChanged += new System.EventHandler(this.checkBoxDebug_CheckedChanged);
             // 

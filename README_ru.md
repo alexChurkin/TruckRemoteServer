@@ -1,5 +1,5 @@
 Truck Remote Server
-====================
+===================
 Сервер для [Truck Remote Control](https://github.com/alexChurkin/TruckRemoteControl), написанный при помощи C#.
 
 ### [ВИДЕОИНСТРУКЦИЯ](https://www.youtube.com/watch?v=ZbeGOxA96dY)
@@ -27,6 +27,8 @@ Truck Remote Server
 	
 3) Скопируйте папку **TruckRemoteServer** в удобное для вас место
 4) Запустите **TruckRemoteServer.exe** и установите предложенный программой плагин телеметрии для ETS2 и/или ATS
+
+ЗАМЕЧАНИЕ: Иногда важно отключить встроенный в антивирус брандмауэр, чтобы брандмауэр Windows предложил вам разрешить TRS подключаться к локальной сети.
 
 Приятного управления!
 

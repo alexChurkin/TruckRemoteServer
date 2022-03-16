@@ -1,5 +1,5 @@
 Truck Remote Server
-====================
+===================
 Server app for [Truck Remote Control](https://github.com/alexChurkin/TruckRemoteControl) written on C#.
 
 #### [Russian guide](README_ru.md)
@@ -29,6 +29,8 @@ Launching:
 	
 3) Сopy the **TruckRemoteServer** folder wherever you want
 4) Launch **TruckRemoteServer.exe** and agree to install the telemetry plugin for ETS2/ATS
+
+NOTE: Sometimes it's important to turn off your antivirus built-in firewall so the Windows firewall suggest you to allow TRS connect to LAN.
 
 Enjoy using!
 

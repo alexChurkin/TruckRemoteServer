@@ -25,7 +25,12 @@ namespace TruckRemoteServer
         private const string HELLO_MESSAGE = "TruckRemoteHello";
         private const string PAUSED_MESSAGE = "paused";
         private const string GOODBYE_MESSAGE = "goodbye";
+        //Controller message: steering, brake, gas, left signal, right signal, emergency,
+        //parking brake, lights, horn, cruise (all are required),
+        //then optional: gas level, brake level (0..1), action counters (see PCController)
         private const int CONTROLLER_MESSAGE_PARTS = 10;
+        private const int PEDAL_LEVELS_INDEX = 10;
+        private const int ACTIONS_INDEX = 12;
 
         public int port;
         private volatile Socket serverSocket;
@@ -260,6 +265,21 @@ namespace TruckRemoteServer
             int hornState = int.Parse(msgParts[8]);
             bool isCruise = bool.Parse(msgParts[9]);
 
+            bool hasPedalLevels = msgParts.Length >= PEDAL_LEVELS_INDEX + 2;
+            double gasLevel = 0, brakeLevel = 0;
+            if (hasPedalLevels)
+            {
+                gasLevel = double.Parse(msgParts[PEDAL_LEVELS_INDEX], CultureInfo.InvariantCulture);
+                brakeLevel = double.Parse(msgParts[PEDAL_LEVELS_INDEX + 1], CultureInfo.InvariantCulture);
+            }
+
+            int actionsCount = Math.Max(0, Math.Min(msgParts.Length - ACTIONS_INDEX, PCController.ActionsCount));
+            int[] actionCounters = new int[actionsCount];
+            for (int i = 0; i < actionsCount; i++)
+            {
+                actionCounters[i] = int.Parse(msgParts[ACTIONS_INDEX + i]);
+            }
+
             if (controllerPaused)
             {
                 controllerPaused = false;
@@ -274,12 +294,14 @@ namespace TruckRemoteServer
             pcController.UpdateAccelerometerValue(accelerometerValue);
             pcController.UpdateBreakGasState(breakPressed, gasPressed);
             pcController.UpdateHorn(hornState);
+            if (hasPedalLevels) pcController.UpdatePedalLevels(gasLevel, brakeLevel);
 
             //Toggle values are only synchronized on the first message after (re)connect,
             //otherwise their difference with the previous session would cause false clicks
             if (!pcController.SyncTogglesIfNeeded(leftSignalClick, rightSignalClick, emergencySignalClick,
-                parkingBrakeEnabled, lightsState, isCruise))
+                parkingBrakeEnabled, lightsState, isCruise, actionCounters))
             {
+                pcController.UpdateActions(actionCounters);
                 pcController.UpdateTurnSignals(leftSignalClick, rightSignalClick, emergencySignalClick);
                 pcController.UpdateParkingBrake(parkingBrakeEnabled);
                 pcController.UpdateLights(lightsState);
@@ -376,9 +398,20 @@ namespace TruckRemoteServer
 
             int effect = Interlocked.Exchange(ref effectDuration, 0);
 
+            //Additional state (0/1): trailer attached, wipers, beacon, analog pedals available.
+            //Old controllers read only the first 6 values
+            var trailerAttached = telemetry.Trailer1 != null && telemetry.Trailer1.Attached;
+
             return $"{engineOn},{isParkingEnabled}," +
                 $"{leftBlinkerOn},{rightBlinkerOn}," + $"{lightsState}," +
-                $"{effect}";
+                $"{effect}," +
+                $"{Bit(trailerAttached)},{Bit(truck.WipersOn)},{Bit(truck.LightsBeaconOn)}," +
+                $"{Bit(InputEmulator.HasPedalAxes())}";
+        }
+
+        private static int Bit(bool value)
+        {
+            return value ? 1 : 0;
         }
 
         /* ................................. </Sender thread> .............................*/

@@ -8,6 +8,16 @@ namespace TruckRemoteServer
         public static int SteeringSensitivity = 50;
 
         private const int X_AXIS_CENTER = 16384;
+        private const int PEDAL_AXIS_MAX = 32767;
+
+        //Keys of additional actions in the order the controller sends their counters:
+        //engine (E), trailer (T), activate (Enter), wipers (P), differential lock (V),
+        //lift axle (U), beacon (O), light horn (J)
+        private static readonly short[] ACTION_SCANCODES = { 0x12, 0x14, 0x1C, 0x19, 0x2F, 0x16, 0x18, 0x24 };
+        public static int ActionsCount => ACTION_SCANCODES.Length;
+        //More clicks at once are considered as broken counter
+        private const int MAX_ACTION_CLICKS = 5;
+        private readonly int[] prevActionCounters = new int[ACTION_SCANCODES.Length];
 
         //Controller-dependent previous data
         public int prevXAxisValue;
@@ -37,17 +47,6 @@ namespace TruckRemoteServer
         private byte DIK_N_SCAN = 0x31;
         private byte DIK_C_SCAN = 0x2E;
 
-        //Panel
-        private bool prevDiffBlock;
-        private int prevWipersState;
-        private bool prevLiftingAxle;
-        private bool prevFlashingBeacon;
-
-        private const int DIK_V_SCAN = 0x2F;
-        private const int DIK_P_SCAN = 0x19;
-        private const int DIK_U_SCAN = 0x16;
-        private const int DIK_O_SCAN = 0x18;
-
         public PCController(IFfbListener ffbListener)
         {
             this.ffbListener = ffbListener;
@@ -71,11 +70,12 @@ namespace TruckRemoteServer
             UpdateHorn(0);
             prevXAxisValue = X_AXIS_CENTER;
             InputEmulator.SetXAxis(X_AXIS_CENTER);
+            InputEmulator.SetPedalAxes(0, 0);
         }
 
         //Returns true if toggles were synchronized (and no clicks should be made this time)
         public bool SyncTogglesIfNeeded(bool leftSignal, bool rightSignal, bool emergencySignal,
-            bool parkingBrake, bool lights, bool cruise)
+            bool parkingBrake, bool lights, bool cruise, int[] actionCounters)
         {
             if (!syncToggles) return false;
             syncToggles = false;
@@ -86,7 +86,38 @@ namespace TruckRemoteServer
             prevParkingBreakState = parkingBrake;
             prevLightsState = lights;
             prevCruiseState = cruise;
+            Array.Copy(actionCounters, prevActionCounters,
+                Math.Min(actionCounters.Length, prevActionCounters.Length));
             return true;
+        }
+
+        //Levels are from 0 to 1 (axes are used for analog pedals)
+        public void UpdatePedalLevels(double gasLevel, double brakeLevel)
+        {
+            InputEmulator.SetPedalAxes(ToPedalAxis(gasLevel), ToPedalAxis(brakeLevel));
+        }
+
+        private static int ToPedalAxis(double level)
+        {
+            if (double.IsNaN(level)) return 0;
+            return (int)(Math.Max(0, Math.Min(1, level)) * PEDAL_AXIS_MAX);
+        }
+
+        //Every action has a counter of clicks on controller's side
+        public void UpdateActions(int[] actionCounters)
+        {
+            int count = Math.Min(actionCounters.Length, prevActionCounters.Length);
+            for (int i = 0; i < count; i++)
+            {
+                int clicks = actionCounters[i] - prevActionCounters[i];
+                prevActionCounters[i] = actionCounters[i];
+                if (clicks <= 0 || clicks > MAX_ACTION_CLICKS) continue;
+
+                for (int c = 0; c < clicks; c++)
+                {
+                    InputEmulator.KeyClick(ACTION_SCANCODES[i]);
+                }
+            }
         }
 
         public void UpdateTelemetryData(IEts2TelemetryData telemetry)
@@ -240,42 +271,6 @@ namespace TruckRemoteServer
             {
                 prevCruiseState = isCruise;
                 InputEmulator.KeyClick(DIK_C_SCAN);
-            }
-        }
-
-        public void UpdateDiffBlock(bool diffBlock)
-        {
-            if(prevDiffBlock != diffBlock)
-            {
-                prevDiffBlock = diffBlock;
-                InputEmulator.KeyClick(DIK_V_SCAN);
-            }
-        }
-
-        public void UpdateWipers(int wipersState)
-        {
-            if (prevWipersState != wipersState)
-            {
-                prevWipersState = wipersState;
-                InputEmulator.KeyClick(DIK_P_SCAN);
-            }
-        }
-
-        public void UpdateLiftingAxle(bool liftingAxle)
-        {
-            if (prevLiftingAxle != liftingAxle)
-            {
-                prevLiftingAxle = liftingAxle;
-                InputEmulator.KeyClick(DIK_U_SCAN);
-            }
-        }
-
-        public void UpdateFlashingBeacon(bool flashingBeacon)
-        {
-            if (prevFlashingBeacon != flashingBeacon)
-            {
-                prevFlashingBeacon = flashingBeacon;
-                InputEmulator.KeyClick(DIK_O_SCAN);
             }
         }
 

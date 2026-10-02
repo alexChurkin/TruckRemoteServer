@@ -14,6 +14,7 @@ namespace TruckRemoteServer
         private static vJoy joyStick;
         private static uint joyId = 1;
         private static volatile bool joyAcquired;
+        private static volatile bool pedalAxesExist;
         private static bool ffbRegistered;
 
         private static IFfbListener ffbListener;
@@ -21,6 +22,12 @@ namespace TruckRemoteServer
         public static bool IsJoyInitialized()
         {
             return joyAcquired;
+        }
+
+        //Analog pedals need Y (gas) and Z (brake) axes enabled in vJoy configuration
+        public static bool HasPedalAxes()
+        {
+            return joyAcquired && pedalAxesExist;
         }
 
         public static bool InitJoy(IFfbListener listener)
@@ -48,6 +55,8 @@ namespace TruckRemoteServer
 
                 Console.WriteLine("Acquired: vJoy device number {0}.\n", joyId);
                 joyStick.ResetVJD(joyId);
+                pedalAxesExist = joyStick.GetVJDAxisExist(joyId, HID_USAGES.HID_USAGE_Y)
+                    && joyStick.GetVJDAxisExist(joyId, HID_USAGES.HID_USAGE_Z);
                 if (!ffbRegistered)
                 {
                     joyStick.FfbRegisterGenCB(OnFFBEvent, joyId);
@@ -87,6 +96,14 @@ namespace TruckRemoteServer
             //xAxisValue can be from 0 to 32768
             if (!joyAcquired) return;
             joyStick.SetAxis(xAxisValue, joyId, HID_USAGES.HID_USAGE_X);
+        }
+
+        public static void SetPedalAxes(int gasValue, int brakeValue)
+        {
+            //Values can be from 0 to 32767
+            if (!HasPedalAxes()) return;
+            joyStick.SetAxis(gasValue, joyId, HID_USAGES.HID_USAGE_Y);
+            joyStick.SetAxis(brakeValue, joyId, HID_USAGES.HID_USAGE_Z);
         }
 
         public static void KeyClick(short scanCode)

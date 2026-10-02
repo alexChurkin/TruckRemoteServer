@@ -30,6 +30,22 @@ Launching:
 3) Сopy the **TruckRemoteServer** folder wherever you want
 4) Launch **TruckRemoteServer.exe** and agree to install the telemetry plugin for ETS2/ATS
 
+### Analog pedals (optional)
+
+By default gas and brake are emulated with the arrow keys (full press). To control the press force
+(the **Analog** pedal mode in the app settings):
+1) In **Configure vJoy** additionally enable the **Y** and **Z** axes of the 1-st device and press **Apply**
+2) In the game, open *Options → Controls*, choose the vJoy device and bind **Throttle** to the Y axis
+   and **Brake** to the Z axis (both are 0 when released; invert them in the game if needed)
+
+If the axes aren't enabled, the app shows a hint and keeps using the arrow keys.
+
+### Quick actions
+
+The quick actions panel in the app (button at the bottom center) uses the default game keys:
+engine **E**, trailer **T**, activate **Enter**, flash lights **J**, wipers **P**, beacon **O**,
+differential lock **V**, lift axle **U**.
+
 Enjoy using!
 
 ![Screenshot](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot.png)

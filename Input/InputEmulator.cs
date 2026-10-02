@@ -110,13 +110,13 @@ namespace TruckRemoteServer
         {
             INPUT input1 = new INPUT();
             input1.type = (int)InputType.INPUT_KEYBOARD;
-            input1.ki.dwFlags = (int)KEYEVENTF.SCANCODE;
-            input1.ki.wScan = scanCode;
+            input1.u.ki.dwFlags = (int)KEYEVENTF.SCANCODE;
+            input1.u.ki.wScan = scanCode;
 
             INPUT input2 = new INPUT();
             input2.type = (int)InputType.INPUT_KEYBOARD;
-            input2.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
-            input2.ki.wScan = scanCode;
+            input2.u.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
+            input2.u.ki.wScan = scanCode;
 
             INPUT[] pInputs = new INPUT[] { input1, input2 };
 
@@ -127,8 +127,8 @@ namespace TruckRemoteServer
         {
             INPUT input = new INPUT();
             input.type = (int)InputType.INPUT_KEYBOARD;
-            input.ki.dwFlags = (int)KEYEVENTF.SCANCODE;
-            input.ki.wScan = scanCode;
+            input.u.ki.dwFlags = (int)KEYEVENTF.SCANCODE;
+            input.u.ki.wScan = scanCode;
 
             INPUT[] pInputs = new INPUT[] { input };
 
@@ -139,8 +139,8 @@ namespace TruckRemoteServer
         {
             INPUT input = new INPUT();
             input.type = (int)InputType.INPUT_KEYBOARD;
-            input.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
-            input.ki.wScan = scanCode;
+            input.u.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
+            input.u.ki.wScan = scanCode;
 
             INPUT[] pInputs = new INPUT[] { input };
 
@@ -154,17 +154,24 @@ namespace TruckRemoteServer
         [DllImport("user32.dll", SetLastError = true)]
         public static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
-        [StructLayout(LayoutKind.Explicit)]
+        //The union is aligned by the pointer size: its offset is 4 in 32-bit and 8 in 64-bit processes,
+        //so a sequential layout is used instead of fixed offsets
+        [StructLayout(LayoutKind.Sequential)]
         public struct INPUT
         {
-            [FieldOffset(4)]
-            public HARDWAREINPUT hi;
-            [FieldOffset(4)]
-            public KEYBDINPUT ki;
-            [FieldOffset(4)]
+            public int type;
+            public INPUTUNION u;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct INPUTUNION
+        {
+            [FieldOffset(0)]
             public MOUSEINPUT mi;
             [FieldOffset(0)]
-            public int type;
+            public KEYBDINPUT ki;
+            [FieldOffset(0)]
+            public HARDWAREINPUT hi;
         }
 
         [StructLayout(LayoutKind.Sequential)]

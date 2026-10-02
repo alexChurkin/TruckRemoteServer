@@ -31,7 +31,16 @@ namespace TruckRemoteServer
             if (installer.Status == SetupStatus.Uninstalled)
             {
                 OnStatusUpdate(false, false, false);
-                installer.Install(this);
+                try
+                {
+                    installer.Install(this);
+                }
+                catch (Exception ex)
+                {
+                    //Controls still work without telemetry, so the server is started anyway
+                    MessageBox.Show(this, "Telemetry plugin wasn't installed: " + ex.Message,
+                        Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
             StartServer();
         }

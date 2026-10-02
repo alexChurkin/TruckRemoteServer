@@ -173,11 +173,13 @@ namespace TruckRemoteServer
                 }
                 else if (message.StartsWith(HELLO_MESSAGE))
                 {
-                    //Only one controller is supported; another one can connect
-                    //only after the current one has gone silent
+                    //Only one controller is supported. Another device can connect only after
+                    //the current one has gone silent; the same device (reconnect) takes over at once
                     if (controllerEndPoint != null)
                     {
-                        if (TimeUtil.GetMonotonicMillis() - lastControllerMsgTime <= CONTROLLER_TIMEOUT) return;
+                        bool sameDevice = endPoint.Address.Equals(controllerEndPoint.Address);
+                        bool timedOut = TimeUtil.GetMonotonicMillis() - lastControllerMsgTime > CONTROLLER_TIMEOUT;
+                        if (!sameDevice && !timedOut) return;
                         DisconnectController();
                     }
                     OnHelloFromController(socket, endPoint);

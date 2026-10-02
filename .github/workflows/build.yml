@@ -1,0 +1,23 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Build
+        run: msbuild TruckRemoteServer.sln /m /restore /p:Configuration=Release /p:Platform="Any CPU" /warnaserror:CS0168,CS0219,CS0162
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: TruckRemoteServer
+          path: bin/Release/

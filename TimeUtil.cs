@@ -1,12 +1,13 @@
-﻿using System;
+﻿using System.Diagnostics;
 
 namespace TruckRemoteServer
 {
     class TimeUtil
     {
-        public static long GetCurrentUnixTime()
+        //Not affected by system clock changes
+        public static long GetMonotonicMillis()
         {
-            return DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            return Stopwatch.GetTimestamp() * 1000 / Stopwatch.Frequency;
         }
     }
 }

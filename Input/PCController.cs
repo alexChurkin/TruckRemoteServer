@@ -7,6 +7,8 @@ namespace TruckRemoteServer
     {
         public static int SteeringSensitivity = 50;
 
+        private const int X_AXIS_CENTER = 16384;
+
         //Controller-dependent previous data
         public int prevXAxisValue;
         private bool prevBreakPressed, prevGasPressed;
@@ -16,6 +18,9 @@ namespace TruckRemoteServer
         private bool prevLightsState;
         private bool prevLeftSignalState, prevRightSignalState;
         private bool prevEmergencyState;
+
+        //Toggle states of new controller should be taken as they are, without clicks
+        private bool syncToggles = true;
 
         private volatile IEts2TelemetryData telemetry;
         private readonly IFfbListener ffbListener;
@@ -55,6 +60,33 @@ namespace TruckRemoteServer
             {
                 InputEmulator.InitJoy(ffbListener);
             }
+            ReleaseControls();
+            syncToggles = true;
+        }
+
+        //Releases all held keys and centers the steering
+        public void ReleaseControls()
+        {
+            UpdateBreakGasState(false, false);
+            UpdateHorn(0);
+            prevXAxisValue = X_AXIS_CENTER;
+            InputEmulator.SetXAxis(X_AXIS_CENTER);
+        }
+
+        //Returns true if toggles were synchronized (and no clicks should be made this time)
+        public bool SyncTogglesIfNeeded(bool leftSignal, bool rightSignal, bool emergencySignal,
+            bool parkingBrake, bool lights, bool cruise)
+        {
+            if (!syncToggles) return false;
+            syncToggles = false;
+
+            prevLeftSignalState = leftSignal;
+            prevRightSignalState = rightSignal;
+            prevEmergencyState = emergencySignal;
+            prevParkingBreakState = parkingBrake;
+            prevLightsState = lights;
+            prevCruiseState = cruise;
+            return true;
         }
 
         public void UpdateTelemetryData(IEts2TelemetryData telemetry)
@@ -64,8 +96,10 @@ namespace TruckRemoteServer
 
         public void UpdateAccelerometerValue(double accelerometerValue)
         {
-            int roughValue = 16384 + (int)(accelerometerValue * 34.7 * SteeringSensitivity);
+            int roughValue = X_AXIS_CENTER + (int)(accelerometerValue * 34.7 * SteeringSensitivity);
             int newXAxisValue = (int)(prevXAxisValue + 0.6 * (roughValue - prevXAxisValue));
+            //Axis range is 0..32768, out of range values must not reach vJoy
+            newXAxisValue = Math.Max(0, Math.Min(2 * X_AXIS_CENTER, newXAxisValue));
             prevXAxisValue = newXAxisValue;
             InputEmulator.SetXAxis(newXAxisValue);
         }
@@ -149,11 +183,10 @@ namespace TruckRemoteServer
 
         public void UpdateLights(bool lightsState)
         {
-            if (telemetry == null) return;
-
             if (lightsState != prevLightsState)
             {
                 prevLightsState = lightsState;
+                if (telemetry == null) return;
 
                 var truck = telemetry.Truck;
 
@@ -185,6 +218,9 @@ namespace TruckRemoteServer
         {
             if(hornState != prevHornState)
             {
+                //Previous horn must be released when switching between horns
+                InputEmulator.KeyRelease(DIK_H_SCAN);
+                InputEmulator.KeyRelease(DIK_N_SCAN);
                 switch(hornState)
                 {
                     case 2:
@@ -192,10 +228,6 @@ namespace TruckRemoteServer
                         break;
                     case 1:
                         InputEmulator.KeyPress(DIK_H_SCAN);
-                        break;
-                    default:
-                        InputEmulator.KeyRelease(DIK_H_SCAN);
-                        InputEmulator.KeyRelease(DIK_N_SCAN);
                         break;
                 }
                 prevHornState = hornState;

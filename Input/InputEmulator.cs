@@ -13,31 +13,54 @@ namespace TruckRemoteServer
 
         private static vJoy joyStick;
         private static uint joyId = 1;
+        private static volatile bool joyAcquired;
+        private static bool ffbRegistered;
 
         private static IFfbListener ffbListener;
 
         public static bool IsJoyInitialized()
         {
-            return joyStick != null;
+            return joyAcquired;
         }
 
         public static bool InitJoy(IFfbListener listener)
         {
-            joyStick = new vJoy();
             ffbListener = listener;
-            VjdStat status = joyStick.GetVJDStatus(joyId);
+            try
+            {
+                if (joyStick == null) joyStick = new vJoy();
 
-            if ((status == VjdStat.VJD_STAT_OWN) || ((status == VjdStat.VJD_STAT_FREE) && (!joyStick.AcquireVJD(joyId))))
-            {
-                Console.WriteLine("Failed to acquire vJoy device number {0}.\n", joyId);
-                return false;
-            }
-            else
-            {
+                if (!joyStick.vJoyEnabled())
+                {
+                    Console.WriteLine("vJoy driver is not enabled");
+                    return false;
+                }
+
+                VjdStat status = joyStick.GetVJDStatus(joyId);
+                bool acquired = status == VjdStat.VJD_STAT_OWN
+                    || (status == VjdStat.VJD_STAT_FREE && joyStick.AcquireVJD(joyId));
+
+                if (!acquired)
+                {
+                    Console.WriteLine("Failed to acquire vJoy device number {0} (status: {1}).\n", joyId, status);
+                    return false;
+                }
+
                 Console.WriteLine("Acquired: vJoy device number {0}.\n", joyId);
                 joyStick.ResetVJD(joyId);
-                joyStick.FfbRegisterGenCB(OnFFBEvent, joyId);
+                if (!ffbRegistered)
+                {
+                    joyStick.FfbRegisterGenCB(OnFFBEvent, joyId);
+                    ffbRegistered = true;
+                }
+                joyAcquired = true;
                 return true;
+            }
+            catch (Exception e)
+            {
+                //vJoy is not installed
+                Console.WriteLine("vJoy initialization failed: " + e.Message);
+                return false;
             }
         }
 
@@ -46,14 +69,15 @@ namespace TruckRemoteServer
             vJoy.FFB_EFF_CONSTANT effectInf = new vJoy.FFB_EFF_CONSTANT();
             if (joyStick.Ffb_h_Eff_Constant(data, ref effectInf) == ERROR_SUCCESS)
             {
-                ffbListener.OnFfbEffect((uint)Math.Abs(effectInf.Magnitude));
+                ffbListener?.OnFfbEffect((uint)Math.Abs(effectInf.Magnitude));
             }
         }
 
         public static void ReleaseJoy()
         {
-            if (joyStick != null)
+            if (joyStick != null && joyAcquired)
             {
+                joyAcquired = false;
                 joyStick.RelinquishVJD(joyId);
             }
         }
@@ -61,6 +85,7 @@ namespace TruckRemoteServer
         public static void SetXAxis(int xAxisValue)
         {
             //xAxisValue can be from 0 to 32768
+            if (!joyAcquired) return;
             joyStick.SetAxis(xAxisValue, joyId, HID_USAGES.HID_USAGE_X);
         }
 

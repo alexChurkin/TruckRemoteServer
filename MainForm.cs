@@ -32,10 +32,15 @@ namespace TruckRemoteServer
             {
                 OnStatusUpdate(false, false, false);
                 installer.Install(this);
-                server.Start();
-            } else
+            }
+            StartServer();
+        }
+
+        private void StartServer()
+        {
+            if (!server.Start())
             {
-                server.Start();
+                ShowStatus("Port " + server.port + " is busy", Color.OrangeRed);
             }
         }
 
@@ -63,6 +68,10 @@ namespace TruckRemoteServer
                     if (controllerPaused)
                     {
                         ShowStatus("Controller paused", Color.ForestGreen);
+                    }
+                    else if (!InputEmulator.IsJoyInitialized())
+                    {
+                        ShowStatus("Controller active, vJoy error", Color.DarkOrange);
                     }
                     else
                     {
@@ -112,11 +121,6 @@ namespace TruckRemoteServer
 
         private void NumericUpPort_ValueChanged(object sender, EventArgs e)
         {
-            if (numericUpPort.Text.Trim() == "" || numericUpPort.Text.Trim() == "0")
-            {
-                numericUpPort.ResetText();
-                Properties.Settings.Default.Port = 18250;
-            }
             Properties.Settings.Default.Port = numericUpPort.Value;
             Properties.Settings.Default.Save();
         }
@@ -131,7 +135,7 @@ namespace TruckRemoteServer
         private void ButtonStart_Click(object sender, EventArgs e)
         {
             server.port = (int)numericUpPort.Value;
-            server.Start();
+            StartServer();
         }
 
         private void SensitivityTrackBar_Scroll(object sender, EventArgs e)

@@ -14,5 +14,8 @@
     <Setting Name="ATSPath" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\Program Files\Steam\SteamApps\Common\American Truck Simulator</Value>
     </Setting>
+    <Setting Name="FirewallPromptShown" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

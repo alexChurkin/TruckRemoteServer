@@ -18,6 +18,7 @@ namespace TruckRemoteServer
         private static bool ffbRegistered;
 
         private static IFfbListener ffbListener;
+        private static readonly KeyClicker clicker = new KeyClicker(KeyPress, KeyRelease);
 
         public static bool IsJoyInitialized()
         {
@@ -106,21 +107,10 @@ namespace TruckRemoteServer
             joyStick.SetAxis(brakeValue, joyId, HID_USAGES.HID_USAGE_Z);
         }
 
+        //Clicks are queued: a key is held for a while, so the game doesn't miss it
         public static void KeyClick(short scanCode)
         {
-            INPUT input1 = new INPUT();
-            input1.type = (int)InputType.INPUT_KEYBOARD;
-            input1.u.ki.dwFlags = (int)KEYEVENTF.SCANCODE;
-            input1.u.ki.wScan = scanCode;
-
-            INPUT input2 = new INPUT();
-            input2.type = (int)InputType.INPUT_KEYBOARD;
-            input2.u.ki.dwFlags = (int)KEYEVENTF.KEYUP | (int)KEYEVENTF.SCANCODE;
-            input2.u.ki.wScan = scanCode;
-
-            INPUT[] pInputs = new INPUT[] { input1, input2 };
-
-            SendInput(2, pInputs, Marshal.SizeOf(input1));
+            clicker.Click(scanCode);
         }
 
         public static void KeyPress(short scanCode)

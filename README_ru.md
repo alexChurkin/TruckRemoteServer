@@ -49,6 +49,16 @@ Truck Remote Server
 ![Screenshot](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot.png)
 
 
+## Сборка
+
+Нужен .NET SDK 8+ (или Visual Studio 2022). Сервер работает на .NET Framework 4.7.2, который встроен в Windows 10/11,
+а собрать его можно на любой ОС:
+
+    dotnet build TruckRemoteServer.sln -c Release
+    dotnet test Tests/TruckRemoteServer.Tests.csproj
+
+Результат — в папке `bin/Release`.
+
 ## Лицензия
 
     Copyright 2021 Alex Churkin.

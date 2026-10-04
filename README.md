@@ -51,6 +51,16 @@ Enjoy using!
 ![Screenshot](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot.png)
 
 
+## Building
+
+.NET SDK 8+ is needed (Visual Studio 2022 works too). The server targets .NET Framework 4.7.2, which is built into Windows 10/11,
+and can be built on any OS:
+
+    dotnet build TruckRemoteServer.sln -c Release
+    dotnet test Tests/TruckRemoteServer.Tests.csproj
+
+The result is in `bin/Release`.
+
 ## License
 
     Copyright 2021 Alex Churkin.

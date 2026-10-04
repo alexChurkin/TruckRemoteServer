@@ -40,6 +40,7 @@
             this.label7 = new System.Windows.Forms.Label();
             this.labelIp = new System.Windows.Forms.Label();
             this.labelSensitivity = new System.Windows.Forms.Label();
+            this.linkFirewall = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpPort)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sensitivityTrackBar)).BeginInit();
             this.SuspendLayout();
@@ -199,11 +200,25 @@
             this.labelSensitivity.Text = "50";
             this.labelSensitivity.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // linkFirewall
+            // 
+            this.linkFirewall.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.linkFirewall.Location = new System.Drawing.Point(217, 220);
+            this.linkFirewall.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.linkFirewall.Name = "linkFirewall";
+            this.linkFirewall.Size = new System.Drawing.Size(190, 94);
+            this.linkFirewall.TabIndex = 14;
+            this.linkFirewall.TabStop = true;
+            this.linkFirewall.Text = "Windows Firewall may block the phone. Click to allow the server";
+            this.linkFirewall.Visible = false;
+            this.linkFirewall.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkFirewall_LinkClicked);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(420, 325);
+            this.Controls.Add(this.linkFirewall);
             this.Controls.Add(this.labelSensitivity);
             this.Controls.Add(this.labelIp);
             this.Controls.Add(this.label7);
@@ -244,6 +259,7 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label labelIp;
         private System.Windows.Forms.Label labelSensitivity;
+        private System.Windows.Forms.LinkLabel linkFirewall;
     }
 }
 

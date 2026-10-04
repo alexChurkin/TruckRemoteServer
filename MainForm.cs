@@ -2,7 +2,9 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Net;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using TruckRemoteServer.Firewall;
 using TruckRemoteServer.Setup;
 
 namespace TruckRemoteServer
@@ -43,6 +45,63 @@ namespace TruckRemoteServer
                 }
             }
             StartServer();
+            CheckFirewall(offerFix: true);
+        }
+
+        /* Windows Firewall blocks the phone's packets when there is no allowing rule */
+
+        private void CheckFirewall(bool offerFix)
+        {
+            string programPath = Application.ExecutablePath;
+            int port = server.port;
+            Task.Run(() => WindowsFirewall.Check(programPath, port))
+                .ContinueWith(task => OnFirewallChecked(task.Result, offerFix),
+                    TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void OnFirewallChecked(FirewallStatus status, bool offerFix)
+        {
+            bool blocked = status == FirewallStatus.NoRule || status == FirewallStatus.Blocked;
+            linkFirewall.Visible = blocked;
+
+            //The question is asked once, later only the link is shown
+            if (!blocked || !offerFix || Properties.Settings.Default.FirewallPromptShown) return;
+            Properties.Settings.Default.FirewallPromptShown = true;
+            Properties.Settings.Default.Save();
+
+            DialogResult answer = MessageBox.Show(this,
+                "Windows Firewall may block connections from the phone.\n\n" +
+                "Allow Truck Remote Server in the firewall? Administrator rights are required.",
+                Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (answer == DialogResult.Yes) AllowInFirewall();
+        }
+
+        private void AllowInFirewall()
+        {
+            string programPath = Application.ExecutablePath;
+            int port = server.port;
+            linkFirewall.Enabled = false;
+            //null: elevation was cancelled, nothing has changed
+            Task.Run(() => WindowsFirewall.AllowProgram(programPath)
+                    ? WindowsFirewall.Check(programPath, port)
+                    : (FirewallStatus?)null)
+                .ContinueWith(task =>
+                {
+                    linkFirewall.Enabled = true;
+                    if (task.Result == null) return;
+                    OnFirewallChecked(task.Result.Value, offerFix: false);
+                    if (linkFirewall.Visible)
+                    {
+                        MessageBox.Show(this, "The firewall rule wasn't applied. Please allow Truck Remote Server " +
+                            "(UDP port " + port + ") in your firewall manually.",
+                            Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void LinkFirewall_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            AllowInFirewall();
         }
 
         private void StartServer()
@@ -145,6 +204,8 @@ namespace TruckRemoteServer
         {
             server.port = (int)numericUpPort.Value;
             StartServer();
+            //Allowing rules may be limited to a port
+            CheckFirewall(offerFix: false);
         }
 
         private void SensitivityTrackBar_Scroll(object sender, EventArgs e)

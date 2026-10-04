@@ -3,8 +3,8 @@ using System.Text;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net;
-using System.Globalization;
 using TruckRemoteServer.Data;
+using TruckRemoteServer.Protocol;
 
 namespace TruckRemoteServer
 {
@@ -25,12 +25,6 @@ namespace TruckRemoteServer
         private const string HELLO_MESSAGE = "TruckRemoteHello";
         private const string PAUSED_MESSAGE = "paused";
         private const string GOODBYE_MESSAGE = "goodbye";
-        //Controller message: steering, brake, gas, left signal, right signal, emergency,
-        //parking brake, lights, horn, cruise (all are required),
-        //then optional: gas level, brake level (0..1), action counters (see PCController)
-        private const int CONTROLLER_MESSAGE_PARTS = 10;
-        private const int PEDAL_LEVELS_INDEX = 10;
-        private const int ACTIONS_INDEX = 12;
 
         public int port;
         private volatile Socket serverSocket;
@@ -246,40 +240,11 @@ namespace TruckRemoteServer
                 return;
             }
 
-            string[] msgParts = message.Split(',');
-            if (msgParts.Length < CONTROLLER_MESSAGE_PARTS)
+            ControllerMessage state = ControllerMessage.Parse(message, PCController.ActionsCount);
+            if (state == null)
             {
                 Console.WriteLine("INFO: Unknown message from controller: " + message);
                 return;
-            }
-
-            double accelerometerValue = double.Parse(msgParts[0], CultureInfo.InvariantCulture);
-            bool breakPressed = bool.Parse(msgParts[1]);
-            bool gasPressed = bool.Parse(msgParts[2]);
-
-            bool leftSignalClick = bool.Parse(msgParts[3]);
-            bool rightSignalClick = bool.Parse(msgParts[4]);
-            bool emergencySignalClick = bool.Parse(msgParts[5]);
-
-            bool parkingBrakeEnabled = bool.Parse(msgParts[6]);
-            bool lightsState = bool.Parse(msgParts[7]);
-
-            int hornState = int.Parse(msgParts[8]);
-            bool isCruise = bool.Parse(msgParts[9]);
-
-            bool hasPedalLevels = msgParts.Length >= PEDAL_LEVELS_INDEX + 2;
-            double gasLevel = 0, brakeLevel = 0;
-            if (hasPedalLevels)
-            {
-                gasLevel = double.Parse(msgParts[PEDAL_LEVELS_INDEX], CultureInfo.InvariantCulture);
-                brakeLevel = double.Parse(msgParts[PEDAL_LEVELS_INDEX + 1], CultureInfo.InvariantCulture);
-            }
-
-            int actionsCount = Math.Max(0, Math.Min(msgParts.Length - ACTIONS_INDEX, PCController.ActionsCount));
-            int[] actionCounters = new int[actionsCount];
-            for (int i = 0; i < actionsCount; i++)
-            {
-                actionCounters[i] = int.Parse(msgParts[ACTIONS_INDEX + i]);
             }
 
             if (controllerPaused)
@@ -288,26 +253,22 @@ namespace TruckRemoteServer
                 PostStatusUpdate();
             }
 
-            if (double.IsNaN(accelerometerValue) || double.IsInfinity(accelerometerValue))
-            {
-                accelerometerValue = 0;
-            }
-
-            pcController.UpdateAccelerometerValue(accelerometerValue);
-            pcController.UpdateBreakGasState(breakPressed, gasPressed);
-            pcController.UpdateHorn(hornState);
-            if (hasPedalLevels) pcController.UpdatePedalLevels(gasLevel, brakeLevel);
+            pcController.UpdateAccelerometerValue(state.Steering);
+            pcController.UpdateBreakGasState(state.BrakePressed, state.GasPressed);
+            pcController.UpdateHorn(state.Horn);
+            if (state.HasPedalLevels) pcController.UpdatePedalLevels(state.GasLevel, state.BrakeLevel);
 
             //Toggle values are only synchronized on the first message after (re)connect,
             //otherwise their difference with the previous session would cause false clicks
-            if (!pcController.SyncTogglesIfNeeded(leftSignalClick, rightSignalClick, emergencySignalClick,
-                parkingBrakeEnabled, lightsState, isCruise, actionCounters))
+            if (!pcController.SyncTogglesIfNeeded(state.LeftSignalClick, state.RightSignalClick,
+                state.EmergencyClick, state.ParkingBrakeClick, state.LightsClick, state.CruiseClick,
+                state.ActionCounters))
             {
-                pcController.UpdateActions(actionCounters);
-                pcController.UpdateTurnSignals(leftSignalClick, rightSignalClick, emergencySignalClick);
-                pcController.UpdateParkingBrake(parkingBrakeEnabled);
-                pcController.UpdateLights(lightsState);
-                pcController.UpdateCruise(isCruise);
+                pcController.UpdateActions(state.ActionCounters);
+                pcController.UpdateTurnSignals(state.LeftSignalClick, state.RightSignalClick, state.EmergencyClick);
+                pcController.UpdateParkingBrake(state.ParkingBrakeClick);
+                pcController.UpdateLights(state.LightsClick);
+                pcController.UpdateCruise(state.CruiseClick);
             }
         }
 
@@ -362,58 +323,12 @@ namespace TruckRemoteServer
         private string MakeMessageToController(IEts2TelemetryData telemetry)
         {
             var truck = telemetry.Truck;
-
-            //Engine and parking brake
-            var engineOn = truck.EngineOn;
-            var isParkingEnabled = truck.ParkBrakeOn;
-
-            //Blinkers
-            var leftBlinkerOn = truck.BlinkerLeftOn;
-            var rightBlinkerOn = truck.BlinkerRightOn;
-
-            //Lights
-            var parkingLights = truck.LightsParkingOn;
-            var lowBeamOn = truck.LightsBeamLowOn;
-            var highBeamOn = truck.LightsBeamHighOn;
-
-            var lightsState = 0;
-
-            if (highBeamOn)
-            {
-                if (lowBeamOn)
-                {
-                    lightsState = 3;
-                }
-                else if (parkingLights)
-                {
-                    lightsState = 1;
-                }
-            }
-            else if (lowBeamOn)
-            {
-                lightsState = 2;
-            }
-            else if (parkingLights)
-            {
-                lightsState = 1;
-            }
-
+            int lightsMode = ServerMessage.LightsMode(truck.LightsParkingOn, truck.LightsBeamLowOn, truck.LightsBeamHighOn);
             int effect = Interlocked.Exchange(ref effectDuration, 0);
+            bool trailerAttached = telemetry.Trailer1 != null && telemetry.Trailer1.Attached;
 
-            //Additional state (0/1): trailer attached, wipers, beacon, analog pedals available.
-            //Old controllers read only the first 6 values
-            var trailerAttached = telemetry.Trailer1 != null && telemetry.Trailer1.Attached;
-
-            return $"{engineOn},{isParkingEnabled}," +
-                $"{leftBlinkerOn},{rightBlinkerOn}," + $"{lightsState}," +
-                $"{effect}," +
-                $"{Bit(trailerAttached)},{Bit(truck.WipersOn)},{Bit(truck.LightsBeaconOn)}," +
-                $"{Bit(InputEmulator.HasPedalAxes())}";
-        }
-
-        private static int Bit(bool value)
-        {
-            return value ? 1 : 0;
+            return ServerMessage.Format(truck.EngineOn, truck.ParkBrakeOn, truck.BlinkerLeftOn, truck.BlinkerRightOn,
+                lightsMode, effect, trailerAttached, truck.WipersOn, truck.LightsBeaconOn, InputEmulator.HasPedalAxes());
         }
 
         /* ................................. </Sender thread> .............................*/

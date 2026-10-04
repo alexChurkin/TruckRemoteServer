@@ -41,4 +41,10 @@ The controls work without it, only the truck state isn't shown on the phone.</va
 For example: {1}</value></data>
   <data name="SelectGameFolder" xml:space="preserve"><value>Select the {0} folder</value></data>
   <data name="Version" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="JoystickWarning" xml:space="preserve"><value>vJoy isn't installed or set up: the phone can't steer.</value></data>
+  <data name="JoystickInstall" xml:space="preserve"><value>Install</value></data>
+  <data name="JoystickQuestion" xml:space="preserve"><value>vJoy (a virtual joystick driver) isn't installed or set up, without it the phone can't steer.
+
+Install and set it up now? Administrator rights are needed, Windows may also ask to trust the vJoy driver.</value></data>
+  <data name="JoystickSetupFailed" xml:space="preserve"><value>vJoy wasn't set up. Install vJoySetup.exe from the release manually and enable the X axis of device 1 in Configure vJoy.</value></data>
 </root>

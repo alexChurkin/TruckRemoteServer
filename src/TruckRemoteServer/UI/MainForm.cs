@@ -45,6 +45,10 @@ namespace TruckRemoteServer.UI
         private readonly Label firewallLabel = new Label { AutoSize = false };
         private readonly RoundedButton allowButton = new RoundedButton();
 
+        private readonly RoundedPanel joystickBanner = new RoundedPanel { Visible = false };
+        private readonly Label joystickLabel = new Label { AutoSize = false };
+        private readonly RoundedButton installJoystickButton = new RoundedButton();
+
         private readonly RoundedPanel steeringCard = new RoundedPanel();
         private readonly Label steeringTitle = new Label { AutoSize = true };
         private readonly Label sensitivityLabel = new Label { AutoSize = true };
@@ -102,11 +106,13 @@ namespace TruckRemoteServer.UI
 
             addressCard.Controls.AddRange(new Control[] { addressCaption, addressLabel, copyButton, portInfoLabel, hintLabel });
             firewallBanner.Controls.AddRange(new Control[] { firewallLabel, allowButton });
+            joystickBanner.Controls.AddRange(new Control[] { joystickLabel, installJoystickButton });
             steeringCard.Controls.AddRange(new Control[] { steeringTitle, sensitivityLabel, sensitivityValue, sensitivitySlider });
             settingsCard.Controls.AddRange(new Control[] { settingsTitle, portCaption, portField, languageCaption, languageButton });
             Controls.AddRange(new Control[]
             {
-                titleLabel, statusPill, addressCard, firewallBanner, steeringCard, settingsCard, startStopButton, versionLabel
+                titleLabel, statusPill, addressCard, joystickBanner, firewallBanner, steeringCard, settingsCard,
+                startStopButton, versionLabel
             });
 
             foreach (var item in LANGUAGES)
@@ -126,6 +132,7 @@ namespace TruckRemoteServer.UI
                 LayoutContent();
             };
             allowButton.Click += (s, e) => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
+            installJoystickButton.Click += (s, e) => InstallJoystickRequested?.Invoke(this, EventArgs.Empty);
             startStopButton.Click += (s, e) => (IsRunning ? StopRequested : StartRequested)?.Invoke(this, EventArgs.Empty);
             sensitivitySlider.ValueChanged += OnSensitivityChanged;
             TextBox portBox = portField.TextBox;
@@ -153,6 +160,7 @@ namespace TruckRemoteServer.UI
         public event EventHandler<int> SensitivityChanged;
         public event EventHandler<string> LanguageChanged;
         public event EventHandler AllowFirewallRequested;
+        public event EventHandler InstallJoystickRequested;
 
         private bool IsRunning => state == ServerState.WaitingForController || state == ServerState.ControllerConnected
             || state == ServerState.ControllerConnectedWithoutJoystick || state == ServerState.ControllerPaused;
@@ -231,6 +239,19 @@ namespace TruckRemoteServer.UI
             LayoutContent();
         }
 
+        public void ShowJoystickWarning(bool visible, bool busy)
+        {
+            joystickBanner.Visible = visible;
+            installJoystickButton.Enabled = !busy;
+            LayoutContent();
+        }
+
+        public bool AskInstallJoystick()
+        {
+            return MessageBox.Show(this, Texts.Get(T.JoystickQuestion), Text,
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
+        }
+
         public bool AskAllowFirewall()
         {
             return MessageBox.Show(this, Texts.Get(T.FirewallQuestion), Text,
@@ -239,9 +260,19 @@ namespace TruckRemoteServer.UI
 
         public void ShowWarning(Warning warning, string detail)
         {
-            string text = warning == Warning.TelemetryPluginNotInstalled
-                ? Texts.Format(T.PluginNotInstalled, detail)
-                : Texts.Format(T.FirewallNotApplied, detail);
+            string text;
+            switch (warning)
+            {
+                case Warning.TelemetryPluginNotInstalled:
+                    text = Texts.Format(T.PluginNotInstalled, detail);
+                    break;
+                case Warning.FirewallRuleNotApplied:
+                    text = Texts.Format(T.FirewallNotApplied, detail);
+                    break;
+                default:
+                    text = Texts.Get(T.JoystickSetupFailed);
+                    break;
+            }
             MessageBox.Show(this, text, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
@@ -324,6 +355,8 @@ namespace TruckRemoteServer.UI
             copyButton.Text = Texts.Get(T.Copy);
             firewallLabel.Text = Texts.Get(T.FirewallWarning);
             allowButton.Text = Texts.Get(T.FirewallAllow);
+            joystickLabel.Text = Texts.Get(T.JoystickWarning);
+            installJoystickButton.Text = Texts.Get(T.JoystickInstall);
             steeringTitle.Text = Texts.Get(T.Steering);
             sensitivityLabel.Text = Texts.Get(T.Sensitivity);
             settingsTitle.Text = Texts.Get(T.SettingsTitle);
@@ -411,11 +444,18 @@ namespace TruckRemoteServer.UI
                 secondary.ForeColor = theme.SecondaryText;
             }
 
-            firewallBanner.FillColor = theme.WarningBackground;
-            firewallBanner.BorderColor = theme.WarningBackground;
-            firewallLabel.BackColor = theme.WarningBackground;
-            firewallLabel.ForeColor = theme.WarningText;
+            foreach (RoundedPanel banner in new[] { firewallBanner, joystickBanner })
+            {
+                banner.FillColor = theme.WarningBackground;
+                banner.BorderColor = theme.WarningBackground;
+            }
+            foreach (Label bannerText in new[] { firewallLabel, joystickLabel })
+            {
+                bannerText.BackColor = theme.WarningBackground;
+                bannerText.ForeColor = theme.WarningText;
+            }
             StyleSecondary(allowButton, theme.WarningBackground);
+            StyleSecondary(installJoystickButton, theme.WarningBackground);
             StyleSecondary(copyButton, theme.Card);
 
             sensitivitySlider.ParentColor = theme.Card;
@@ -523,18 +563,9 @@ namespace TruckRemoteServer.UI
             addressCard.Bounds = new Rectangle(pad, y, width, cy);
             y += cy + gap;
 
-            //Firewall warning: only when the phone may be blocked
-            if (firewallBanner.Visible)
-            {
-                allowButton.Size = allowButton.GetPreferredSize(Size.Empty);
-                int textWidth = width - 2 * cardPad - allowButton.Width - gap;
-                firewallLabel.Size = new Size(textWidth, MeasureWrapped(firewallLabel, textWidth));
-                int bannerHeight = Math.Max(firewallLabel.Height, allowButton.Height) + 2 * Px(12);
-                firewallLabel.Location = new Point(cardPad, (bannerHeight - firewallLabel.Height) / 2);
-                allowButton.Location = new Point(width - cardPad - allowButton.Width, (bannerHeight - allowButton.Height) / 2);
-                firewallBanner.Bounds = new Rectangle(pad, y, width, bannerHeight);
-                y += bannerHeight + gap;
-            }
+            //Warnings: vJoy isn't ready (the phone can't steer), the firewall may block the phone
+            y = LayoutBanner(joystickBanner, joystickLabel, installJoystickButton, y);
+            y = LayoutBanner(firewallBanner, firewallLabel, allowButton, y);
 
             //Steering
             cy = cardPad;
@@ -573,6 +604,24 @@ namespace TruckRemoteServer.UI
             ClientSize = new Size(width + 2 * pad, y);
             ResumeLayout(false);
             Invalidate(true);
+        }
+
+        //A warning banner (text and a button) at y, returns y under it
+        private int LayoutBanner(RoundedPanel banner, Label text, RoundedButton button, int y)
+        {
+            if (!banner.Visible) return y;
+            int pad = Px(24);
+            int width = Px(CONTENT_WIDTH);
+            int cardPad = Px(16);
+            int gap = Px(12);
+            button.Size = button.GetPreferredSize(Size.Empty);
+            int textWidth = width - 2 * cardPad - button.Width - gap;
+            text.Size = new Size(textWidth, MeasureWrapped(text, textWidth));
+            int bannerHeight = Math.Max(text.Height, button.Height) + 2 * Px(12);
+            text.Location = new Point(cardPad, (bannerHeight - text.Height) / 2);
+            button.Location = new Point(width - cardPad - button.Width, (bannerHeight - button.Height) / 2);
+            banner.Bounds = new Rectangle(pad, y, width, bannerHeight);
+            return y + bannerHeight + gap;
         }
 
         private static int MeasureWrapped(Label label, int width)

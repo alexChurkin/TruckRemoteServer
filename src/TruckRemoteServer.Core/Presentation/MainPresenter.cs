@@ -9,7 +9,7 @@ using TruckRemoteServer.Settings;
 
 namespace TruckRemoteServer.Presentation
 {
-    //Logic of the main window: server start/stop, settings, addresses, firewall and telemetry plugin
+    //Logic of the main window: server start/stop, settings, addresses, firewall, vJoy and telemetry plugin
     public class MainPresenter
     {
         private readonly IMainView view;
@@ -20,13 +20,14 @@ namespace TruckRemoteServer.Presentation
         private readonly IFirewall firewall;
         private readonly INetworkInfo network;
         private readonly ITelemetryPluginSetup pluginSetup;
+        private readonly IJoystickSetup joystickSetup;
         private readonly string programPath;
         //The last start failed because the port is used by another program
         private bool portBusy;
 
         public MainPresenter(IMainView view, ControllerServer server, ControllerInputMapper input,
             IVirtualJoystick joystick, ISettingsStore settings, IFirewall firewall, INetworkInfo network,
-            ITelemetryPluginSetup pluginSetup, string programPath)
+            ITelemetryPluginSetup pluginSetup, IJoystickSetup joystickSetup, string programPath)
         {
             this.view = view;
             this.server = server;
@@ -36,6 +37,7 @@ namespace TruckRemoteServer.Presentation
             this.firewall = firewall;
             this.network = network;
             this.pluginSetup = pluginSetup;
+            this.joystickSetup = joystickSetup;
             this.programPath = programPath;
 
             view.Shown += (s, e) => OnShown();
@@ -46,10 +48,11 @@ namespace TruckRemoteServer.Presentation
             view.LanguageChanged += (s, language) => ChangeLanguage(language);
             view.SensitivityChanged += (s, value) => SetSensitivity(value);
             view.AllowFirewallRequested += (s, e) => AllowInFirewall();
+            view.InstallJoystickRequested += (s, e) => SetupJoystick();
         }
 
-        //For tests: firewall checks run on this scheduler
-        public Func<Func<FirewallStatus>, Task<FirewallStatus>> RunInBackground { get; set; } = Task.Run;
+        //For tests: firewall and vJoy checks run on this scheduler
+        public Func<Action, Task> RunInBackground { get; set; } = Task.Run;
 
         //Before the window is shown: its texts depend on the language
         public void Initialize()
@@ -81,6 +84,7 @@ namespace TruckRemoteServer.Presentation
 
             StartServer(checkFirewall: false);
             CheckFirewall(offerFix: true);
+            CheckJoystick(offerSetup: true);
         }
 
         private void OnClosing()
@@ -170,8 +174,9 @@ namespace TruckRemoteServer.Presentation
         private void CheckFirewall(bool offerFix)
         {
             int port = settings.Port;
-            RunInBackground(() => firewall.Check(programPath, port))
-                .ContinueWith(task => view.RunOnUiThread(() => OnFirewallChecked(task.Result, offerFix)),
+            FirewallStatus status = FirewallStatus.Unknown;
+            RunInBackground(() => status = firewall.Check(programPath, port))
+                .ContinueWith(task => view.RunOnUiThread(() => OnFirewallChecked(status, offerFix)),
                     TaskContinuationOptions.ExecuteSynchronously);
         }
 
@@ -192,10 +197,10 @@ namespace TruckRemoteServer.Presentation
             int port = settings.Port;
             view.ShowFirewallWarning(visible: true, busy: true);
             //Unknown: elevation was cancelled, nothing has changed
-            RunInBackground(() => firewall.AllowProgram(programPath) ? firewall.Check(programPath, port) : FirewallStatus.Unknown)
+            FirewallStatus status = FirewallStatus.Unknown;
+            RunInBackground(() => status = firewall.AllowProgram(programPath) ? firewall.Check(programPath, port) : FirewallStatus.Unknown)
                 .ContinueWith(task => view.RunOnUiThread(() =>
                 {
-                    FirewallStatus status = task.Result;
                     if (status == FirewallStatus.Unknown)
                     {
                         view.ShowFirewallWarning(visible: true, busy: false);
@@ -206,6 +211,48 @@ namespace TruckRemoteServer.Presentation
                     {
                         view.ShowWarning(Warning.FirewallRuleNotApplied, port.ToString());
                     }
+                }), TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        /* vJoy: without it the phone can't steer */
+
+        private void CheckJoystick(bool offerSetup)
+        {
+            bool needsSetup = false;
+            RunInBackground(() => needsSetup = joystickSetup.NeedsSetup())
+                .ContinueWith(task => view.RunOnUiThread(() => OnJoystickChecked(needsSetup, offerSetup)),
+                    TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        private void OnJoystickChecked(bool needsSetup, bool offerSetup)
+        {
+            view.ShowJoystickWarning(needsSetup, busy: false);
+
+            //The question is asked once, later only the button is shown
+            if (!needsSetup || !offerSetup || settings.JoystickPromptShown) return;
+            settings.JoystickPromptShown = true;
+            settings.Save();
+            if (view.AskInstallJoystick()) SetupJoystick();
+        }
+
+        private void SetupJoystick()
+        {
+            view.ShowJoystickWarning(visible: true, busy: true);
+            bool done = false;
+            bool needsSetup = true;
+            RunInBackground(() =>
+                {
+                    done = joystickSetup.Setup();
+                    needsSetup = joystickSetup.NeedsSetup();
+                    //A connected phone gets the joystick at once
+                    if (!needsSetup && !joystick.IsAvailable) joystick.Initialize();
+                })
+                .ContinueWith(task => view.RunOnUiThread(() =>
+                {
+                    view.ShowJoystickWarning(needsSetup, busy: false);
+                    //Not done: the user refused administrator rights, nothing has changed
+                    if (done && needsSetup) view.ShowWarning(Warning.JoystickSetupFailed, "");
+                    ShowStatus(server.Status);
                 }), TaskContinuationOptions.ExecuteSynchronously);
         }
     }

@@ -21,21 +21,26 @@ on older systems install it from [Microsoft](https://dotnet.microsoft.com/downlo
 ## Setup
 
 Launching:
-1) Install **vJoy** on your PC by launching **vJoySetup.exe** (it's in the release archive)
-2) Open **Configure vjoy**, configure 1-st virtual joystick as on this screenshot:
-
-    ![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
-	
-3) Put **TruckRemoteServer.exe** wherever you want: it's a single file, everything it needs is inside
-4) Launch **TruckRemoteServer.exe**. On the first start it:
+1) Put **TruckRemoteServer.exe** wherever you want: it's a single file, everything it needs is inside
+2) Launch **TruckRemoteServer.exe**. On the first start it:
+   - offers to install **vJoy** (the virtual joystick driver the phone steers through) if it isn't installed
+     or set up: vJoy 2.1.9.1 is inside the server, it's installed silently and its 1-st device is configured
+     (administrator rights are asked for, Windows may ask to trust the vJoy driver). Later the window shows
+     an **Install** button while vJoy isn't ready;
    - installs the telemetry plugin into ETS2 and ATS (the games are looked for in all Steam libraries;
      if a game isn't found, the server asks for its folder, **Cancel** skips the game);
    - offers to allow the server in Windows Firewall (administrator rights are asked for), otherwise the firewall
      may block the phone. Later the window shows a link to do it if the server is still blocked.
-5) Connect the phone to the same network as the PC and start Truck Remote Control: it finds the server by itself.
+3) Connect the phone to the same network as the PC and start Truck Remote Control: it finds the server by itself.
    If it doesn't, enter the address shown in the server window in the app settings.
 
 The port, steering sensitivity and language (the language of Windows by default) are set in the server window.
+
+To set vJoy up manually (e.g. if the automatic setup failed), install **vJoySetup.exe** from the
+[vJoy project](https://sourceforge.net/projects/vjoystick/files/Beta%202.x/2.1.9.1-160719/) and configure the 1-st device
+in **Configure vJoy** as on this screenshot:
+
+![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
 
 ### Analog pedals (optional)
 
@@ -71,7 +76,7 @@ and can be built on any OS:
     dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj
 
 The result is a single `src/TruckRemoteServer/bin/Release/TruckRemoteServer.exe`: references, translations,
-the native vJoy library and the telemetry plugin are embedded into it ([Costura](https://github.com/Fody/Costura)).
+the native vJoy library, the vJoy setup and the telemetry plugin are embedded into it ([Costura](https://github.com/Fody/Costura)).
 The process is 32-bit, as the vJoy libraries in `lib` are x86 only.
 
 ### Architecture
@@ -83,7 +88,8 @@ The process is 32-bit, as the vJoy libraries in `lib` are x86 only.
   Platform services are interfaces (`IKeyboard`, `IVirtualJoystick`, `ITelemetrySource`, `IFirewall`, ...).
 - `src/TruckRemoteServer` (.NET Framework 4.7.2, WinForms) — the application: `Program` is the composition root
   (Microsoft.Extensions.DependencyInjection), `UI/MainForm` is a passive view (MVP), `Infrastructure`
-  has the Windows implementations (vJoy, SendInput, telemetry, Windows Firewall, settings), `Telemetry/Setup` installs
+  has the Windows implementations (vJoy, SendInput, telemetry, Windows Firewall, settings), `Infrastructure/VJoySetup`
+  installs and configures vJoy (in the same exe started with administrator rights), `Telemetry/Setup` installs
   the plugin into the games, `Localization` has the texts (English, Russian, Belarusian, Ukrainian).
 - `tests/TruckRemoteServer.Tests` (.NET 8, xUnit) — tests of the core, including real UDP sessions on the loopback interface.
 

@@ -30,6 +30,10 @@ namespace TruckRemoteServer.Localization
         public const string FirewallAllow = nameof(FirewallAllow);
         public const string FirewallQuestion = nameof(FirewallQuestion);
         public const string FirewallNotApplied = nameof(FirewallNotApplied);
+        public const string JoystickWarning = nameof(JoystickWarning);
+        public const string JoystickInstall = nameof(JoystickInstall);
+        public const string JoystickQuestion = nameof(JoystickQuestion);
+        public const string JoystickSetupFailed = nameof(JoystickSetupFailed);
         public const string PluginNotInstalled = nameof(PluginNotInstalled);
         public const string GameNotFound = nameof(GameNotFound);
         public const string SelectGameFolder = nameof(SelectGameFolder);

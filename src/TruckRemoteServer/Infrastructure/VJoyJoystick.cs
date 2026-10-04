@@ -12,6 +12,7 @@ namespace TruckRemoteServer.Infrastructure
         private const int ERROR_SUCCESS = 0;
 
         private readonly ILogger<VJoyJoystick> logger;
+        private readonly object initLock = new object();
         private vJoy device;
         private volatile bool acquired;
         private volatile bool pedalAxesExist;
@@ -29,7 +30,16 @@ namespace TruckRemoteServer.Infrastructure
 
         public bool HasPedalAxes => acquired && pedalAxesExist;
 
+        //Called by the network thread when the phone connects and by the window after vJoy setup
         public bool Initialize()
+        {
+            lock (initLock)
+            {
+                return InitializeDevice();
+            }
+        }
+
+        private bool InitializeDevice()
         {
             try
             {

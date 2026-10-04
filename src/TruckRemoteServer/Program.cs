@@ -16,8 +16,11 @@ namespace TruckRemoteServer
     static class Program
     {
         [STAThread]
-        static void Main()
+        static int Main(string[] args)
         {
+            //The server started itself with administrator rights to install vJoy
+            if (args.Length > 0 && args[0] == VJoySetup.ELEVATED_ARGUMENT) return VJoySetup.RunElevated();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
@@ -28,6 +31,7 @@ namespace TruckRemoteServer
                 services.GetRequiredService<MainPresenter>().Initialize();
                 Application.Run(form);
             }
+            return 0;
         }
 
         //Composition root: the platform implementations of the core interfaces are chosen here
@@ -44,6 +48,7 @@ namespace TruckRemoteServer
             services.AddSingleton<IFirewall, WindowsFirewall>();
             services.AddSingleton<INetworkInfo, SystemNetworkInfo>();
             services.AddSingleton<ITelemetryPluginSetup, TelemetryPluginSetup>();
+            services.AddSingleton<IJoystickSetup, VJoySetup>();
 
             services.AddSingleton<ControllerInputMapper>();
             services.AddSingleton<ControllerServer>();
@@ -59,6 +64,7 @@ namespace TruckRemoteServer
                 provider.GetRequiredService<IFirewall>(),
                 provider.GetRequiredService<INetworkInfo>(),
                 provider.GetRequiredService<ITelemetryPluginSetup>(),
+                provider.GetRequiredService<IJoystickSetup>(),
                 Application.ExecutablePath));
             return services.BuildServiceProvider();
         }

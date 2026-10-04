@@ -16,6 +16,7 @@ namespace TruckRemoteServer.Tests
         private readonly FakeFirewall firewall = new FakeFirewall();
         private readonly FakeNetwork network = new FakeNetwork();
         private readonly FakePluginSetup pluginSetup = new FakePluginSetup();
+        private readonly FakeJoystickSetup joystickSetup = new FakeJoystickSetup();
         private readonly ControllerInputMapper mapper;
         private readonly ControllerServer server;
         private readonly MainPresenter presenter;
@@ -25,9 +26,14 @@ namespace TruckRemoteServer.Tests
             mapper = new ControllerInputMapper(new FakeKeyboard(), joystick);
             server = new ControllerServer(mapper, new FakeTelemetry(), joystick, new NoTimerResolution(),
                 NullLogger<ControllerServer>.Instance);
-            presenter = new MainPresenter(view, server, mapper, joystick, settings, firewall, network, pluginSetup, "server.exe")
+            presenter = new MainPresenter(view, server, mapper, joystick, settings, firewall, network, pluginSetup,
+                joystickSetup, "server.exe")
             {
-                RunInBackground = work => System.Threading.Tasks.Task.FromResult(work())
+                RunInBackground = work =>
+                {
+                    work();
+                    return System.Threading.Tasks.Task.CompletedTask;
+                }
             };
         }
 
@@ -189,6 +195,76 @@ namespace TruckRemoteServer.Tests
 
             Assert.False(server.Status.Running);
             Assert.True(joystick.Released);
+        }
+
+        [Fact]
+        public void MissingVJoyIsOfferedToBeInstalledOnce()
+        {
+            joystickSetup.Ready = false;
+            view.AnswerInstallJoystick = false;
+            view.Show();
+
+            Assert.Equal(1, view.JoystickQuestions);
+            Assert.True(view.JoystickWarning);
+            Assert.True(settings.JoystickPromptShown);
+            Assert.Equal(0, joystickSetup.Setups);
+
+            view.Close();
+            view.Show();
+            Assert.Equal(1, view.JoystickQuestions);
+            Assert.True(view.JoystickWarning);
+        }
+
+        [Fact]
+        public void InstalledVJoyHidesTheWarning()
+        {
+            joystickSetup.Ready = false;
+            joystick.IsAvailable = false;
+            view.Show();
+
+            Assert.Equal(1, joystickSetup.Setups);
+            Assert.False(view.JoystickWarning);
+            Assert.False(view.JoystickBusy);
+            Assert.Empty(view.Warnings);
+        }
+
+        [Fact]
+        public void RefusedRightsKeepTheButtonWithoutError()
+        {
+            joystickSetup.Ready = false;
+            joystickSetup.Accepted = false;
+            settings.JoystickPromptShown = true;
+            view.Show();
+
+            view.InstallJoystick();
+
+            Assert.Equal(1, joystickSetup.Setups);
+            Assert.True(view.JoystickWarning);
+            Assert.False(view.JoystickBusy);
+            Assert.Empty(view.Warnings);
+        }
+
+        [Fact]
+        public void FailedSetupIsReported()
+        {
+            joystickSetup.Ready = false;
+            joystickSetup.Works = false;
+            settings.JoystickPromptShown = true;
+            view.Show();
+
+            view.InstallJoystick();
+
+            Assert.True(view.JoystickWarning);
+            Assert.Equal(new[] { Warning.JoystickSetupFailed }, view.Warnings);
+        }
+
+        [Fact]
+        public void ReadyVJoyIsNotMentioned()
+        {
+            view.Show();
+
+            Assert.False(view.JoystickWarning);
+            Assert.Equal(0, view.JoystickQuestions);
         }
     }
 }

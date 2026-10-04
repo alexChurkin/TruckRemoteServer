@@ -19,21 +19,26 @@ Truck Remote Server
 ## Как установить
 
 Запуск:
-1) Установите **vJoy** на ваш ПК/ноутбук, запустив **vJoySetup.exe** (он есть в архиве релиза)
-2) Откройте утилиту **Configure vjoy** и настройте 1-ый виртуальный джойстик, как показано на этом скриншоте:
-
-    ![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
-	
-3) Положите **TruckRemoteServer.exe** в удобное для вас место: это один файл, всё нужное уже внутри
-4) Запустите **TruckRemoteServer.exe**. При первом запуске он:
+1) Положите **TruckRemoteServer.exe** в удобное для вас место: это один файл, всё нужное уже внутри
+2) Запустите **TruckRemoteServer.exe**. При первом запуске он:
+   - предлагает установить **vJoy** (драйвер виртуального джойстика, через который рулит телефон), если он
+     не установлен или не настроен: vJoy 2.1.9.1 встроен в сервер, ставится без лишних окон, и его 1-е устройство
+     настраивается само (потребуются права администратора, Windows может попросить доверять драйверу vJoy).
+     Позже, пока vJoy не готов, в окне будет кнопка **Установить**;
    - устанавливает плагин телеметрии в ETS2 и ATS (игры ищутся во всех библиотеках Steam; если игра не найдена,
      сервер попросит указать её папку, **Отмена** пропускает игру);
    - предлагает разрешить сервер в брандмауэре Windows (потребуются права администратора), иначе брандмауэр
      может блокировать телефон. Позже, если сервер всё ещё заблокирован, в окне будет ссылка для этого.
-5) Подключите телефон к той же сети, что и ПК, и запустите Truck Remote Control: он сам найдёт сервер.
+3) Подключите телефон к той же сети, что и ПК, и запустите Truck Remote Control: он сам найдёт сервер.
    Если не нашёл, укажите в настройках приложения адрес, показанный в окне сервера.
 
 Порт, чувствительность руля и язык (по умолчанию — язык Windows) настраиваются в окне сервера.
+
+Чтобы настроить vJoy вручную (например, если автоматическая установка не удалась), установите **vJoySetup.exe** с
+[сайта проекта vJoy](https://sourceforge.net/projects/vjoystick/files/Beta%202.x/2.1.9.1-160719/) и настройте 1-е устройство
+в **Configure vJoy**, как на этом скриншоте:
+
+![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
 
 ### Аналоговые педали (необязательно)
 
@@ -69,7 +74,7 @@ Truck Remote Server
     dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj
 
 Результат — один файл `src/TruckRemoteServer/bin/Release/TruckRemoteServer.exe`: зависимости, переводы,
-нативная библиотека vJoy и плагин телеметрии встроены в него ([Costura](https://github.com/Fody/Costura)).
+нативная библиотека vJoy, установщик vJoy и плагин телеметрии встроены в него ([Costura](https://github.com/Fody/Costura)).
 Процесс 32-битный, так как библиотеки vJoy в `lib` есть только для x86.
 
 ### Архитектура
@@ -81,7 +86,8 @@ Truck Remote Server
   (`IKeyboard`, `IVirtualJoystick`, `ITelemetrySource`, `IFirewall`, ...).
 - `src/TruckRemoteServer` (.NET Framework 4.7.2, WinForms) — приложение: `Program` собирает зависимости
   (Microsoft.Extensions.DependencyInjection), `UI/MainForm` — пассивное представление (MVP), в `Infrastructure` —
-  реализации для Windows (vJoy, SendInput, телеметрия, брандмауэр Windows, настройки), `Telemetry/Setup` устанавливает
+  реализации для Windows (vJoy, SendInput, телеметрия, брандмауэр Windows, настройки), `Infrastructure/VJoySetup`
+  устанавливает и настраивает vJoy (тот же exe, запущенный с правами администратора), `Telemetry/Setup` устанавливает
   плагин в игры, в `Localization` — тексты (английский, русский, белорусский, украинский).
 - `tests/TruckRemoteServer.Tests` (.NET 8, xUnit) — тесты ядра, в том числе настоящие UDP-сессии через loopback.
 

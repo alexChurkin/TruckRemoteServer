@@ -2,7 +2,8 @@ Truck Remote Server includes the following third-party software. Each is license
 
 - scs-sdk-plugin 1.12.1 (telemetry plugin installed into ETS2/ATS), https://github.com/RenCloud/scs-sdk-plugin
   Copyright (c) 2014 Hans; Copyright (c) RenCloud and contributors
-- vJoyInterfaceWrap (vJoy SDK), https://github.com/shauleiz/vJoy
+- vJoy 2.1.9.1: the driver setup (installed by the server when vJoy is missing) and vJoyInterfaceWrap,
+  https://github.com/shauleiz/vJoy
   Copyright (c) 2017 Shaul Eizikovich
 - Microsoft.Extensions.DependencyInjection, Microsoft.Extensions.Logging and their dependencies
   (System.Memory, System.Buffers and others), https://github.com/dotnet/runtime

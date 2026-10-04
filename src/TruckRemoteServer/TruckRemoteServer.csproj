@@ -62,6 +62,8 @@
     <EmbeddedResource Update="Localization\Strings.*.resx" WithCulture="false" />
     <!-- Telemetry plugin is installed into the games from the exe -->
     <EmbeddedResource Include="Ets2Plugins\win_x64\plugins\scs-telemetry.dll" LogicalName="scs-telemetry.dll" />
+    <!-- vJoy 2.1.9.1 setup (official, from SourceForge vjoystick), installed by the server when vJoy is missing -->
+    <EmbeddedResource Include="lib\vJoySetup.exe" LogicalName="vJoySetup.exe" />
     <!-- Native vJoy library is extracted and loaded by Costura before vJoyInterfaceWrap uses it -->
     <EmbeddedResource Include="lib\vJoyInterface.dll" Link="costura-win-x86\vJoyInterface.dll" />
     <None Include="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />

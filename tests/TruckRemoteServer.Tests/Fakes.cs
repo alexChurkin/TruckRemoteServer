@@ -92,6 +92,7 @@ namespace TruckRemoteServer.Tests
         public int Port { get; set; }
         public int Sensitivity { get; set; } = 50;
         public bool FirewallPromptShown { get; set; }
+        public bool JoystickPromptShown { get; set; }
         public string Language { get; set; } = "";
         public int Saves;
 
@@ -139,6 +140,26 @@ namespace TruckRemoteServer.Tests
         }
     }
 
+    public class FakeJoystickSetup : IJoystickSetup
+    {
+        public bool Ready = true;
+        //The user gives administrator rights
+        public bool Accepted = true;
+        //The setup makes vJoy ready
+        public bool Works = true;
+        public int Setups;
+
+        public bool NeedsSetup() => !Ready;
+
+        public bool Setup()
+        {
+            Setups++;
+            if (!Accepted) return false;
+            if (Works) Ready = true;
+            return true;
+        }
+    }
+
     public class FakeView : IMainView
     {
         public int? Port;
@@ -152,6 +173,10 @@ namespace TruckRemoteServer.Tests
         public bool FirewallBusy;
         public bool AnswerAllowFirewall = true;
         public int FirewallQuestions;
+        public bool JoystickWarning;
+        public bool JoystickBusy;
+        public bool AnswerInstallJoystick = true;
+        public int JoystickQuestions;
         public List<Warning> Warnings = new List<Warning>();
 
         public event EventHandler Shown;
@@ -162,6 +187,7 @@ namespace TruckRemoteServer.Tests
         public event EventHandler<int> SensitivityChanged;
         public event EventHandler<string> LanguageChanged;
         public event EventHandler AllowFirewallRequested;
+        public event EventHandler InstallJoystickRequested;
 
         public void Show() => Shown?.Invoke(this, EventArgs.Empty);
         public void Close() => Closing?.Invoke(this, EventArgs.Empty);
@@ -170,6 +196,7 @@ namespace TruckRemoteServer.Tests
         public void ChangePort(int port) => PortChanged?.Invoke(this, port);
         public void ChangeSensitivity(int value) => SensitivityChanged?.Invoke(this, value);
         public void AllowFirewall() => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
+        public void InstallJoystick() => InstallJoystickRequested?.Invoke(this, EventArgs.Empty);
         public void ChangeLanguage(string language) => LanguageChanged?.Invoke(this, language);
 
         public void ShowLanguage(string language) => Language = language;
@@ -196,6 +223,18 @@ namespace TruckRemoteServer.Tests
         {
             FirewallWarning = visible;
             FirewallBusy = busy;
+        }
+
+        public void ShowJoystickWarning(bool visible, bool busy)
+        {
+            JoystickWarning = visible;
+            JoystickBusy = busy;
+        }
+
+        public bool AskInstallJoystick()
+        {
+            JoystickQuestions++;
+            return AnswerInstallJoystick;
         }
 
         public bool AskAllowFirewall()

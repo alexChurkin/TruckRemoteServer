@@ -19,7 +19,9 @@ namespace TruckRemoteServer.Presentation
         //Detail: the reason
         TelemetryPluginNotInstalled,
         //Detail: the port
-        FirewallRuleNotApplied
+        FirewallRuleNotApplied,
+        //No detail
+        JoystickSetupFailed
     }
 
     //Main window of the server (passive view: no logic, everything is decided by MainPresenter)
@@ -33,6 +35,7 @@ namespace TruckRemoteServer.Presentation
         event EventHandler<int> SensitivityChanged;
         event EventHandler<string> LanguageChanged;
         event EventHandler AllowFirewallRequested;
+        event EventHandler InstallJoystickRequested;
 
         //"" - the language of Windows
         void ShowLanguage(string language);
@@ -47,6 +50,10 @@ namespace TruckRemoteServer.Presentation
         void ShowFirewallWarning(bool visible, bool busy);
 
         bool AskAllowFirewall();
+
+        void ShowJoystickWarning(bool visible, bool busy);
+
+        bool AskInstallJoystick();
 
         void ShowWarning(Warning warning, string detail);
 

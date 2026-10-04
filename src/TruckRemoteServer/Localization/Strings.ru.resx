@@ -41,4 +41,10 @@
 Например: {1}</value></data>
   <data name="SelectGameFolder" xml:space="preserve"><value>Выберите папку {0}</value></data>
   <data name="Version" xml:space="preserve"><value>Версия {0}</value></data>
+  <data name="JoystickWarning" xml:space="preserve"><value>vJoy не установлен или не настроен: телефон не может рулить.</value></data>
+  <data name="JoystickInstall" xml:space="preserve"><value>Установить</value></data>
+  <data name="JoystickQuestion" xml:space="preserve"><value>vJoy (драйвер виртуального джойстика) не установлен или не настроен, без него телефон не может рулить.
+
+Установить и настроить его сейчас? Нужны права администратора, Windows также может попросить доверять драйверу vJoy.</value></data>
+  <data name="JoystickSetupFailed" xml:space="preserve"><value>vJoy не настроился. Установите vJoySetup.exe из релиза вручную и включите ось X у устройства 1 в Configure vJoy.</value></data>
 </root>

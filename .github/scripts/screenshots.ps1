@@ -1,9 +1,9 @@
-﻿# Starts the server on a clean Windows (CI), dismisses the first-start dialogs and takes screenshots
+# Starts the server on a clean Windows (CI), dismisses the first-start dialogs and takes screenshots
 # of the main window: light theme, dark theme and Russian. Also a smoke test: the app must start.
 param([string]$Exe, [string]$Out)
 
 $ErrorActionPreference = 'Stop'
-Add-Type -AssemblyName System.Windows.Forms, System.Drawing, UIAutomationClient, UIAutomationTypes
+Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 Add-Type @"
 using System;
 using System.Runtime.InteropServices;
@@ -65,37 +65,39 @@ function Capture($process, [string]$name) {
     Write-Host "Saved $name ($width x $height)"
 }
 
-# The language button opens a menu, its items are named by the languages
-function Select-Language($process, [string]$name) {
-    $A = [System.Windows.Automation.AutomationElement]
-    $root = $A::FromHandle($process.MainWindowHandle)
-    $buttons = $root.FindAll([System.Windows.Automation.TreeScope]::Descendants,
-        (New-Object System.Windows.Automation.PropertyCondition($A::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)))
-    $button = $buttons | Where-Object { $_.Current.Name -like '*:*' } | Select-Object -First 1
-    $button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
-    Start-Sleep -Milliseconds 800
-    $item = $A::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Descendants,
-        (New-Object System.Windows.Automation.PropertyCondition($A::NameProperty, $name)))
-    $item.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
-    Start-Sleep -Milliseconds 800
+# The language saved by the app (user.config exists after the first start) is used on the next start
+function Set-SavedLanguage([string]$code) {
+    $config = Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA 'TruckRemoteServer') -Filter user.config -Recurse |
+        Select-Object -First 1
+    if (-not $config) { throw 'user.config was not found' }
+    [xml]$xml = Get-Content $config.FullName -Encoding UTF8
+    $settings = $xml.configuration.userSettings.'TruckRemoteServer.Properties.Settings'
+    $setting = $settings.setting | Where-Object { $_.name -eq 'Language' }
+    if (-not $setting) {
+        $setting = $xml.CreateElement('setting')
+        $setting.SetAttribute('name', 'Language'); $setting.SetAttribute('serializeAs', 'String')
+        $setting.AppendChild($xml.CreateElement('value')) | Out-Null
+        $settings.AppendChild($setting) | Out-Null
+    }
+    $setting.value = $code
+    $xml.Save($config.FullName)
+    Write-Host "Language $code saved to $($config.FullName)"
 }
 
-function Run([string]$name, [int]$light, [string]$language) {
+function Run([string]$name, [int]$light) {
     Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' AppsUseLightTheme $light -Type DWord -Force
     $process = Start-Process -FilePath $Exe -PassThru
     for ($i = 0; $i -lt 60 -and $process.MainWindowHandle -eq 0; $i++) { Start-Sleep -Milliseconds 500; $process.Refresh() }
     if ($process.HasExited) { throw "The server exited with code $($process.ExitCode)" }
     Close-Dialogs $process
-    if ($language) {
-        try { Select-Language $process $language } catch { Write-Host "Language wasn't changed: $_" }
-    }
     Capture $process $name
     $process.CloseMainWindow() | Out-Null
     if (-not $process.WaitForExit(10000)) { $process.Kill() }
 }
 
 New-Item -Force -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' | Out-Null
-Run 'light' 1 $null
-Run 'dark' 0 $null
-Run 'russian' 1 'Русский'
-Run 'russian-dark' 0 $null
+Run 'light' 1
+Run 'dark' 0
+Set-SavedLanguage 'ru'
+Run 'russian' 1
+Run 'russian-dark' 0

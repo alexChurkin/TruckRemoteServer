@@ -9,8 +9,9 @@ Server app for [Truck Remote Control](https://github.com/alexChurkin/TruckRemote
 ### [DOWNLOAD THE LATEST VERSION](https://github.com/alexChurkin/TruckRemoteServer/releases)
 
 ### Supported OS
-**Windows Vista, Windows 7, 8, 10 or 11 (64-bit)**.
-**.NET Framework 4.7.2** is required. If it is not installed you will be prompted to install it when you run the server.
+**Windows 7 SP1, 8.1, 10 or 11 (64-bit)**.
+**.NET Framework 4.7.2** or newer is required. It's built into Windows 10 (version 1803 and newer) and Windows 11,
+on older systems install it from [Microsoft](https://dotnet.microsoft.com/download/dotnet-framework/net472).
 
 ### Supported games
 
@@ -20,13 +21,21 @@ Server app for [Truck Remote Control](https://github.com/alexChurkin/TruckRemote
 ## Setup
 
 Launching:
-1) Install **vJoy** on your PC by launching **vJoySetup.exe**
+1) Install **vJoy** on your PC by launching **vJoySetup.exe** (it's in the release archive)
 2) Open **Configure vjoy**, configure 1-st virtual joystick as on this screenshot:
 
     ![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
 	
 3) Put **TruckRemoteServer.exe** wherever you want: it's a single file, everything it needs is inside
-4) Launch **TruckRemoteServer.exe** and agree to install the telemetry plugin for ETS2/ATS
+4) Launch **TruckRemoteServer.exe**. On the first start it:
+   - installs the telemetry plugin into ETS2 and ATS (the games are looked for in all Steam libraries;
+     if a game isn't found, the server asks for its folder, **Cancel** skips the game);
+   - offers to allow the server in Windows Firewall (administrator rights are asked for), otherwise the firewall
+     may block the phone. Later the window shows a link to do it if the server is still blocked.
+5) Connect the phone to the same network as the PC and start Truck Remote Control: it finds the server by itself.
+   If it doesn't, enter the address shown in the server window in the app settings.
+
+The port, steering sensitivity and language (the language of Windows by default) are set in the server window.
 
 ### Analog pedals (optional)
 
@@ -38,9 +47,13 @@ By default gas and brake are emulated with the arrow keys (full press). To contr
 
 If the axes aren't enabled, the app shows a hint and keeps using the arrow keys.
 
-### Quick actions
+### Keys
 
-The quick actions panel in the app (button at the bottom center) uses the default game keys:
+The server presses the default game keys, so keep them in the game settings:
+gas and brake **↑**/**↓** (in the digital pedal mode), blinkers **[** and **]**, hazard lights **F**,
+parking brake **Space**, lights **L**, high beam **K**, horn **H**, air horn **N**, cruise control **C**.
+
+The quick actions panel in the app (button at the bottom center) uses:
 engine **E**, trailer **T**, activate **Enter**, flash lights **J**, wipers **P**, beacon **O**,
 differential lock **V**, lift axle **U**.
 
@@ -65,12 +78,14 @@ The process is 32-bit, as the vJoy libraries in `lib` are x86 only.
 
 - `src/TruckRemoteServer.Core` (.NET Standard 2.0) — the logic without Windows dependencies:
   the protocol, `ControllerServer` (UDP sessions of the phone), `ControllerInputMapper` (controller messages
-  to keys and joystick axes), firewall rules, local addresses and `MainPresenter` of the main window.
+  to keys and joystick axes), the telemetry shared memory layout (`ScsTelemetryMap`), firewall rules,
+  local addresses and `MainPresenter` of the main window.
   Platform services are interfaces (`IKeyboard`, `IVirtualJoystick`, `ITelemetrySource`, `IFirewall`, ...).
 - `src/TruckRemoteServer` (.NET Framework 4.7.2, WinForms) — the application: `Program` is the composition root
   (Microsoft.Extensions.DependencyInjection), `UI/MainForm` is a passive view (MVP), `Infrastructure`
-  has the Windows implementations (vJoy, SendInput, telemetry plugin, Windows Firewall, settings).
-- `tests/TruckRemoteServer.Tests` — tests of the core, including real UDP sessions on the loopback interface.
+  has the Windows implementations (vJoy, SendInput, telemetry, Windows Firewall, settings), `Telemetry/Setup` installs
+  the plugin into the games, `Localization` has the texts (English, Russian, Belarusian, Ukrainian).
+- `tests/TruckRemoteServer.Tests` (.NET 8, xUnit) — tests of the core, including real UDP sessions on the loopback interface.
 
 ### Telemetry plugin
 

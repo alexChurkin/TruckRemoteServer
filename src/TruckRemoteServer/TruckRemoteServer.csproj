@@ -10,10 +10,16 @@
     <ApplicationIcon>app_icon.ico</ApplicationIcon>
     <!-- Version attributes are kept in Properties\AssemblyInfo.cs -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <!-- 64-bit process on 64-bit Windows, as before -->
+    <!-- The program is a single exe: references are embedded by Costura (it loads them whatever version is asked),
+         so there's no exe.config with binding redirects; settings defaults come from Properties\Settings -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+    <!-- Version conflicts of the embedded references are resolved by Costura at runtime -->
+    <NoWarn>$(NoWarn);MSB3276</NoWarn>
+    <DebugType>embedded</DebugType>
+    <!-- 32-bit process, as the released 1.2: vJoyInterfaceWrap and vJoyInterface.dll in lib are x86 only -->
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
+    <Prefer32Bit>true</Prefer32Bit>
     <!-- Output stays in bin\Release (without the framework subfolder), as before -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Deterministic>true</Deterministic>
@@ -28,6 +34,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.12" />
+    <!-- Embeds the referenced assemblies into the exe, so the program is a single file -->
+    <PackageReference Include="Costura.Fody" Version="6.2.0" PrivateAssets="all" />
+    <PackageReference Include="Fody" Version="6.9.3" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,8 +58,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Telemetry plugin is installed into the game from the application folder -->
-    <None Include="Ets2Plugins\**" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Translations are kept in the exe instead of satellite assemblies in language folders (see Localization\Texts) -->
+    <EmbeddedResource Update="Localization\Strings.*.resx" WithCulture="false" />
+    <!-- Telemetry plugin is installed into the games from the exe -->
+    <EmbeddedResource Include="Ets2Plugins\win_x64\plugins\scs-telemetry.dll" LogicalName="scs-telemetry.dll" />
+    <!-- Native vJoy library is extracted and loaded by Costura before vJoyInterfaceWrap uses it -->
+    <EmbeddedResource Include="lib\vJoyInterface.dll" Link="costura-win-x86\vJoyInterface.dll" />
+    <None Include="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

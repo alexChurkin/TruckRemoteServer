@@ -19,15 +19,13 @@ Server app for [Truck Remote Control](https://github.com/alexChurkin/TruckRemote
 
 ## Setup
 
-ATTENTION: Do not delete files from the **TruckRemoteServer** folder. It's important for correct Server work.
-
 Launching:
 1) Install **vJoy** on your PC by launching **vJoySetup.exe**
 2) Open **Configure vjoy**, configure 1-st virtual joystick as on this screenshot:
 
     ![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
 	
-3) Сopy the **TruckRemoteServer** folder wherever you want
+3) Put **TruckRemoteServer.exe** wherever you want: it's a single file, everything it needs is inside
 4) Launch **TruckRemoteServer.exe** and agree to install the telemetry plugin for ETS2/ATS
 
 ### Analog pedals (optional)
@@ -59,7 +57,9 @@ and can be built on any OS:
     dotnet build TruckRemoteServer.sln -c Release
     dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj
 
-The result is in `src/TruckRemoteServer/bin/Release`.
+The result is a single `src/TruckRemoteServer/bin/Release/TruckRemoteServer.exe`: references, translations,
+the native vJoy library and the telemetry plugin are embedded into it ([Costura](https://github.com/Fody/Costura)).
+The process is 32-bit, as the vJoy libraries in `lib` are x86 only.
 
 ### Architecture
 

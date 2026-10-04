@@ -24,10 +24,13 @@ jobs:
       - name: Test
         run: dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj -c Release --no-build
 
+      # The program is a single exe (references, translations, vJoy library and the telemetry plugin are embedded)
       - uses: actions/upload-artifact@v6
         with:
           name: TruckRemoteServer
-          path: src/TruckRemoteServer/bin/Release/
+          path: |
+            src/TruckRemoteServer/bin/Release/TruckRemoteServer.exe
+            src/TruckRemoteServer/bin/Release/THIRD-PARTY-NOTICES.txt
 
       # Smoke test of the window on a clean Windows and its look for reviews
       - name: Screenshots

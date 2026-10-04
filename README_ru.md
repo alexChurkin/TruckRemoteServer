@@ -17,15 +17,13 @@ Truck Remote Server
 
 ## Как установить
 
-ВНИМАНИЕ: Не удаляйте файлы из папки **TruckRemoteServer**. Они необходимы для корректной работы сервера.
-
 Запуск:
 1) Установите **vJoy** на ваш ПК/ноутбук, запустив **vJoySetup.exe**
 2) Откройте утилиту **Configure vjoy** и настройте 1-ый виртуальный джойстик, как показано на этом скриншоте:
 
     ![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
 	
-3) Скопируйте папку **TruckRemoteServer** в удобное для вас место
+3) Положите **TruckRemoteServer.exe** в удобное для вас место: это один файл, всё нужное уже внутри
 4) Запустите **TruckRemoteServer.exe** и установите предложенный программой плагин телеметрии для ETS2 и/или ATS
 
 ### Аналоговые педали (необязательно)
@@ -57,7 +55,9 @@ Truck Remote Server
     dotnet build TruckRemoteServer.sln -c Release
     dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj
 
-Результат — в папке `src/TruckRemoteServer/bin/Release`.
+Результат — один файл `src/TruckRemoteServer/bin/Release/TruckRemoteServer.exe`: зависимости, переводы,
+нативная библиотека vJoy и плагин телеметрии встроены в него ([Costura](https://github.com/Fody/Costura)).
+Процесс 32-битный, так как библиотеки vJoy в `lib` есть только для x86.
 
 ### Архитектура
 

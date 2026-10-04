@@ -16,6 +16,7 @@ public static class Win {
     [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);
     [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr hWnd);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder name, int max);
+    [DllImport("kernel32.dll")] public static extern bool IsWow64Process(IntPtr process, out bool wow64);
 }
 "@
 New-Item -ItemType Directory -Force -Path $Out | Out-Null
@@ -89,6 +90,9 @@ function Run([string]$name, [int]$light) {
     $process = Start-Process -FilePath $Exe -PassThru
     for ($i = 0; $i -lt 60 -and $process.MainWindowHandle -eq 0; $i++) { Start-Sleep -Milliseconds 500; $process.Refresh() }
     if ($process.HasExited) { throw "The server exited with code $($process.ExitCode)" }
+    # vJoyInterfaceWrap and vJoyInterface.dll are x86 only, the server must run as a 32-bit process
+    $wow64 = $false; [void][Win]::IsWow64Process($process.Handle, [ref]$wow64)
+    if (-not $wow64) { throw 'The server runs as a 64-bit process, vJoy libraries cannot be loaded' }
     Close-Dialogs $process
     Capture $process $name
     $process.CloseMainWindow() | Out-Null

@@ -165,8 +165,12 @@ namespace TruckRemoteServer.Setup
 
                 string x64DllFileName = GetTelemetryPluginDllFileName(GamePath);
 
-                //Log.InfoFormat("Copying {1} x64 plugin DLL file to: {0}", x64DllFileName, _gameName);
-                File.Copy(LocalEts2X64TelemetryPluginDllFileName, x64DllFileName, true);
+                //The plugin is embedded into the exe
+                using (Stream plugin = typeof(PluginInstaller).Assembly.GetManifestResourceStream(TelemetryDllName))
+                using (FileStream file = File.Create(x64DllFileName))
+                {
+                    plugin.CopyTo(file);
+                }
                 RemoveLegacyPlugin();
             }
 
@@ -203,9 +207,6 @@ namespace TruckRemoteServer.Setup
                 var steamKey = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
                 return steamKey?.GetValue("SteamPath") as string;
             }
-
-            static string LocalEts2X64TelemetryPluginDllFileName => Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory, @"Ets2Plugins\win_x64\plugins", TelemetryDllName);
 
             static string GetPluginPath(string gamePath)
             {

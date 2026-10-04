@@ -70,6 +70,13 @@ Truck Remote Server
   реализации для Windows (vJoy, SendInput, плагин телеметрии, брандмауэр Windows, настройки).
 - `tests/TruckRemoteServer.Tests` — тесты ядра, в том числе настоящие UDP-сессии через loopback.
 
+### Плагин телеметрии
+
+Состояние грузовика (двигатель, свет, поворотники, дворники, прицеп) читается из
+[scs-sdk-plugin](https://github.com/RenCloud/scs-sdk-plugin) 1.12.1 от RenCloud (лицензия MIT,
+`src/TruckRemoteServer/Ets2Plugins`). Сервер устанавливает его как `bin\win_x64\plugins\scs-telemetry.dll` в ETS2 и ATS
+и читает его разделяемую память `Local\SCSTelemetry` (ревизия 12, смещения — в `Core/Telemetry/ScsTelemetryMap`).
+
 ## Лицензия
 
     Copyright 2021 Alex Churkin.

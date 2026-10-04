@@ -106,8 +106,12 @@ namespace TruckRemoteServer.Setup
         class GameState
         {
             const string InstallationSkippedPath = "N/A";
-            const string TelemetryDllName = "ets2-telemetry-server.dll";
-            const string TelemetryX64DllMd5 = "d606f27c94bcae1114d930d8e83b6fa2";
+            //RenCloud's scs-sdk-plugin 1.12.1 (revision 12), the usual name lets other telemetry apps share it
+            const string TelemetryDllName = "scs-telemetry.dll";
+            const string TelemetryX64DllMd5 = "6b93d8b11981e6754968bb1ae20cf89e";
+            //Plugin installed by older versions (scs-sdk-plugin of 2019 under another name)
+            const string LegacyTelemetryDllName = "ets2-telemetry-server.dll";
+            const string LegacyTelemetryX64DllMd5 = "d606f27c94bcae1114d930d8e83b6fa2";
 
             readonly string _gameName;
 
@@ -163,6 +167,22 @@ namespace TruckRemoteServer.Setup
 
                 //Log.InfoFormat("Copying {1} x64 plugin DLL file to: {0}", x64DllFileName, _gameName);
                 File.Copy(LocalEts2X64TelemetryPluginDllFileName, x64DllFileName, true);
+                RemoveLegacyPlugin();
+            }
+
+            //The old plugin isn't read anymore, it's removed only if it's exactly the one installed by us
+            void RemoveLegacyPlugin()
+            {
+                string legacyDllFileName = Path.Combine(GetPluginPath(GamePath), LegacyTelemetryDllName);
+                try
+                {
+                    if (Md5(legacyDllFileName) == LegacyTelemetryX64DllMd5)
+                        File.Delete(legacyDllFileName);
+                }
+                catch (Exception)
+                {
+                    //The game is running and keeps it loaded: it stays, but it is harmless (nothing reads its memory)
+                }
             }
 
             public void UninstallPlugin()

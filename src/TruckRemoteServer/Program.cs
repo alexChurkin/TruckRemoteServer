@@ -38,7 +38,7 @@ namespace TruckRemoteServer
 
             services.AddSingleton<IKeyboard, SendInputKeyboard>();
             services.AddSingleton<IVirtualJoystick, VJoyJoystick>();
-            services.AddSingleton<ITelemetrySource, Ets2TelemetrySource>();
+            services.AddSingleton<ITelemetrySource, ScsTelemetrySource>();
             services.AddSingleton<ITimerResolution, TimerResolution>();
             services.AddSingleton<ISettingsStore, PropertiesSettingsStore>();
             services.AddSingleton<IFirewall, WindowsFirewall>();

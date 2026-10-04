@@ -72,6 +72,13 @@ The result is in `src/TruckRemoteServer/bin/Release`.
   has the Windows implementations (vJoy, SendInput, telemetry plugin, Windows Firewall, settings).
 - `tests/TruckRemoteServer.Tests` — tests of the core, including real UDP sessions on the loopback interface.
 
+### Telemetry plugin
+
+The truck state (engine, lights, blinkers, wipers, trailer) is read from
+[scs-sdk-plugin](https://github.com/RenCloud/scs-sdk-plugin) 1.12.1 by RenCloud (MIT license,
+`src/TruckRemoteServer/Ets2Plugins`). The server installs it as `bin\win_x64\plugins\scs-telemetry.dll` into ETS2 and ATS
+and reads its shared memory `Local\SCSTelemetry` (revision 12, offsets are in `Core/Telemetry/ScsTelemetryMap`).
+
 ## License
 
     Copyright 2021 Alex Churkin.

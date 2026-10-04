@@ -1,0 +1,203 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using TruckRemoteServer.Firewall;
+using TruckRemoteServer.Input;
+using TruckRemoteServer.Network;
+using TruckRemoteServer.Presentation;
+using TruckRemoteServer.Settings;
+using TruckRemoteServer.Telemetry;
+
+namespace TruckRemoteServer.Tests
+{
+    public class FakeKeyboard : IKeyboard
+    {
+        private readonly List<string> events = new List<string>();
+
+        public List<string> Events
+        {
+            get { lock (events) return events.ToList(); }
+        }
+
+        public void Clear()
+        {
+            lock (events) events.Clear();
+        }
+
+        public void Press(GameKey key) => Add("press " + key);
+
+        public void Release(GameKey key) => Add("release " + key);
+
+        public void Click(GameKey key) => Add("click " + key);
+
+        private void Add(string e)
+        {
+            lock (events) events.Add(e);
+        }
+    }
+
+    public class FakeJoystick : IVirtualJoystick
+    {
+        public bool IsAvailable { get; set; } = true;
+        public bool HasPedalAxes { get; set; } = true;
+        public int Steering = -1;
+        public int Gas = -1;
+        public int Brake = -1;
+        public int Initializations;
+        public bool Released;
+
+        public bool Initialize()
+        {
+            Initializations++;
+            return IsAvailable;
+        }
+
+        public void SetSteering(int value) => Steering = value;
+
+        public void SetPedals(int gas, int brake)
+        {
+            Gas = gas;
+            Brake = brake;
+        }
+
+        public void Release() => Released = true;
+
+        public event Action<uint> ForceFeedback;
+
+        public void RaiseForceFeedback(uint duration) => ForceFeedback?.Invoke(duration);
+    }
+
+    public class FakeTelemetry : ITelemetrySource
+    {
+        public volatile TruckTelemetry Truck = new TruckTelemetry();
+
+        public TruckTelemetry Read() => Truck;
+    }
+
+    public class NoTimerResolution : ITimerResolution
+    {
+        public IDisposable Acquire() => new Nothing();
+
+        private sealed class Nothing : IDisposable
+        {
+            public void Dispose()
+            {
+            }
+        }
+    }
+
+    public class FakeSettings : ISettingsStore
+    {
+        public int Port { get; set; }
+        public int Sensitivity { get; set; } = 50;
+        public bool FirewallPromptShown { get; set; }
+        public int Saves;
+
+        public void Save() => Saves++;
+    }
+
+    public class FakeFirewall : IFirewall
+    {
+        public FirewallStatus Status = FirewallStatus.Allowed;
+        public bool AllowAccepted = true;
+        public int AllowCalls;
+
+        public FirewallStatus Check(string programPath, int port) => Status;
+
+        public bool AllowProgram(string programPath)
+        {
+            AllowCalls++;
+            if (AllowAccepted) Status = FirewallStatus.Allowed;
+            return AllowAccepted;
+        }
+    }
+
+    public class FakeNetwork : INetworkInfo
+    {
+        public List<IPAddress> Addresses = new List<IPAddress> { IPAddress.Parse("192.168.1.10") };
+
+        public IList<IPAddress> GetLocalAddresses() => Addresses;
+
+        public event EventHandler AddressesChanged;
+
+        public void RaiseChanged() => AddressesChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public class FakePluginSetup : ITelemetryPluginSetup
+    {
+        public bool IsInstalled { get; set; } = true;
+        public Exception InstallError;
+        public int Installs;
+
+        public void Install()
+        {
+            Installs++;
+            if (InstallError != null) throw InstallError;
+            IsInstalled = true;
+        }
+    }
+
+    public class FakeView : IMainView
+    {
+        public int? Port;
+        public int? Sensitivity;
+        public IList<string> Addresses;
+        public string Status;
+        public StatusKind StatusKind;
+        public bool Running;
+        public bool FirewallWarning;
+        public bool FirewallBusy;
+        public bool AnswerAllowFirewall = true;
+        public int FirewallQuestions;
+        public List<string> Warnings = new List<string>();
+
+        public event EventHandler Shown;
+        public event EventHandler Closing;
+        public event EventHandler StartRequested;
+        public event EventHandler StopRequested;
+        public event EventHandler<int> PortChanged;
+        public event EventHandler<int> SensitivityChanged;
+        public event EventHandler AllowFirewallRequested;
+
+        public void Show() => Shown?.Invoke(this, EventArgs.Empty);
+        public void Close() => Closing?.Invoke(this, EventArgs.Empty);
+        public void Start() => StartRequested?.Invoke(this, EventArgs.Empty);
+        public void Stop() => StopRequested?.Invoke(this, EventArgs.Empty);
+        public void ChangePort(int port) => PortChanged?.Invoke(this, port);
+        public void ChangeSensitivity(int value) => SensitivityChanged?.Invoke(this, value);
+        public void AllowFirewall() => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
+
+        public void ShowSettings(int port, int sensitivity)
+        {
+            Port = port;
+            Sensitivity = sensitivity;
+        }
+
+        public void ShowAddresses(IList<string> addresses) => Addresses = addresses;
+
+        public void ShowStatus(string text, StatusKind kind)
+        {
+            Status = text;
+            StatusKind = kind;
+        }
+
+        public void ShowRunning(bool running) => Running = running;
+
+        public void ShowFirewallWarning(bool visible, bool busy)
+        {
+            FirewallWarning = visible;
+            FirewallBusy = busy;
+        }
+
+        public bool AskAllowFirewall()
+        {
+            FirewallQuestions++;
+            return AnswerAllowFirewall;
+        }
+
+        public void ShowWarning(string message) => Warnings.Add(message);
+
+        public void RunOnUiThread(Action action) => action();
+    }
+}

@@ -55,9 +55,20 @@ Truck Remote Server
 а собрать его можно на любой ОС:
 
     dotnet build TruckRemoteServer.sln -c Release
-    dotnet test Tests/TruckRemoteServer.Tests.csproj
+    dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj
 
-Результат — в папке `bin/Release`.
+Результат — в папке `src/TruckRemoteServer/bin/Release`.
+
+### Архитектура
+
+- `src/TruckRemoteServer.Core` (.NET Standard 2.0) — логика без зависимостей от Windows: протокол,
+  `ControllerServer` (UDP-сессии телефона), `ControllerInputMapper` (сообщения контроллера в клавиши и оси джойстика),
+  правила брандмауэра, локальные адреса и `MainPresenter` главного окна. Платформенные сервисы — интерфейсы
+  (`IKeyboard`, `IVirtualJoystick`, `ITelemetrySource`, `IFirewall`, ...).
+- `src/TruckRemoteServer` (.NET Framework 4.7.2, WinForms) — приложение: `Program` собирает зависимости
+  (Microsoft.Extensions.DependencyInjection), `UI/MainForm` — пассивное представление (MVP), в `Infrastructure` —
+  реализации для Windows (vJoy, SendInput, плагин телеметрии, брандмауэр Windows, настройки).
+- `tests/TruckRemoteServer.Tests` — тесты ядра, в том числе настоящие UDP-сессии через loopback.
 
 ## Лицензия
 

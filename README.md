@@ -57,9 +57,20 @@ Enjoy using!
 and can be built on any OS:
 
     dotnet build TruckRemoteServer.sln -c Release
-    dotnet test Tests/TruckRemoteServer.Tests.csproj
+    dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj
 
-The result is in `bin/Release`.
+The result is in `src/TruckRemoteServer/bin/Release`.
+
+### Architecture
+
+- `src/TruckRemoteServer.Core` (.NET Standard 2.0) — the logic without Windows dependencies:
+  the protocol, `ControllerServer` (UDP sessions of the phone), `ControllerInputMapper` (controller messages
+  to keys and joystick axes), firewall rules, local addresses and `MainPresenter` of the main window.
+  Platform services are interfaces (`IKeyboard`, `IVirtualJoystick`, `ITelemetrySource`, `IFirewall`, ...).
+- `src/TruckRemoteServer` (.NET Framework 4.7.2, WinForms) — the application: `Program` is the composition root
+  (Microsoft.Extensions.DependencyInjection), `UI/MainForm` is a passive view (MVP), `Infrastructure`
+  has the Windows implementations (vJoy, SendInput, telemetry plugin, Windows Firewall, settings).
+- `tests/TruckRemoteServer.Tests` — tests of the core, including real UDP sessions on the loopback interface.
 
 ## License
 

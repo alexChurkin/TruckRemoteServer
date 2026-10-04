@@ -4,6 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -26,3 +27,15 @@ jobs:
         with:
           name: TruckRemoteServer
           path: src/TruckRemoteServer/bin/Release/
+
+      # Smoke test of the window on a clean Windows and its look for reviews
+      - name: Screenshots
+        run: ./.github/scripts/screenshots.ps1 -Exe "${{ github.workspace }}\src\TruckRemoteServer\bin\Release\TruckRemoteServer.exe" -Out screenshots
+        shell: pwsh
+
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: screenshots
+          path: screenshots/
+          if-no-files-found: ignore

@@ -3,7 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 using Microsoft.Win32;
+using TruckRemoteServer.Localization;
 
 namespace TruckRemoteServer.Setup
 {
@@ -211,12 +213,37 @@ namespace TruckRemoteServer.Setup
                 }
             }
 
+            //The game may be in any Steam library (e.g. on another disk), they are listed in libraryfolders.vdf
             public void DetectPath()
             {
-                GamePath = GetDefaultSteamPath();
-                if (!string.IsNullOrEmpty(GamePath))
-                    GamePath = Path.Combine(
-                        GamePath.Replace('/', '\\'), @"SteamApps\common\" + GameDirectoryName);
+                string steamPath = GetDefaultSteamPath();
+                if (string.IsNullOrEmpty(steamPath)) return;
+                steamPath = steamPath.Replace('/', '\\');
+
+                foreach (string library in GetSteamLibraries(steamPath))
+                {
+                    GamePath = Path.Combine(library, @"steamapps\common\" + GameDirectoryName);
+                    if (IsPathValid()) return;
+                }
+                GamePath = Path.Combine(steamPath, @"steamapps\common\" + GameDirectoryName);
+            }
+
+            private static string[] GetSteamLibraries(string steamPath)
+            {
+                string libraries = Path.Combine(steamPath, @"steamapps\libraryfolders.vdf");
+                try
+                {
+                    var paths = File.Exists(libraries)
+                        ? Regex.Matches(File.ReadAllText(libraries), "\"path\"\\s+\"([^\"]+)\"")
+                            .Cast<Match>()
+                            .Select(m => m.Groups[1].Value.Replace(@"\\", @"\"))
+                        : Enumerable.Empty<string>();
+                    return new[] { steamPath }.Concat(paths).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                }
+                catch (Exception)
+                {
+                    return new[] { steamPath };
+                }
             }
 
             public void BrowserForValidPath(IWin32Window owner)
@@ -224,23 +251,24 @@ namespace TruckRemoteServer.Setup
                 while (!IsPathValid())
                 {
                     var result = MessageBox.Show(owner,
-                        @"Could not detect " + _gameName + @" game path. " +
-                        @"If you do not have this game installed press [Cancel] to skip, " +
-                        @"otherwise press [OK] to select path manually." + Environment.NewLine + Environment.NewLine +
-                        @"For example:" + Environment.NewLine + @"D:\Steam\SteamApps\Common\" +
-                        GameDirectoryName,
-                        @"Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
+                        Texts.Format(TextKeys.GameNotFound, GameDirectoryName,
+                            @"D:\SteamLibrary\steamapps\common\" + GameDirectoryName),
+                        "Truck Remote Server", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
                     if (result == DialogResult.Cancel)
                     {
                         GamePath = InstallationSkippedPath;
                         return;
                     }
                     var browser = new FolderBrowserDialog();
-                    browser.Description = @"Select " + _gameName + @" game path";
+                    browser.Description = Texts.Format(TextKeys.SelectGameFolder, GameDirectoryName);
                     browser.ShowNewFolderButton = false;
                     result = browser.ShowDialog(owner);
+                    //The game is skipped (the program used to close here)
                     if (result == DialogResult.Cancel)
-                        Environment.Exit(1);
+                    {
+                        GamePath = InstallationSkippedPath;
+                        return;
+                    }
                     GamePath = browser.SelectedPath;
                 }
             }

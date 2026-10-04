@@ -3,11 +3,23 @@ using System.Collections.Generic;
 
 namespace TruckRemoteServer.Presentation
 {
-    public enum StatusKind
+    //What the window says about the server (the view turns it into text of the chosen language)
+    public enum ServerState
     {
-        Ok,
-        Warning,
-        Error
+        Stopped,
+        PortBusy,
+        WaitingForController,
+        ControllerConnected,
+        ControllerConnectedWithoutJoystick,
+        ControllerPaused
+    }
+
+    public enum Warning
+    {
+        //Detail: the reason
+        TelemetryPluginNotInstalled,
+        //Detail: the port
+        FirewallRuleNotApplied
     }
 
     //Main window of the server (passive view: no logic, everything is decided by MainPresenter)
@@ -19,22 +31,24 @@ namespace TruckRemoteServer.Presentation
         event EventHandler StopRequested;
         event EventHandler<int> PortChanged;
         event EventHandler<int> SensitivityChanged;
+        event EventHandler<string> LanguageChanged;
         event EventHandler AllowFirewallRequested;
+
+        //"" - the language of Windows
+        void ShowLanguage(string language);
 
         void ShowSettings(int port, int sensitivity);
 
-        //The first address is the most likely one, all of them are available in a tooltip
-        void ShowAddresses(IList<string> addresses);
+        //The first address is the most likely one for the phone
+        void ShowAddresses(IList<string> addresses, int port);
 
-        void ShowStatus(string text, StatusKind kind);
-
-        void ShowRunning(bool running);
+        void ShowState(ServerState state, int port);
 
         void ShowFirewallWarning(bool visible, bool busy);
 
         bool AskAllowFirewall();
 
-        void ShowWarning(string message);
+        void ShowWarning(Warning warning, string detail);
 
         //Presenter gets events of the server and the system on other threads
         void RunOnUiThread(Action action);

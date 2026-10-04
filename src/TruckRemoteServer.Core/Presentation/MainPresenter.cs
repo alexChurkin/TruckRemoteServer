@@ -21,6 +21,8 @@ namespace TruckRemoteServer.Presentation
         private readonly INetworkInfo network;
         private readonly ITelemetryPluginSetup pluginSetup;
         private readonly string programPath;
+        //The last start failed because the port is used by another program
+        private bool portBusy;
 
         public MainPresenter(IMainView view, ControllerServer server, ControllerInputMapper input,
             IVirtualJoystick joystick, ISettingsStore settings, IFirewall firewall, INetworkInfo network,
@@ -40,13 +42,20 @@ namespace TruckRemoteServer.Presentation
             view.Closing += (s, e) => OnClosing();
             view.StartRequested += (s, e) => StartServer(checkFirewall: true);
             view.StopRequested += (s, e) => server.Stop();
-            view.PortChanged += (s, port) => SavePort(port);
+            view.PortChanged += (s, port) => ChangePort(port);
+            view.LanguageChanged += (s, language) => ChangeLanguage(language);
             view.SensitivityChanged += (s, value) => SetSensitivity(value);
             view.AllowFirewallRequested += (s, e) => AllowInFirewall();
         }
 
         //For tests: firewall checks run on this scheduler
         public Func<Func<FirewallStatus>, Task<FirewallStatus>> RunInBackground { get; set; } = Task.Run;
+
+        //Before the window is shown: its texts depend on the language
+        public void Initialize()
+        {
+            view.ShowLanguage(settings.Language ?? "");
+        }
 
         private void OnShown()
         {
@@ -66,7 +75,7 @@ namespace TruckRemoteServer.Presentation
                 catch (Exception e)
                 {
                     //Controls still work without telemetry, so the server is started anyway
-                    view.ShowWarning("Telemetry plugin wasn't installed: " + e.Message);
+                    view.ShowWarning(Warning.TelemetryPluginNotInstalled, e.Message);
                 }
             }
 
@@ -86,17 +95,40 @@ namespace TruckRemoteServer.Presentation
         {
             if (!server.Start(settings.Port))
             {
-                view.ShowStatus("Port " + settings.Port + " is busy", StatusKind.Error);
+                portBusy = true;
+                view.ShowState(ServerState.PortBusy, settings.Port);
                 return;
             }
             //Allowing rules may be limited to a port
             if (checkFirewall) CheckFirewall(offerFix: false);
         }
 
-        private void SavePort(int port)
+        //The running server moves to the new port at once
+        private void ChangePort(int port)
         {
+            if (port == settings.Port) return;
             settings.Port = port;
             settings.Save();
+            ShowAddresses();
+            if (server.Status.Running)
+            {
+                server.Stop();
+                StartServer(checkFirewall: true);
+            }
+            else if (portBusy)
+            {
+                StartServer(checkFirewall: true);
+            }
+        }
+
+        private void ChangeLanguage(string language)
+        {
+            settings.Language = language ?? "";
+            settings.Save();
+            view.ShowLanguage(settings.Language);
+            //Texts of the state are made by the view in the new language
+            ShowStatus(server.Status);
+            ShowAddresses();
         }
 
         private void SetSensitivity(int value)
@@ -113,27 +145,14 @@ namespace TruckRemoteServer.Presentation
 
         private void ShowStatus(ServerStatus status)
         {
-            view.ShowRunning(status.Running);
-            if (!status.Running)
-            {
-                view.ShowStatus("Disabled", StatusKind.Error);
-            }
-            else if (!status.ControllerConnected)
-            {
-                view.ShowStatus("Enabled", StatusKind.Ok);
-            }
-            else if (status.ControllerPaused)
-            {
-                view.ShowStatus("Controller paused", StatusKind.Ok);
-            }
-            else if (!joystick.IsAvailable)
-            {
-                view.ShowStatus("Controller active, vJoy error", StatusKind.Warning);
-            }
-            else
-            {
-                view.ShowStatus("Controller active", StatusKind.Ok);
-            }
+            if (status.Running) portBusy = false;
+            ServerState state;
+            if (!status.Running) state = portBusy ? ServerState.PortBusy : ServerState.Stopped;
+            else if (!status.ControllerConnected) state = ServerState.WaitingForController;
+            else if (status.ControllerPaused) state = ServerState.ControllerPaused;
+            else if (!joystick.IsAvailable) state = ServerState.ControllerConnectedWithoutJoystick;
+            else state = ServerState.ControllerConnected;
+            view.ShowState(state, settings.Port);
         }
 
         private void OnAddressesChanged(object sender, EventArgs e)
@@ -143,7 +162,7 @@ namespace TruckRemoteServer.Presentation
 
         private void ShowAddresses()
         {
-            view.ShowAddresses(network.GetLocalAddresses().Select(address => address.ToString()).ToList());
+            view.ShowAddresses(network.GetLocalAddresses().Select(address => address.ToString()).ToList(), settings.Port);
         }
 
         /* Windows Firewall blocks the phone's packets when there is no allowing rule */
@@ -185,8 +204,7 @@ namespace TruckRemoteServer.Presentation
                     OnFirewallChecked(status, offerFix: false);
                     if (status != FirewallStatus.Allowed)
                     {
-                        view.ShowWarning("The firewall rule wasn't applied. Please allow Truck Remote Server " +
-                            "(UDP port " + port + ") in your firewall manually.");
+                        view.ShowWarning(Warning.FirewallRuleNotApplied, port.ToString());
                     }
                 }), TaskContinuationOptions.ExecuteSynchronously);
         }

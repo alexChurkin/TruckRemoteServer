@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ServerAddress" xml:space="preserve"><value>Адрас сервера</value></data>
+  <data name="AddressHint" xml:space="preserve"><value>Тэлефон знаходзіць сервер сам. Калі не атрымліваецца, укажыце гэты адрас у наладах праграмы.</value></data>
+  <data name="NoAddress" xml:space="preserve"><value>Няма падключэння да сеткі</value></data>
+  <data name="PortAndMore" xml:space="preserve"><value>Порт {0} · яшчэ адрасоў: {1}</value></data>
+  <data name="PortOnly" xml:space="preserve"><value>Порт {0}</value></data>
+  <data name="OtherAddresses" xml:space="preserve"><value>Усе адрасы гэтага ПК (паспрабуйце наступны, калі тэлефон не падключаецца):</value></data>
+  <data name="Copy" xml:space="preserve"><value>Капіраваць</value></data>
+  <data name="Copied" xml:space="preserve"><value>Скапіравана</value></data>
+  <data name="StateStopped" xml:space="preserve"><value>Сервер спынены</value></data>
+  <data name="StatePortBusy" xml:space="preserve"><value>Порт {0} заняты іншай праграмай</value></data>
+  <data name="StateWaiting" xml:space="preserve"><value>Чаканне тэлефона</value></data>
+  <data name="StateConnected" xml:space="preserve"><value>Тэлефон падключаны</value></data>
+  <data name="StateNoJoystick" xml:space="preserve"><value>Тэлефон падключаны, vJoy недаступны</value></data>
+  <data name="StatePaused" xml:space="preserve"><value>Тэлефон на паўзе</value></data>
+  <data name="Start" xml:space="preserve"><value>Запусціць сервер</value></data>
+  <data name="Stop" xml:space="preserve"><value>Спыніць сервер</value></data>
+  <data name="Steering" xml:space="preserve"><value>Руль</value></data>
+  <data name="Sensitivity" xml:space="preserve"><value>Адчувальнасць</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Налады</value></data>
+  <data name="Port" xml:space="preserve"><value>Порт</value></data>
+  <data name="PortRange" xml:space="preserve"><value>Ад 10000 да 65535</value></data>
+  <data name="Language" xml:space="preserve"><value>Мова</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>Як у сістэме</value></data>
+  <data name="FirewallWarning" xml:space="preserve"><value>Брандмаўэр Windows можа блакаваць тэлефон.</value></data>
+  <data name="FirewallAllow" xml:space="preserve"><value>Дазволіць</value></data>
+  <data name="FirewallQuestion" xml:space="preserve"><value>Брандмаўэр Windows можа блакаваць падключэнні тэлефона.
+
+Дазволіць Truck Remote Server у брандмаўэры? Спатрэбяцца правы адміністратара.</value></data>
+  <data name="FirewallNotApplied" xml:space="preserve"><value>Правіла брандмаўэра не ўжылося. Дазвольце Truck Remote Server (UDP-порт {0}) у брандмаўэры ўручную.</value></data>
+  <data name="PluginNotInstalled" xml:space="preserve"><value>Плагін тэлеметрыі не ўсталяваны: {0}
+
+Кіраванне працуе і без яго, толькі стан грузавіка не паказваецца на тэлефоне.</value></data>
+  <data name="GameNotFound" xml:space="preserve"><value>{0} не знойдзена. Калі гульня не ўсталявана, націсніце «Скасаваць», каб прапусціць яе, інакш націсніце «ОК» і выберыце яе папку.
+
+Напрыклад: {1}</value></data>
+  <data name="SelectGameFolder" xml:space="preserve"><value>Выберыце папку {0}</value></data>
+  <data name="Version" xml:space="preserve"><value>Версія {0}</value></data>
+</root>

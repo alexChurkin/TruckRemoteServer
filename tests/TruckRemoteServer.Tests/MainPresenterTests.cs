@@ -18,13 +18,14 @@ namespace TruckRemoteServer.Tests
         private readonly FakePluginSetup pluginSetup = new FakePluginSetup();
         private readonly ControllerInputMapper mapper;
         private readonly ControllerServer server;
+        private readonly MainPresenter presenter;
 
         public MainPresenterTests()
         {
             mapper = new ControllerInputMapper(new FakeKeyboard(), joystick);
             server = new ControllerServer(mapper, new FakeTelemetry(), joystick, new NoTimerResolution(),
                 NullLogger<ControllerServer>.Instance);
-            new MainPresenter(view, server, mapper, joystick, settings, firewall, network, pluginSetup, "server.exe")
+            presenter = new MainPresenter(view, server, mapper, joystick, settings, firewall, network, pluginSetup, "server.exe")
             {
                 RunInBackground = work => System.Threading.Tasks.Task.FromResult(work())
             };
@@ -41,8 +42,7 @@ namespace TruckRemoteServer.Tests
             Assert.Equal(70, view.Sensitivity);
             Assert.Equal(70, mapper.SteeringSensitivity);
             Assert.Equal(new[] { "192.168.1.10" }, view.Addresses);
-            Assert.True(view.Running);
-            Assert.Equal("Enabled", view.Status);
+            Assert.Equal(ServerState.WaitingForController, view.State);
         }
 
         [Fact]
@@ -103,12 +103,10 @@ namespace TruckRemoteServer.Tests
         {
             view.Show();
             view.ChangeSensitivity(30);
-            view.ChangePort(18300);
 
             Assert.Equal(30, mapper.SteeringSensitivity);
             Assert.Equal(30, settings.Sensitivity);
-            Assert.Equal(18300, settings.Port);
-            Assert.True(settings.Saves >= 2);
+            Assert.True(settings.Saves >= 1);
         }
 
         [Fact]
@@ -116,11 +114,10 @@ namespace TruckRemoteServer.Tests
         {
             view.Show();
             view.Stop();
-            Assert.False(view.Running);
-            Assert.Equal("Disabled", view.Status);
+            Assert.Equal(ServerState.Stopped, view.State);
 
             view.Start();
-            Assert.True(view.Running);
+            Assert.Equal(ServerState.WaitingForController, view.State);
         }
 
         [Fact]
@@ -131,8 +128,57 @@ namespace TruckRemoteServer.Tests
             view.Show();
 
             Assert.Equal(1, pluginSetup.Installs);
-            Assert.Single(view.Warnings);
-            Assert.True(view.Running);
+            Assert.Equal(new[] { Warning.TelemetryPluginNotInstalled }, view.Warnings);
+            Assert.Equal(ServerState.WaitingForController, view.State);
+        }
+
+        [Fact]
+        public void RunningServerMovesToTheNewPort()
+        {
+            view.Show();
+            int newPort = FreePort();
+            view.ChangePort(newPort);
+
+            Assert.Equal(newPort, settings.Port);
+            Assert.Equal(newPort, server.Port);
+            Assert.Equal(newPort, view.AddressesPort);
+            Assert.Equal(ServerState.WaitingForController, view.State);
+        }
+
+        [Fact]
+        public void BusyPortIsShownAndAnotherOneCanBeChosen()
+        {
+            using (var other = new System.Net.Sockets.UdpClient(new IPEndPoint(IPAddress.Any, 0)))
+            {
+                settings.Port = ((IPEndPoint)other.Client.LocalEndPoint).Port;
+                view.Show();
+                Assert.Equal(ServerState.PortBusy, view.State);
+                Assert.Equal(settings.Port, view.StatePort);
+
+                view.ChangePort(FreePort());
+                Assert.Equal(ServerState.WaitingForController, view.State);
+            }
+        }
+
+        [Fact]
+        public void LanguageIsShownBeforeTheWindowAndSaved()
+        {
+            settings.Language = "ru";
+            presenter.Initialize();
+            Assert.Equal("ru", view.Language);
+
+            view.Show();
+            view.ChangeLanguage("");
+            Assert.Equal("", settings.Language);
+            Assert.Equal("", view.Language);
+        }
+
+        private static int FreePort()
+        {
+            using (var socket = new System.Net.Sockets.UdpClient(new IPEndPoint(IPAddress.Any, 0)))
+            {
+                return ((IPEndPoint)socket.Client.LocalEndPoint).Port;
+            }
         }
 
         [Fact]

@@ -11,6 +11,9 @@ namespace TruckRemoteServer.Settings
         //The firewall question is asked once, later only the link is shown
         bool FirewallPromptShown { get; set; }
 
+        //"" - the language of Windows, otherwise a language code ("en", "ru", "be", "uk")
+        string Language { get; set; }
+
         void Save();
     }
 }

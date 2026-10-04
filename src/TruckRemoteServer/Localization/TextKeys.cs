@@ -1,0 +1,38 @@
+namespace TruckRemoteServer.Localization
+{
+    //Names of the texts in Strings.resx
+    public static class TextKeys
+    {
+        public const string ServerAddress = nameof(ServerAddress);
+        public const string AddressHint = nameof(AddressHint);
+        public const string NoAddress = nameof(NoAddress);
+        public const string PortAndMore = nameof(PortAndMore);
+        public const string PortOnly = nameof(PortOnly);
+        public const string OtherAddresses = nameof(OtherAddresses);
+        public const string Copy = nameof(Copy);
+        public const string Copied = nameof(Copied);
+        public const string StateStopped = nameof(StateStopped);
+        public const string StatePortBusy = nameof(StatePortBusy);
+        public const string StateWaiting = nameof(StateWaiting);
+        public const string StateConnected = nameof(StateConnected);
+        public const string StateNoJoystick = nameof(StateNoJoystick);
+        public const string StatePaused = nameof(StatePaused);
+        public const string Start = nameof(Start);
+        public const string Stop = nameof(Stop);
+        public const string Steering = nameof(Steering);
+        public const string Sensitivity = nameof(Sensitivity);
+        public const string SettingsTitle = nameof(SettingsTitle);
+        public const string Port = nameof(Port);
+        public const string PortRange = nameof(PortRange);
+        public const string Language = nameof(Language);
+        public const string LanguageSystem = nameof(LanguageSystem);
+        public const string FirewallWarning = nameof(FirewallWarning);
+        public const string FirewallAllow = nameof(FirewallAllow);
+        public const string FirewallQuestion = nameof(FirewallQuestion);
+        public const string FirewallNotApplied = nameof(FirewallNotApplied);
+        public const string PluginNotInstalled = nameof(PluginNotInstalled);
+        public const string GameNotFound = nameof(GameNotFound);
+        public const string SelectGameFolder = nameof(SelectGameFolder);
+        public const string Version = nameof(Version);
+    }
+}

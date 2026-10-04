@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ServerAddress" xml:space="preserve"><value>Адрес сервера</value></data>
+  <data name="AddressHint" xml:space="preserve"><value>Телефон находит сервер сам. Если не получается, укажите этот адрес в настройках приложения.</value></data>
+  <data name="NoAddress" xml:space="preserve"><value>Нет подключения к сети</value></data>
+  <data name="PortAndMore" xml:space="preserve"><value>Порт {0} · ещё адресов: {1}</value></data>
+  <data name="PortOnly" xml:space="preserve"><value>Порт {0}</value></data>
+  <data name="OtherAddresses" xml:space="preserve"><value>Все адреса этого ПК (попробуйте следующий, если телефон не подключается):</value></data>
+  <data name="Copy" xml:space="preserve"><value>Копировать</value></data>
+  <data name="Copied" xml:space="preserve"><value>Скопировано</value></data>
+  <data name="StateStopped" xml:space="preserve"><value>Сервер остановлен</value></data>
+  <data name="StatePortBusy" xml:space="preserve"><value>Порт {0} занят другой программой</value></data>
+  <data name="StateWaiting" xml:space="preserve"><value>Ожидание телефона</value></data>
+  <data name="StateConnected" xml:space="preserve"><value>Телефон подключён</value></data>
+  <data name="StateNoJoystick" xml:space="preserve"><value>Телефон подключён, vJoy недоступен</value></data>
+  <data name="StatePaused" xml:space="preserve"><value>Телефон на паузе</value></data>
+  <data name="Start" xml:space="preserve"><value>Запустить сервер</value></data>
+  <data name="Stop" xml:space="preserve"><value>Остановить сервер</value></data>
+  <data name="Steering" xml:space="preserve"><value>Руль</value></data>
+  <data name="Sensitivity" xml:space="preserve"><value>Чувствительность</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Настройки</value></data>
+  <data name="Port" xml:space="preserve"><value>Порт</value></data>
+  <data name="PortRange" xml:space="preserve"><value>От 10000 до 65535</value></data>
+  <data name="Language" xml:space="preserve"><value>Язык</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>Как в системе</value></data>
+  <data name="FirewallWarning" xml:space="preserve"><value>Брандмауэр Windows может блокировать телефон.</value></data>
+  <data name="FirewallAllow" xml:space="preserve"><value>Разрешить</value></data>
+  <data name="FirewallQuestion" xml:space="preserve"><value>Брандмауэр Windows может блокировать подключения телефона.
+
+Разрешить Truck Remote Server в брандмауэре? Потребуются права администратора.</value></data>
+  <data name="FirewallNotApplied" xml:space="preserve"><value>Правило брандмауэра не применилось. Разрешите Truck Remote Server (UDP-порт {0}) в брандмауэре вручную.</value></data>
+  <data name="PluginNotInstalled" xml:space="preserve"><value>Плагин телеметрии не установлен: {0}
+
+Управление работает и без него, только состояние грузовика не показывается на телефоне.</value></data>
+  <data name="GameNotFound" xml:space="preserve"><value>{0} не найдена. Если игра не установлена, нажмите «Отмена», чтобы пропустить её, иначе нажмите «ОК» и выберите её папку.
+
+Например: {1}</value></data>
+  <data name="SelectGameFolder" xml:space="preserve"><value>Выберите папку {0}</value></data>
+  <data name="Version" xml:space="preserve"><value>Версия {0}</value></data>
+</root>

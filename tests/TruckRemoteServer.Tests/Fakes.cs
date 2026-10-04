@@ -92,6 +92,7 @@ namespace TruckRemoteServer.Tests
         public int Port { get; set; }
         public int Sensitivity { get; set; } = 50;
         public bool FirewallPromptShown { get; set; }
+        public string Language { get; set; } = "";
         public int Saves;
 
         public void Save() => Saves++;
@@ -143,14 +144,15 @@ namespace TruckRemoteServer.Tests
         public int? Port;
         public int? Sensitivity;
         public IList<string> Addresses;
-        public string Status;
-        public StatusKind StatusKind;
-        public bool Running;
+        public int AddressesPort;
+        public ServerState State;
+        public int StatePort;
+        public string Language;
         public bool FirewallWarning;
         public bool FirewallBusy;
         public bool AnswerAllowFirewall = true;
         public int FirewallQuestions;
-        public List<string> Warnings = new List<string>();
+        public List<Warning> Warnings = new List<Warning>();
 
         public event EventHandler Shown;
         public event EventHandler Closing;
@@ -158,6 +160,7 @@ namespace TruckRemoteServer.Tests
         public event EventHandler StopRequested;
         public event EventHandler<int> PortChanged;
         public event EventHandler<int> SensitivityChanged;
+        public event EventHandler<string> LanguageChanged;
         public event EventHandler AllowFirewallRequested;
 
         public void Show() => Shown?.Invoke(this, EventArgs.Empty);
@@ -167,6 +170,9 @@ namespace TruckRemoteServer.Tests
         public void ChangePort(int port) => PortChanged?.Invoke(this, port);
         public void ChangeSensitivity(int value) => SensitivityChanged?.Invoke(this, value);
         public void AllowFirewall() => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
+        public void ChangeLanguage(string language) => LanguageChanged?.Invoke(this, language);
+
+        public void ShowLanguage(string language) => Language = language;
 
         public void ShowSettings(int port, int sensitivity)
         {
@@ -174,15 +180,17 @@ namespace TruckRemoteServer.Tests
             Sensitivity = sensitivity;
         }
 
-        public void ShowAddresses(IList<string> addresses) => Addresses = addresses;
-
-        public void ShowStatus(string text, StatusKind kind)
+        public void ShowAddresses(IList<string> addresses, int port)
         {
-            Status = text;
-            StatusKind = kind;
+            Addresses = addresses;
+            AddressesPort = port;
         }
 
-        public void ShowRunning(bool running) => Running = running;
+        public void ShowState(ServerState state, int port)
+        {
+            State = state;
+            StatePort = port;
+        }
 
         public void ShowFirewallWarning(bool visible, bool busy)
         {
@@ -196,7 +204,7 @@ namespace TruckRemoteServer.Tests
             return AnswerAllowFirewall;
         }
 
-        public void ShowWarning(string message) => Warnings.Add(message);
+        public void ShowWarning(Warning warning, string detail) => Warnings.Add(warning);
 
         public void RunOnUiThread(Action action) => action();
     }

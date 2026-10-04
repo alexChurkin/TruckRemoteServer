@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ServerAddress" xml:space="preserve"><value>Server address</value></data>
+  <data name="AddressHint" xml:space="preserve"><value>The phone finds the server by itself. If it doesn't, enter this address in the app settings.</value></data>
+  <data name="NoAddress" xml:space="preserve"><value>No network connection</value></data>
+  <data name="PortAndMore" xml:space="preserve"><value>Port {0} · {1} more addresses</value></data>
+  <data name="PortOnly" xml:space="preserve"><value>Port {0}</value></data>
+  <data name="OtherAddresses" xml:space="preserve"><value>All addresses of this PC (try the next one if the phone can't connect):</value></data>
+  <data name="Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Copied" xml:space="preserve"><value>Copied</value></data>
+  <data name="StateStopped" xml:space="preserve"><value>Server stopped</value></data>
+  <data name="StatePortBusy" xml:space="preserve"><value>Port {0} is used by another program</value></data>
+  <data name="StateWaiting" xml:space="preserve"><value>Waiting for the phone</value></data>
+  <data name="StateConnected" xml:space="preserve"><value>Phone connected</value></data>
+  <data name="StateNoJoystick" xml:space="preserve"><value>Phone connected, vJoy isn't available</value></data>
+  <data name="StatePaused" xml:space="preserve"><value>Phone paused</value></data>
+  <data name="Start" xml:space="preserve"><value>Start server</value></data>
+  <data name="Stop" xml:space="preserve"><value>Stop server</value></data>
+  <data name="Steering" xml:space="preserve"><value>Steering</value></data>
+  <data name="Sensitivity" xml:space="preserve"><value>Sensitivity</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
+  <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="PortRange" xml:space="preserve"><value>From 10000 to 65535</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>System default</value></data>
+  <data name="FirewallWarning" xml:space="preserve"><value>Windows Firewall may block the phone.</value></data>
+  <data name="FirewallAllow" xml:space="preserve"><value>Allow</value></data>
+  <data name="FirewallQuestion" xml:space="preserve"><value>Windows Firewall may block connections from the phone.
+
+Allow Truck Remote Server in the firewall? Administrator rights are required.</value></data>
+  <data name="FirewallNotApplied" xml:space="preserve"><value>The firewall rule wasn't applied. Allow Truck Remote Server (UDP port {0}) in your firewall manually.</value></data>
+  <data name="PluginNotInstalled" xml:space="preserve"><value>The telemetry plugin wasn't installed: {0}
+
+The controls work without it, only the truck state isn't shown on the phone.</value></data>
+  <data name="GameNotFound" xml:space="preserve"><value>{0} wasn't found. If it isn't installed, press Cancel to skip it, otherwise press OK and select its folder.
+
+For example: {1}</value></data>
+  <data name="SelectGameFolder" xml:space="preserve"><value>Select the {0} folder</value></data>
+  <data name="Version" xml:space="preserve"><value>Version {0}</value></data>
+</root>

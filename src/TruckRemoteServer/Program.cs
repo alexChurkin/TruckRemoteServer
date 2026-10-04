@@ -25,7 +25,7 @@ namespace TruckRemoteServer
             {
                 var form = services.GetRequiredService<MainForm>();
                 //The presenter subscribes to the view, it lives as long as the form
-                services.GetRequiredService<MainPresenter>();
+                services.GetRequiredService<MainPresenter>().Initialize();
                 Application.Run(form);
             }
         }

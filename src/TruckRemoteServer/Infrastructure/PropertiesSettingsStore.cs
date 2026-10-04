@@ -25,6 +25,12 @@ namespace TruckRemoteServer.Infrastructure
             set => Values.FirewallPromptShown = value;
         }
 
+        public string Language
+        {
+            get => Values.Language ?? "";
+            set => Values.Language = value ?? "";
+        }
+
         public void Save()
         {
             Values.Save();

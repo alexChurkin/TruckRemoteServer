@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
@@ -499,12 +499,12 @@ namespace TruckRemoteServer.UI
             SuspendLayout();
             int y = pad;
 
-            //Header: title and the server state
+            //Header: title and the server state under it (long states don't fit beside the title)
+            titleLabel.Location = new Point(pad - Px(2), y);
+            y += titleLabel.PreferredHeight + Px(6);
             statusPill.Size = statusPill.GetPreferredSize(Size.Empty);
-            int headerHeight = Math.Max(titleLabel.PreferredHeight, statusPill.Height);
-            titleLabel.Location = new Point(pad - Px(2), y + (headerHeight - titleLabel.PreferredHeight) / 2);
-            statusPill.Location = new Point(pad + width - statusPill.Width, y + (headerHeight - statusPill.Height) / 2);
-            y += headerHeight + Px(16);
+            statusPill.Location = new Point(pad, y);
+            y += statusPill.Height + Px(16);
 
             //Address of the server: the most important thing for the user
             int cy = cardPad;

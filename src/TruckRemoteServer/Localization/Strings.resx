@@ -7,7 +7,7 @@
   <data name="ServerAddress" xml:space="preserve"><value>Server address</value></data>
   <data name="AddressHint" xml:space="preserve"><value>The phone finds the server by itself. If it doesn't, enter this address in the app settings.</value></data>
   <data name="NoAddress" xml:space="preserve"><value>No network connection</value></data>
-  <data name="PortAndMore" xml:space="preserve"><value>Port {0} · {1} more addresses</value></data>
+  <data name="PortAndMore" xml:space="preserve"><value>Port {0} · other addresses: {1}</value></data>
   <data name="PortOnly" xml:space="preserve"><value>Port {0}</value></data>
   <data name="OtherAddresses" xml:space="preserve"><value>All addresses of this PC (try the next one if the phone can't connect):</value></data>
   <data name="Copy" xml:space="preserve"><value>Copy</value></data>

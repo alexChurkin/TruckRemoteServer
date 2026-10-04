@@ -1,4 +1,4 @@
-# Starts the server on a clean Windows (CI), dismisses the first-start dialogs and takes screenshots
+﻿# Starts the server on a clean Windows (CI), dismisses the first-start dialogs and takes screenshots
 # of the main window: light theme, dark theme and Russian. Also a smoke test: the app must start.
 param([string]$Exe, [string]$Out)
 
@@ -65,17 +65,18 @@ function Capture($process, [string]$name) {
     Write-Host "Saved $name ($width x $height)"
 }
 
-function Select-Language($process, [string]$code) {
-    $root = [System.Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
-    $combo = $root.FindFirst([System.Windows.Automation.TreeScope]::Descendants,
-        (New-Object System.Windows.Automation.PropertyCondition(
-            [System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::ComboBox)))
-    $combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
-    Start-Sleep -Milliseconds 500
-    $item = $combo.FindFirst([System.Windows.Automation.TreeScope]::Descendants,
-        (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $code)))
-    $item.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
-    $combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Collapse()
+# The language button opens a menu, its items are named by the languages
+function Select-Language($process, [string]$name) {
+    $A = [System.Windows.Automation.AutomationElement]
+    $root = $A::FromHandle($process.MainWindowHandle)
+    $buttons = $root.FindAll([System.Windows.Automation.TreeScope]::Descendants,
+        (New-Object System.Windows.Automation.PropertyCondition($A::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)))
+    $button = $buttons | Where-Object { $_.Current.Name -like '*:*' } | Select-Object -First 1
+    $button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Start-Sleep -Milliseconds 800
+    $item = $A::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Descendants,
+        (New-Object System.Windows.Automation.PropertyCondition($A::NameProperty, $name)))
+    $item.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
     Start-Sleep -Milliseconds 800
 }
 
@@ -96,4 +97,5 @@ function Run([string]$name, [int]$light, [string]$language) {
 New-Item -Force -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' | Out-Null
 Run 'light' 1 $null
 Run 'dark' 0 $null
-Run 'russian' 1 'ru'
+Run 'russian' 1 'Русский'
+Run 'russian-dark' 0 $null

@@ -18,12 +18,12 @@ namespace TruckRemoteServer.UI.Controls
         public Color TextColor { get; set; } = Color.Black;
         public Color ParentColor { get; set; } = Color.White;
 
-        private float Scale => DeviceDpi / 96f;
+        private float DpiScale => DeviceDpi / 96f;
 
         public override Size GetPreferredSize(Size proposedSize)
         {
             Size text = TextRenderer.MeasureText(Text, Font);
-            return new Size((int)(text.Width + 34 * Scale), (int)(text.Height + 10 * Scale));
+            return new Size((int)(text.Width + 34 * DpiScale), (int)(text.Height + 10 * DpiScale));
         }
 
         protected override void OnTextChanged(System.EventArgs e)
@@ -44,12 +44,12 @@ namespace TruckRemoteServer.UI.Controls
             {
                 e.Graphics.FillPath(brush, path);
             }
-            float dot = 8 * Scale;
+            float dot = 8 * DpiScale;
             using (var brush = new SolidBrush(DotColor))
             {
-                e.Graphics.FillEllipse(brush, 12 * Scale, (Height - dot) / 2, dot, dot);
+                e.Graphics.FillEllipse(brush, 12 * DpiScale, (Height - dot) / 2, dot, dot);
             }
-            var textBounds = new Rectangle((int)(26 * Scale), 0, Width - (int)(26 * Scale), Height);
+            var textBounds = new Rectangle((int)(26 * DpiScale), 0, Width - (int)(26 * DpiScale), Height);
             TextRenderer.DrawText(e.Graphics, Text, Font, textBounds, TextColor,
                 TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.SingleLine);
         }

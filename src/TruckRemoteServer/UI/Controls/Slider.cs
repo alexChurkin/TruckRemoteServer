@@ -44,8 +44,8 @@ namespace TruckRemoteServer.UI.Controls
 
         protected override AccessibleObject CreateAccessibilityInstance() => new SliderAccessibleObject(this);
 
-        private float Scale => DeviceDpi / 96f;
-        private float ThumbRadius => 10 * Scale;
+        private float DpiScale => DeviceDpi / 96f;
+        private float ThumbRadius => 10 * DpiScale;
         private float TrackLeft => ThumbRadius + 1;
         private float TrackRight => Width - ThumbRadius - 1;
 
@@ -141,7 +141,7 @@ namespace TruckRemoteServer.UI.Controls
             e.Graphics.Clear(ParentColor);
             Drawing.Prepare(e.Graphics);
             float centerY = Height / 2f;
-            float trackHeight = 4 * Scale;
+            float trackHeight = 4 * DpiScale;
             float thumbX = ValueToX(value);
 
             var track = new RectangleF(TrackLeft, centerY - trackHeight / 2, TrackRight - TrackLeft, trackHeight);
@@ -159,7 +159,7 @@ namespace TruckRemoteServer.UI.Controls
 
             //Thumb: an outer circle with an accent dot, the dot grows when focused
             float outer = ThumbRadius;
-            float inner = (Focused ? 6 : 5) * Scale;
+            float inner = (Focused ? 6 : 5) * DpiScale;
             using (var brush = new SolidBrush(ThumbColor))
             using (var border = new Pen(TrackColor))
             {

@@ -54,14 +54,10 @@ namespace TruckRemoteServer.UI
         private readonly RoundedPanel settingsCard = new RoundedPanel();
         private readonly Label settingsTitle = new Label { AutoSize = true };
         private readonly Label portCaption = new Label { AutoSize = true };
-        private readonly TextBox portBox = new TextBox { BorderStyle = BorderStyle.FixedSingle, MaxLength = 5 };
+        private readonly InputField portField = new InputField();
         private readonly Label languageCaption = new Label { AutoSize = true };
-        private readonly ComboBox languageBox = new ComboBox
-        {
-            DropDownStyle = ComboBoxStyle.DropDownList,
-            DrawMode = DrawMode.OwnerDrawFixed,
-            FlatStyle = FlatStyle.Flat
-        };
+        private readonly RoundedButton languageButton = new RoundedButton { ShowChevron = true };
+        private readonly ContextMenuStrip languageMenu = new ContextMenuStrip { ShowImageMargin = false, ShowCheckMargin = true };
 
         private readonly RoundedButton startStopButton = new RoundedButton();
         private readonly Label versionLabel = new Label { AutoSize = true };
@@ -107,15 +103,21 @@ namespace TruckRemoteServer.UI
             addressCard.Controls.AddRange(new Control[] { addressCaption, addressLabel, copyButton, portInfoLabel, hintLabel });
             firewallBanner.Controls.AddRange(new Control[] { firewallLabel, allowButton });
             steeringCard.Controls.AddRange(new Control[] { steeringTitle, sensitivityLabel, sensitivityValue, sensitivitySlider });
-            settingsCard.Controls.AddRange(new Control[] { settingsTitle, portCaption, portBox, languageCaption, languageBox });
+            settingsCard.Controls.AddRange(new Control[] { settingsTitle, portCaption, portField, languageCaption, languageButton });
             Controls.AddRange(new Control[]
             {
                 titleLabel, statusPill, addressCard, firewallBanner, steeringCard, settingsCard, startStopButton, versionLabel
             });
 
-            foreach (var item in LANGUAGES) languageBox.Items.Add(item.Code);
-            languageBox.DrawItem += DrawLanguageItem;
-            languageBox.SelectedIndexChanged += OnLanguageSelected;
+            foreach (var item in LANGUAGES)
+            {
+                string code = item.Code;
+                var menuItem = new ToolStripMenuItem { Tag = code, Font = Theme.Body };
+                menuItem.Click += (s, e) => OnLanguageSelected(code);
+                languageMenu.Items.Add(menuItem);
+            }
+            languageMenu.Font = Theme.Body;
+            languageButton.Click += (s, e) => languageMenu.Show(languageButton, 0, languageButton.Height + Px(2));
             copyButton.Click += (s, e) => CopyAddress();
             copiedTimer.Tick += (s, e) =>
             {
@@ -126,6 +128,9 @@ namespace TruckRemoteServer.UI
             allowButton.Click += (s, e) => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
             startStopButton.Click += (s, e) => (IsRunning ? StopRequested : StartRequested)?.Invoke(this, EventArgs.Empty);
             sensitivitySlider.ValueChanged += OnSensitivityChanged;
+            TextBox portBox = portField.TextBox;
+            portBox.MaxLength = 5;
+            portBox.Font = Theme.Body;
             portBox.KeyDown += (s, e) =>
             {
                 if (e.KeyCode != Keys.Enter) return;
@@ -177,6 +182,7 @@ namespace TruckRemoteServer.UI
                 SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
                 toolTip.Dispose();
                 copiedTimer.Dispose();
+                languageMenu.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -187,9 +193,6 @@ namespace TruckRemoteServer.UI
         {
             language = code ?? "";
             Texts.SetLanguage(language);
-            showingValues = true;
-            languageBox.SelectedIndex = Math.Max(0, Array.FindIndex(LANGUAGES, item => item.Code == language));
-            showingValues = false;
             ApplyTexts();
         }
 
@@ -197,7 +200,7 @@ namespace TruckRemoteServer.UI
         {
             showingValues = true;
             this.port = port;
-            portBox.Text = port.ToString();
+            portField.TextBox.Text = port.ToString();
             sensitivitySlider.Value = sensitivity;
             sensitivityValue.Text = sensitivity.ToString();
             showingValues = false;
@@ -285,20 +288,19 @@ namespace TruckRemoteServer.UI
         //A wrong port is replaced back by the current one
         private void CommitPort()
         {
-            if (int.TryParse(portBox.Text, out int value) && value >= PORT_MIN && value <= PORT_MAX)
+            if (int.TryParse(portField.TextBox.Text, out int value) && value >= PORT_MIN && value <= PORT_MAX)
             {
-                toolTip.Hide(portBox);
+                toolTip.Hide(portField);
                 if (value != port) PortChanged?.Invoke(this, value);
                 return;
             }
-            portBox.Text = port.ToString();
-            toolTip.Show(Texts.Get(T.PortRange), portBox, 0, portBox.Height + 2, 2500);
+            portField.TextBox.Text = port.ToString();
+            toolTip.Show(Texts.Get(T.PortRange), portField, 0, portField.Height + Px(2), 2500);
         }
 
-        private void OnLanguageSelected(object sender, EventArgs e)
+        private void OnLanguageSelected(string code)
         {
-            if (showingValues || languageBox.SelectedIndex < 0) return;
-            LanguageChanged?.Invoke(this, LANGUAGES[languageBox.SelectedIndex].Code);
+            if (code != language) LanguageChanged?.Invoke(this, code);
         }
 
         private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
@@ -329,7 +331,16 @@ namespace TruckRemoteServer.UI
             languageCaption.Text = Texts.Get(T.Language);
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
             versionLabel.Text = Texts.Format(T.Version, version.ToString(3));
-            languageBox.Invalidate();
+            string systemName = Texts.Get(T.LanguageSystem);
+            foreach (ToolStripMenuItem item in languageMenu.Items)
+            {
+                string code = (string)item.Tag;
+                item.Text = Array.Find(LANGUAGES, l => l.Code == code).Name ?? systemName;
+                item.Checked = code == language;
+                item.AccessibleName = item.Text;
+            }
+            languageButton.Text = Array.Find(LANGUAGES, l => l.Code == language).Name ?? systemName;
+            languageButton.AccessibleName = Texts.Get(T.Language) + ": " + languageButton.Text;
             ApplyAddressTexts();
             ApplyStateTexts();
             LayoutContent();
@@ -412,10 +423,16 @@ namespace TruckRemoteServer.UI
             sensitivitySlider.TrackColor = theme.ControlBorder;
             sensitivitySlider.ThumbColor = theme.Control;
 
-            portBox.BackColor = theme.Control;
-            portBox.ForeColor = theme.Text;
-            languageBox.BackColor = theme.Control;
-            languageBox.ForeColor = theme.Text;
+            portField.FillColor = theme.Control;
+            portField.BorderColor = theme.ControlBorder;
+            portField.AccentColor = theme.Accent;
+            portField.TextBox.BackColor = theme.Control;
+            portField.TextBox.ForeColor = theme.Text;
+            StyleSecondary(languageButton, theme.Card);
+            languageMenu.Renderer = new ThemedMenuRenderer(theme.Card, theme.ControlBorder,
+                theme.IsDark ? Color.FromArgb(60, 60, 60) : Color.FromArgb(234, 234, 234));
+            languageMenu.BackColor = theme.Card;
+            foreach (ToolStripItem item in languageMenu.Items) item.ForeColor = theme.Text;
 
             statusPill.ParentColor = theme.Background;
             statusPill.FillColor = theme.Card;
@@ -465,18 +482,6 @@ namespace TruckRemoteServer.UI
             button.BorderColor = theme.ControlBorder;
             button.ParentColor = parent;
             button.Invalidate();
-        }
-
-        private void DrawLanguageItem(object sender, DrawItemEventArgs e)
-        {
-            if (e.Index < 0) return;
-            bool selected = (e.State & DrawItemState.Selected) != 0 && (e.State & DrawItemState.ComboBoxEdit) == 0;
-            Color back = selected ? theme.Accent : theme.Control;
-            Color fore = selected ? theme.OnAccent : theme.Text;
-            using (var brush = new SolidBrush(back)) e.Graphics.FillRectangle(brush, e.Bounds);
-            string name = LANGUAGES[e.Index].Name ?? Texts.Get(T.LanguageSystem);
-            TextRenderer.DrawText(e.Graphics, name, languageBox.Font, e.Bounds, fore,
-                TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.SingleLine);
         }
 
         /* Layout */
@@ -551,12 +556,10 @@ namespace TruckRemoteServer.UI
             portCaption.Location = new Point(cardPad, cy);
             languageCaption.Location = new Point(cardPad + column + gap, cy);
             cy += Math.Max(portCaption.PreferredHeight, languageCaption.PreferredHeight) + Px(4);
-            portBox.Width = Px(110);
-            portBox.Location = new Point(cardPad, cy);
-            languageBox.Width = column;
-            languageBox.ItemHeight = portBox.PreferredHeight - Px(6);
-            languageBox.Location = new Point(cardPad + column + gap, cy);
-            cy += Math.Max(portBox.PreferredHeight, languageBox.Height) + cardPad;
+            int fieldHeight = Px(34);
+            portField.Bounds = new Rectangle(cardPad, cy, Px(120), fieldHeight);
+            languageButton.Bounds = new Rectangle(cardPad + column + gap, cy, column, fieldHeight);
+            cy += fieldHeight + cardPad;
             settingsCard.Bounds = new Rectangle(pad, y, width, cy);
             y += cy + Px(20);
 

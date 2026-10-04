@@ -53,6 +53,34 @@ namespace TruckRemoteServer.Tests
             Assert.False(state.GasPressed);
         }
 
+        [Fact]
+        public void SequenceNumberIsTheLastField()
+        {
+            var state = ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false,0.5,0,1,2,#42", 8);
+
+            Assert.Equal(42L, state.Sequence);
+            Assert.Equal(0.5, state.GasLevel);
+            Assert.Equal(new[] { 1, 2 }, state.ActionCounters);
+            Assert.Null(ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false", 8).Sequence);
+        }
+
+        [Fact]
+        public void SequenceDoesntCountAsActions()
+        {
+            var state = ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false,0,0,#3", 8);
+
+            Assert.Empty(state.ActionCounters);
+            Assert.Equal(3L, state.Sequence);
+        }
+
+        [Theory]
+        [InlineData("0,false,false,false,false,false,false,false,0,false,#x")]
+        [InlineData("0,false,false,false,false,false,false,false,0,#1")]
+        public void MalformedSequenceGivesNull(string message)
+        {
+            Assert.Null(ControllerMessage.Parse(message, 8));
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData("paused")]

@@ -15,9 +15,7 @@ namespace TruckRemoteServer
         //lift axle (U), beacon (O), light horn (J)
         private static readonly short[] ACTION_SCANCODES = { 0x12, 0x14, 0x1C, 0x19, 0x2F, 0x16, 0x18, 0x24 };
         public static int ActionsCount => ACTION_SCANCODES.Length;
-        //More clicks at once are considered as broken counter
-        private const int MAX_ACTION_CLICKS = 5;
-        private readonly int[] prevActionCounters = new int[ACTION_SCANCODES.Length];
+        private readonly ActionCounters actionCounters = new ActionCounters(ACTION_SCANCODES.Length);
 
         //Controller-dependent previous data
         public int prevXAxisValue;
@@ -86,8 +84,7 @@ namespace TruckRemoteServer
             prevParkingBreakState = parkingBrake;
             prevLightsState = lights;
             prevCruiseState = cruise;
-            Array.Copy(actionCounters, prevActionCounters,
-                Math.Min(actionCounters.Length, prevActionCounters.Length));
+            this.actionCounters.Sync(actionCounters);
             return true;
         }
 
@@ -104,16 +101,12 @@ namespace TruckRemoteServer
         }
 
         //Every action has a counter of clicks on controller's side
-        public void UpdateActions(int[] actionCounters)
+        public void UpdateActions(int[] counters)
         {
-            int count = Math.Min(actionCounters.Length, prevActionCounters.Length);
-            for (int i = 0; i < count; i++)
+            int[] clicks = actionCounters.Update(counters);
+            for (int i = 0; i < clicks.Length; i++)
             {
-                int clicks = actionCounters[i] - prevActionCounters[i];
-                prevActionCounters[i] = actionCounters[i];
-                if (clicks <= 0 || clicks > MAX_ACTION_CLICKS) continue;
-
-                for (int c = 0; c < clicks; c++)
+                for (int c = 0; c < clicks[i]; c++)
                 {
                     InputEmulator.KeyClick(ACTION_SCANCODES[i]);
                 }

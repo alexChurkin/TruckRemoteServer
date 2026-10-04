@@ -20,9 +20,10 @@ namespace TruckRemoteServer.Tests
         [Fact]
         public void FormatKeepsTheFormatReadByControllers()
         {
-            string message = ServerMessage.Format(true, false, true, false, 2, 150, true, false, true, false);
+            string message = ServerMessage.Format(true, false, true, false, 2, 150, true, false, true, false, 77);
 
-            Assert.Equal("True,False,True,False,2,150,1,0,1,0", message);
+            //Old controllers read the values by their positions, the number is the last field
+            Assert.Equal("True,False,True,False,2,150,1,0,1,0,#77", message);
         }
     }
 }

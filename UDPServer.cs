@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Net.Sockets;
@@ -19,6 +20,9 @@ namespace TruckRemoteServer
         private const int CONTROLLER_TIMEOUT = 1200;
         //Socket receive timeout (to check controller's silence periodically)
         private const int RECEIVE_TIMEOUT = 300;
+        //Truck state is sent 50 times per second, 20 times to a paused controller
+        private const int SEND_INTERVAL = 20;
+        private const int PAUSED_SEND_INTERVAL = 50;
         //Makes Windows not to break UDP socket with WSAECONNRESET after ICMP "Port unreachable"
         private const int SIO_UDP_CONNRESET = -1744830452;
 
@@ -39,6 +43,8 @@ namespace TruckRemoteServer
         //Incremented on every controller connect/disconnect, stops outdated sender threads
         private int controllerSession;
         private int effectDuration;
+        //Drops controller messages that came out of order
+        private readonly SequenceGate sequenceGate = new SequenceGate();
 
         private readonly PCController pcController;
 
@@ -189,6 +195,7 @@ namespace TruckRemoteServer
             SendHelloAnswer(socket, remoteEndPoint);
 
             Interlocked.Exchange(ref effectDuration, 0);
+            sequenceGate.Reset();
             controllerPaused = false;
             lastControllerMsgTime = TimeUtil.GetMonotonicMillis();
             controllerEndPoint = remoteEndPoint;
@@ -212,10 +219,13 @@ namespace TruckRemoteServer
 
         private void OnMessageFromController(Socket socket, IPEndPoint endPoint, string message)
         {
-            //Controller reconnected from the same address and port
+            //The same controller resumes the session after a network problem (its messages didn't come for a while
+            //or ours didn't reach it). Controls aren't released and toggles aren't synchronized:
+            //clicks made meanwhile must still happen
             if (message.StartsWith(HELLO_MESSAGE))
             {
-                pcController.OnRemoteControlConnected();
+                Console.WriteLine("Controller resumes the session");
+                sequenceGate.Reset();
                 SendHelloAnswer(socket, endPoint);
                 return;
             }
@@ -246,6 +256,7 @@ namespace TruckRemoteServer
                 Console.WriteLine("INFO: Unknown message from controller: " + message);
                 return;
             }
+            if (!sequenceGate.Accept(state.Sequence)) return;
 
             if (controllerPaused)
             {
@@ -290,37 +301,52 @@ namespace TruckRemoteServer
 
         /* ................................. <Sender thread> .............................*/
 
+        //Sends at a fixed rate: the interval doesn't grow by the time of reading telemetry and sending.
+        //Errors (e.g. the network is down for a moment) don't stop sending: the session may be resumed
         private void SendToController(Socket socket, IPEndPoint endPoint, int session)
         {
-            try
+            long sequence = 0;
+            long nextSendTime = 0;
+            Stopwatch clock = Stopwatch.StartNew();
+
+            using (new TimerResolution())
             {
                 while (session == Volatile.Read(ref controllerSession))
                 {
-                    var telemetry = Ets2TelemetryDataReader.Instance.Read();
-
-                    //Saving telemetry data to local state
-                    pcController.UpdateTelemetryData(telemetry);
-
-                    //Paused controller doesn't read anything, so there's no need to flood it
-                    if (!controllerPaused)
+                    try
                     {
-                        byte[] messageToControllerBytes = Encoding.UTF8.GetBytes(MakeMessageToController(telemetry));
-                        socket.SendTo(messageToControllerBytes, endPoint);
+                        var telemetry = Ets2TelemetryDataReader.Instance.Read();
+
+                        //Saving telemetry data to local state
+                        pcController.UpdateTelemetryData(telemetry);
+
+                        //Paused controller doesn't read anything, so there's no need to flood it
+                        if (!controllerPaused)
+                        {
+                            byte[] bytes = Encoding.UTF8.GetBytes(MakeMessageToController(telemetry, ++sequence));
+                            socket.SendTo(bytes, endPoint);
+                        }
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        //Server is stopped
+                        return;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("INFO: Send error: " + e.Message);
                     }
 
-                    if (controllerPaused) Thread.Sleep(50);
-                    else Thread.Sleep(20);
+                    nextSendTime += controllerPaused ? PAUSED_SEND_INTERVAL : SEND_INTERVAL;
+                    long wait = nextSendTime - clock.ElapsedMilliseconds;
+                    //After a long delay (e.g. the PC was busy) messages aren't sent in a burst to catch up
+                    if (wait < -SEND_INTERVAL) nextSendTime = clock.ElapsedMilliseconds;
+                    if (wait > 0) Thread.Sleep((int)wait);
                 }
-            }
-            catch (ObjectDisposedException) { }
-            catch (Exception e)
-            {
-                Console.WriteLine("INFO: Send exception handled");
-                Console.WriteLine("INFO: " + e.ToString());
             }
         }
 
-        private string MakeMessageToController(IEts2TelemetryData telemetry)
+        private string MakeMessageToController(IEts2TelemetryData telemetry, long sequence)
         {
             var truck = telemetry.Truck;
             int lightsMode = ServerMessage.LightsMode(truck.LightsParkingOn, truck.LightsBeamLowOn, truck.LightsBeamHighOn);
@@ -328,7 +354,8 @@ namespace TruckRemoteServer
             bool trailerAttached = telemetry.Trailer1 != null && telemetry.Trailer1.Attached;
 
             return ServerMessage.Format(truck.EngineOn, truck.ParkBrakeOn, truck.BlinkerLeftOn, truck.BlinkerRightOn,
-                lightsMode, effect, trailerAttached, truck.WipersOn, truck.LightsBeaconOn, InputEmulator.HasPedalAxes());
+                lightsMode, effect, trailerAttached, truck.WipersOn, truck.LightsBeaconOn, InputEmulator.HasPedalAxes(),
+                sequence);
         }
 
         /* ................................. </Sender thread> .............................*/

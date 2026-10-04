@@ -11,6 +11,8 @@
     <Compile Include="..\Protocol\*.cs" Link="Linked\Protocol\%(Filename)%(Extension)" />
     <Compile Include="..\Firewall\FirewallRules.cs" Link="Linked\Firewall\FirewallRules.cs" />
     <Compile Include="..\Input\KeyClicker.cs" Link="Linked\Input\KeyClicker.cs" />
+    <Compile Include="..\Input\ActionCounters.cs" Link="Linked\Input\ActionCounters.cs" />
+    <Compile Include="..\NetworkUtil.cs" Link="Linked\NetworkUtil.cs" />
   </ItemGroup>
 
   <ItemGroup>

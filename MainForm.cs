@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TruckRemoteServer.Firewall;
@@ -12,6 +14,7 @@ namespace TruckRemoteServer
     public partial class MainForm : Form, UDPServer.IStatusListener
     {
         private readonly UDPServer server;
+        private readonly ToolTip ipToolTip = new ToolTip();
 
         public MainForm()
         {
@@ -29,6 +32,7 @@ namespace TruckRemoteServer
         {
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.AboveNormal;
             ShowIpInLabel();
+            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             PluginInstaller installer = new PluginInstaller();
             if (installer.Status == SetupStatus.Uninstalled)
             {
@@ -112,16 +116,32 @@ namespace TruckRemoteServer
             }
         }
 
+        //The most likely address is shown, all of them are in the tooltip (e.g. when a VPN or a virtual machine adapter exists)
         public void ShowIpInLabel()
         {
-            IPAddress ip = NetworkUtil.GetLocalIp();
-            if (ip != null)
-            {
-                labelIp.Text = ip.ToString();
-            }
-            else
+            List<IPAddress> ips = NetworkUtil.GetLocalIps();
+            if (ips.Count == 0)
             {
                 labelIp.Text = "Doesn't exist!";
+                ipToolTip.SetToolTip(labelIp, null);
+                return;
+            }
+
+            labelIp.Text = ips.Count == 1 ? ips[0].ToString() : ips[0] + " (+" + (ips.Count - 1) + ")";
+            ipToolTip.SetToolTip(labelIp, ips.Count == 1 ? null :
+                "Addresses of this PC (try the next one if the phone can't connect):\n" + string.Join("\n", ips));
+        }
+
+        //Wi-Fi reconnection or a new DHCP lease may change the address
+        private void OnNetworkAddressChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                BeginInvoke((MethodInvoker)ShowIpInLabel);
+            }
+            catch (InvalidOperationException)
+            {
+                //The form is closed
             }
         }
 
@@ -219,6 +239,7 @@ namespace TruckRemoteServer
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
             server.Shutdown();
             InputEmulator.ReleaseJoy();
         }

@@ -2,7 +2,8 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    # Work branches of the assistant are built too: the Windows window can be checked only in CI
+    branches: [ master, 'claude/**' ]
   pull_request:
   workflow_dispatch:
 

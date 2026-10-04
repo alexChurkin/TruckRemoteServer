@@ -79,7 +79,9 @@ namespace TruckRemoteServer.Infrastructure
                 File.WriteAllText(LogFile, DateTime.Now + " vJoy setup" + Environment.NewLine);
 
                 string configTool = FindConfigTool();
-                if (configTool == null)
+                //A fresh vJoy has a default device 1 with all axes: it's replaced, a user's device is kept
+                bool installedNow = configTool == null;
+                if (installedNow)
                 {
                     string setup = Path.Combine(WorkFolder, SETUP_RESOURCE);
                     using (Stream resource = typeof(VJoySetup).Assembly.GetManifestResourceStream(SETUP_RESOURCE))
@@ -100,7 +102,7 @@ namespace TruckRemoteServer.Infrastructure
                 }
 
                 Run(configTool, "enable on", CONFIG_TIMEOUT_MS);
-                if (DeviceNeedsConfig()) Run(configTool, DEVICE_CONFIG, CONFIG_TIMEOUT_MS);
+                if (installedNow || DeviceNeedsConfig()) Run(configTool, DEVICE_CONFIG, CONFIG_TIMEOUT_MS);
 
                 bool ready = WaitUntilReady();
                 Log(ready ? "vJoy is ready" : "vJoy isn't ready");
@@ -113,7 +115,6 @@ namespace TruckRemoteServer.Infrastructure
             }
         }
 
-        //A device made by the user (e.g. with more axes) is kept
         private static bool DeviceNeedsConfig()
         {
             try

@@ -40,6 +40,7 @@ dotnet_diagnostic.IDE0055.severity = warning
 
 # Logging isn't on a hot path, and the LoggerMessage generator needs C# 9 (the projects are C# 7.3 for .NET Framework)
 dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
 
 # Naming (.NET conventions): constants and static readonly fields are PascalCase, private fields are camelCase
 dotnet_naming_rule.constants_are_pascal_case.symbols = constants

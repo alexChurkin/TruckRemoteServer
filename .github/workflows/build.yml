@@ -14,9 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
+          # The same SDK (and analyzer rules) as global.json
+          global-json-file: global.json
 
       # Code style and formatting of .editorconfig (whitespace, style and analyzer rules)
       - name: Format

@@ -1,3 +1,5 @@
+using System;
+
 namespace TruckRemoteServer.Telemetry
 {
     //Shared memory of RenCloud's scs-sdk-plugin (https://github.com/RenCloud/scs-sdk-plugin), revision 12.
@@ -9,8 +11,19 @@ namespace TruckRemoteServer.Telemetry
 
         //Zone 1
         private const int SdkActiveOffset = 0;
-        //Zone 2: scs_values.telemetry_plugin_revision
+        //Zone 2: scs_values.telemetry_plugin_revision and game (1 - ETS2, 2 - ATS)
         private const int PluginRevisionOffset = 40;
+        private const int GameOffset = 52;
+        //Zone 3: truck_i.gearDashboard
+        private const int GearOffset = 508;
+        //Zone 4: config_f and truck_f (floats)
+        private const int FuelCapacityOffset = 704;
+        private const int EngineRpmMaxOffset = 740;
+        private const int SpeedOffset = 948;
+        private const int EngineRpmOffset = 952;
+        private const int CruiseSpeedOffset = 988;
+        private const int FuelOffset = 1000;
+        private const int SpeedLimitOffset = 1068;
         //Zone 5 starts at 1500 with config_b (64 wheel flags, isCargoLoaded, specialJob), truck_b follows
         private const int TruckBoolsOffset = 1566;
         private const int ParkingBrakeOffset = TruckBoolsOffset + 0;
@@ -37,6 +50,16 @@ namespace TruckRemoteServer.Telemetry
 
             return new TruckTelemetry
             {
+                Available = true,
+                Game = ReadInt(data, GameOffset),
+                Speed = ReadFloat(data, SpeedOffset),
+                SpeedLimit = ReadFloat(data, SpeedLimitOffset),
+                CruiseSpeed = ReadFloat(data, CruiseSpeedOffset),
+                Gear = ReadInt(data, GearOffset),
+                EngineRpm = ReadFloat(data, EngineRpmOffset),
+                EngineRpmMax = ReadFloat(data, EngineRpmMaxOffset),
+                Fuel = ReadFloat(data, FuelOffset),
+                FuelCapacity = ReadFloat(data, FuelCapacityOffset),
                 EngineOn = data[EngineEnabledOffset] != 0,
                 ParkingBrake = data[ParkingBrakeOffset] != 0,
                 LeftBlinker = data[BlinkerLeftOnOffset] != 0,
@@ -54,6 +77,15 @@ namespace TruckRemoteServer.Telemetry
         private static int ReadInt(byte[] data, int offset)
         {
             return data[offset] | data[offset + 1] << 8 | data[offset + 2] << 16 | data[offset + 3] << 24;
+        }
+
+        private static float ReadFloat(byte[] data, int offset)
+        {
+            float value = BitConverter.ToSingle(BitConverter.IsLittleEndian
+                ? data
+                : new[] { data[offset + 3], data[offset + 2], data[offset + 1], data[offset] },
+                BitConverter.IsLittleEndian ? offset : 0);
+            return float.IsNaN(value) || float.IsInfinity(value) ? 0 : value;
         }
     }
 }

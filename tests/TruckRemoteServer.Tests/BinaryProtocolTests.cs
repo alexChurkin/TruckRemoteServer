@@ -1,5 +1,6 @@
 using System;
 using TruckRemoteServer.Protocol;
+using TruckRemoteServer.Telemetry;
 using Xunit;
 
 namespace TruckRemoteServer.Tests
@@ -61,18 +62,51 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
-        public void ServerStateIsNineBytes()
+        public void ServerStateHasFlagsAndTheDashboard()
         {
-            byte[] message = BinaryProtocol.FormatServerState(engineOn: true, parkingBrake: false, leftBlinker: false,
-                rightBlinker: true, lightsMode: 3, ffbDuration: 100000, trailerAttached: true, wipersOn: false,
-                beaconOn: true, analogPedalsAvailable: true, sequence: 0x100000007);
+            var truck = new TruckTelemetry
+            {
+                Available = true,
+                Game = TruckTelemetry.GameAts,
+                EngineOn = true,
+                RightBlinker = true,
+                TrailerAttached = true,
+                Beacon = true,
+                Speed = -2.5f,
+                SpeedLimit = 24.587f,
+                CruiseSpeed = 22.2222f,
+                Gear = -1,
+                EngineRpm = 1499.6f,
+                EngineRpmMax = 2500,
+                Fuel = 300,
+                FuelCapacity = 800
+            };
+            byte[] message = BinaryProtocol.FormatServerState(truck, lightsMode: 3, ffbDuration: 100000,
+                analogPedalsAvailable: true, sequence: 0x100000007);
 
-            Assert.Equal(9, message.Length);
+            Assert.Equal(22, message.Length);
             Assert.Equal(0x02, message[0]);
             Assert.Equal(7u, BitConverter.ToUInt32(message, 1));
-            Assert.Equal(1 | 1 << 3 | 1 << 4 | 1 << 6 | 1 << 7 | 3 << 8, BitConverter.ToUInt16(message, 5));
+            Assert.Equal(1 | 1 << 3 | 1 << 4 | 1 << 6 | 1 << 7 | 3 << 8 | 1 << 10, BitConverter.ToUInt16(message, 5));
             //Clamped to the field
             Assert.Equal(ushort.MaxValue, BitConverter.ToUInt16(message, 7));
+            Assert.Equal(-250, BitConverter.ToInt16(message, 9));
+            Assert.Equal(2459, BitConverter.ToUInt16(message, 11));
+            Assert.Equal(2222, BitConverter.ToUInt16(message, 13));
+            Assert.Equal(-1, (sbyte)message[15]);
+            Assert.Equal(1500, BitConverter.ToUInt16(message, 16));
+            Assert.Equal(2500, BitConverter.ToUInt16(message, 18));
+            Assert.Equal(38, message[20]);
+            Assert.Equal(TruckTelemetry.GameAts, message[21]);
+        }
+
+        [Fact]
+        public void UnknownTruckHasNoTelemetryFlag()
+        {
+            byte[] message = BinaryProtocol.FormatServerState(TruckTelemetry.Unknown, 0, 0, false, 1);
+
+            Assert.Equal(0, BitConverter.ToUInt16(message, 5) & 1 << 10);
+            Assert.Equal(0, message[20]);
         }
 
         [Fact]

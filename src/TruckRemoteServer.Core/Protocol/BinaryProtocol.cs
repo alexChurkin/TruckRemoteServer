@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TruckRemoteServer.Telemetry;
 
 namespace TruckRemoteServer.Protocol
 {
@@ -18,10 +19,14 @@ namespace TruckRemoteServer.Protocol
     //  a click counter (mod 256) or 1 while a hold action is held; only clicked and held actions are sent.
     //Paused controller: type 0x03. Goodbye: type 0x04.
     //
-    //Server state (9 bytes):
-    //  type 0x02 | sequence u32 | flags u16 | force feedback duration u16 (ms)
+    //Server state (22 bytes):
+    //  type 0x02 | sequence u32 | flags u16 | force feedback duration u16 (ms) |
+    //  speed i16 (cm/s, negative when reversing) | speed limit u16 (cm/s, 0 - none) |
+    //  cruise speed u16 (cm/s, 0 - off) | gear i8 (negative - reverse) | engine rpm u16 | max rpm u16 |
+    //  fuel u8 (percent of the tank) | game u8 (1 - ETS2, 2 - ATS)
     //  flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer attached, 5 wipers,
-    //  6 beacon, 7 analog pedals available, 8-9 lights mode (see ServerMessage)
+    //  6 beacon, 7 analog pedals available, 8-9 lights mode (see ServerMessage),
+    //  10 telemetry available (the dashboard values are real)
     public static class BinaryProtocol
     {
         public const int Version = 2;
@@ -31,7 +36,8 @@ namespace TruckRemoteServer.Protocol
         public const byte GoodbyeType = 0x04;
 
         private const int ControllerHeaderSize = 16;
-        private const int ServerStateSize = 9;
+        private const int ServerStateSize = 22;
+        private const double CentimetersInMeter = 100;
         private const double LevelScale = ushort.MaxValue;
 
         public static bool IsBinary(byte[] data, int length) => length > 0 && data[0] < 0x20;
@@ -72,20 +78,34 @@ namespace TruckRemoteServer.Protocol
             };
         }
 
-        public static byte[] FormatServerState(bool engineOn, bool parkingBrake, bool leftBlinker, bool rightBlinker,
-            int lightsMode, int ffbDuration,
-            bool trailerAttached, bool wipersOn, bool beaconOn, bool analogPedalsAvailable, long sequence)
+        public static byte[] FormatServerState(TruckTelemetry truck, int lightsMode, int ffbDuration,
+            bool analogPedalsAvailable, long sequence)
         {
-            int flags = Flag(engineOn, 0) | Flag(parkingBrake, 1) | Flag(leftBlinker, 2) | Flag(rightBlinker, 3)
-                | Flag(trailerAttached, 4) | Flag(wipersOn, 5) | Flag(beaconOn, 6) | Flag(analogPedalsAvailable, 7)
-                | ((lightsMode & 0x3) << 8);
+            int flags = Flag(truck.EngineOn, 0) | Flag(truck.ParkingBrake, 1) | Flag(truck.LeftBlinker, 2)
+                | Flag(truck.RightBlinker, 3) | Flag(truck.TrailerAttached, 4) | Flag(truck.Wipers, 5)
+                | Flag(truck.Beacon, 6) | Flag(analogPedalsAvailable, 7) | ((lightsMode & 0x3) << 8)
+                | Flag(truck.Available, 10);
             var message = new byte[ServerStateSize];
             message[0] = StateType;
             WriteUInt32(message, 1, (uint)sequence);
             WriteUInt16(message, 5, flags);
-            WriteUInt16(message, 7, Math.Max(0, Math.Min(ffbDuration, ushort.MaxValue)));
+            WriteUInt16(message, 7, Clamp(ffbDuration, 0, ushort.MaxValue));
+            WriteUInt16(message, 9, Clamp(Centimeters(truck.Speed), short.MinValue, short.MaxValue));
+            WriteUInt16(message, 11, Clamp(Centimeters(truck.SpeedLimit), 0, ushort.MaxValue));
+            WriteUInt16(message, 13, Clamp(Centimeters(truck.CruiseSpeed), 0, ushort.MaxValue));
+            message[15] = (byte)(sbyte)Clamp(truck.Gear, sbyte.MinValue, sbyte.MaxValue);
+            WriteUInt16(message, 16, Clamp((int)Math.Round(truck.EngineRpm), 0, ushort.MaxValue));
+            WriteUInt16(message, 18, Clamp((int)Math.Round(truck.EngineRpmMax), 0, ushort.MaxValue));
+            message[20] = (byte)(truck.FuelCapacity > 0
+                ? Clamp((int)Math.Round(truck.Fuel / truck.FuelCapacity * 100), 0, 100)
+                : 0);
+            message[21] = (byte)Clamp(truck.Game, 0, byte.MaxValue);
             return message;
         }
+
+        private static int Centimeters(float metersPerSecond) => (int)Math.Round(metersPerSecond * CentimetersInMeter);
+
+        private static int Clamp(int value, int min, int max) => Math.Max(min, Math.Min(max, value));
 
         private static bool Bit(int flags, int bit) => (flags & (1 << bit)) != 0;
 

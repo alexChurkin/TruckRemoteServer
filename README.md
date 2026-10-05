@@ -112,7 +112,8 @@ The process is 32-bit, as the vJoy libraries in `lib` are x86 only.
 
 The phone and the server talk over UDP. Since version 2 (the phone's hello is `TruckRemoteHello2`, the server answers
 `Hi!2`) the messages are binary: the phone's state is 16 bytes plus 2 bytes per clicked or held action, the truck state
-is 9 bytes (`Core/Protocol/BinaryProtocol`). Actions are sent by fixed codes, not by the places of their buttons.
+is 22 bytes with the dashboard of the app: speed, speed limit, cruise speed, gear, engine rpm, fuel
+(`Core/Protocol/BinaryProtocol`). Actions are sent by fixed codes, not by the places of their buttons.
 Older apps and servers keep the text protocol.
 
 ### Telemetry plugin

@@ -426,9 +426,7 @@ namespace TruckRemoteServer
             int effect = Interlocked.Exchange(ref effectDuration, 0);
             if (binaryController)
             {
-                return BinaryProtocol.FormatServerState(truck.EngineOn, truck.ParkingBrake, truck.LeftBlinker,
-                    truck.RightBlinker, lightsMode, effect, truck.TrailerAttached, truck.Wipers, truck.Beacon,
-                    joystick.HasPedalAxes, sequence);
+                return BinaryProtocol.FormatServerState(truck, lightsMode, effect, joystick.HasPedalAxes, sequence);
             }
             return Encoding.UTF8.GetBytes(ServerMessage.Format(truck.EngineOn, truck.ParkingBrake, truck.LeftBlinker,
                 truck.RightBlinker, lightsMode, effect, truck.TrailerAttached, truck.Wipers, truck.Beacon,

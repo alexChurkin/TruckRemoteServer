@@ -41,6 +41,34 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void DashboardValuesAreReadFromPluginOffsets()
+        {
+            byte[] data = ActiveMap();
+            BitConverter.GetBytes(TruckTelemetry.GameEts2).CopyTo(data, 52);
+            BitConverter.GetBytes(-2).CopyTo(data, 508);
+            BitConverter.GetBytes(400f).CopyTo(data, 704);
+            BitConverter.GetBytes(2500f).CopyTo(data, 740);
+            BitConverter.GetBytes(22.5f).CopyTo(data, 948);
+            BitConverter.GetBytes(1350f).CopyTo(data, 952);
+            BitConverter.GetBytes(25f).CopyTo(data, 988);
+            BitConverter.GetBytes(120f).CopyTo(data, 1000);
+            BitConverter.GetBytes(27.78f).CopyTo(data, 1068);
+
+            TruckTelemetry truck = ScsTelemetryMap.Parse(data);
+
+            Assert.True(truck.Available);
+            Assert.Equal(TruckTelemetry.GameEts2, truck.Game);
+            Assert.Equal(-2, truck.Gear);
+            Assert.Equal(400f, truck.FuelCapacity);
+            Assert.Equal(2500f, truck.EngineRpmMax);
+            Assert.Equal(22.5f, truck.Speed);
+            Assert.Equal(1350f, truck.EngineRpm);
+            Assert.Equal(25f, truck.CruiseSpeed);
+            Assert.Equal(120f, truck.Fuel);
+            Assert.Equal(27.78f, truck.SpeedLimit);
+        }
+
+        [Fact]
         public void RemainingValuesAreReadFromPluginOffsets()
         {
             byte[] data = ActiveMap();

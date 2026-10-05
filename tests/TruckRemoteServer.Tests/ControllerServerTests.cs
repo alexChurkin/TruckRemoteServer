@@ -98,7 +98,7 @@ namespace TruckRemoteServer.Tests
 
             IPEndPoint from = null;
             byte[] truck = phone.Receive(ref from);
-            Assert.Equal(9, truck.Length);
+            Assert.Equal(22, truck.Length);
             Assert.Equal(1 | 2 << 8, BitConverter.ToUInt16(truck, 5) & (1 | 3 << 8));
 
             //First state is synchronized, the second one clicks the engine and holds the engine brake

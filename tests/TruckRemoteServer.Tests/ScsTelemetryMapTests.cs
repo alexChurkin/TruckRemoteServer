@@ -87,6 +87,59 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void WarningsAndAxlesAreReadFromPluginOffsets()
+        {
+            byte[] data = ActiveMap();
+            data[1567] = 1; //motorBrake
+            data[1568] = 1; //airPressureWarning
+            data[1570] = 1; //fuelWarning
+            data[1573] = 1; //waterTemperatureWarning
+            data[1608] = 1; //differentialLock
+            BitConverter.GetBytes(3).CopyTo(data, 76); //config_ui.retarderStepCount
+            BitConverter.GetBytes(1).CopyTo(data, 108); //truck_ui.retarderBrake
+            BitConverter.GetBytes(95).CopyTo(data, 500); //common_i.restStop
+            BitConverter.GetBytes(0.12f).CopyTo(data, 1044); //wearCabin
+            BitConverter.GetBytes(52_000f).CopyTo(data, 1060); //routeDistance
+            BitConverter.GetBytes(2400f).CopyTo(data, 1064); //routeTime
+
+            TruckTelemetry truck = ScsTelemetryMap.Parse(data);
+
+            Assert.True(truck.EngineBrake);
+            Assert.True(truck.AirPressureWarning);
+            Assert.False(truck.AirPressureEmergency);
+            Assert.True(truck.FuelWarning);
+            Assert.False(truck.AdBlueWarning);
+            Assert.False(truck.OilPressureWarning);
+            Assert.True(truck.WaterTemperatureWarning);
+            Assert.False(truck.BatteryVoltageWarning);
+            Assert.True(truck.DifferentialLock);
+            Assert.False(truck.LiftAxle);
+            Assert.Equal(3, truck.RetarderStepCount);
+            Assert.Equal(1, truck.RetarderLevel);
+            Assert.Equal(95, truck.RestStopMinutes);
+            Assert.Equal(0.12f, truck.Wear);
+            Assert.Equal(52_000f, truck.RouteDistance);
+            Assert.Equal(2400f, truck.RouteTime);
+        }
+
+        [Fact]
+        public void TrailerCountsOnlyWhenAttached()
+        {
+            byte[] data = ActiveMap();
+            data[1611] = 1; //trailerLiftAxle
+            BitConverter.GetBytes(0.4f).CopyTo(data, 6164); //trailer[0].com_f.wearBody
+
+            TruckTelemetry detached = ScsTelemetryMap.Parse(data);
+            data[6080] = 1;
+            TruckTelemetry attached = ScsTelemetryMap.Parse(data);
+
+            Assert.False(detached.LiftAxle);
+            Assert.Equal(0f, detached.Wear);
+            Assert.True(attached.LiftAxle);
+            Assert.Equal(0.4f, attached.Wear);
+        }
+
+        [Fact]
         public void BlinkerSwitchIsNotTheLamp()
         {
             byte[] data = ActiveMap();

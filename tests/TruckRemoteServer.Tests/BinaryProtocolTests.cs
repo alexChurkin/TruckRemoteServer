@@ -79,12 +79,22 @@ namespace TruckRemoteServer.Tests
                 EngineRpm = 1499.6f,
                 EngineRpmMax = 2500,
                 Fuel = 300,
-                FuelCapacity = 800
+                FuelCapacity = 800,
+                AirPressureWarning = true,
+                WaterTemperatureWarning = true,
+                FuelWarning = true,
+                LiftAxle = true,
+                RetarderLevel = 2,
+                RetarderStepCount = 4,
+                Wear = 0.234f,
+                RestStopMinutes = -40,
+                RouteDistance = 128_400.6f,
+                RouteTime = 6300.2f
             };
             byte[] message = BinaryProtocol.FormatServerState(truck, lightsMode: 3, ffbDuration: 100000,
                 analogPedalsAvailable: true, sequence: 0x100000007);
 
-            Assert.Equal(22, message.Length);
+            Assert.Equal(37, message.Length);
             Assert.Equal(0x02, message[0]);
             Assert.Equal(7u, BitConverter.ToUInt32(message, 1));
             Assert.Equal(1 | 1 << 3 | 1 << 4 | 1 << 6 | 1 << 7 | 3 << 8 | 1 << 10, BitConverter.ToUInt16(message, 5));
@@ -98,6 +108,13 @@ namespace TruckRemoteServer.Tests
             Assert.Equal(2500, BitConverter.ToUInt16(message, 18));
             Assert.Equal(38, message[20]);
             Assert.Equal(TruckTelemetry.GameAts, message[21]);
+            Assert.Equal(1 | 1 << 3 | 1 << 6 | 1 << 8, BitConverter.ToUInt16(message, 22));
+            Assert.Equal(2, message[24]);
+            Assert.Equal(4, message[25]);
+            Assert.Equal(23, message[26]);
+            Assert.Equal(-40, BitConverter.ToInt16(message, 27));
+            Assert.Equal(128_401u, BitConverter.ToUInt32(message, 29));
+            Assert.Equal(6300u, BitConverter.ToUInt32(message, 33));
         }
 
         [Fact]

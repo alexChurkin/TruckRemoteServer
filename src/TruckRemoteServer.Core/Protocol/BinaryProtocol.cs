@@ -19,14 +19,18 @@ namespace TruckRemoteServer.Protocol
     //  a click counter (mod 256) or 1 while a hold action is held; only clicked and held actions are sent.
     //Paused controller: type 0x03. Goodbye: type 0x04.
     //
-    //Server state (22 bytes):
+    //Server state (37 bytes; older controllers read the first 22):
     //  type 0x02 | sequence u32 | flags u16 | force feedback duration u16 (ms) |
     //  speed i16 (cm/s, negative when reversing) | speed limit u16 (cm/s, 0 - none) |
     //  cruise speed u16 (cm/s, 0 - off) | gear i8 (negative - reverse) | engine rpm u16 | max rpm u16 |
-    //  fuel u8 (percent of the tank) | game u8 (1 - ETS2, 2 - ATS)
+    //  fuel u8 (percent of the tank) | game u8 (1 - ETS2, 2 - ATS) |
+    //  flags2 u16 | retarder level u8 | retarder steps u8 (0 - no retarder) | wear u8 (percent, the most worn part) |
+    //  rest stop i16 (game minutes until the driver must rest) | route distance u32 (m) | route time u32 (s)
     //  flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer attached, 5 wipers,
     //  6 beacon, 7 analog pedals available, 8-9 lights mode (see ServerMessage),
     //  10 telemetry available (the dashboard values are real)
+    //  flags2: 0 air pressure warning, 1 air pressure emergency, 2 oil pressure warning, 3 water temperature warning,
+    //  4 battery voltage warning, 5 AdBlue warning, 6 fuel warning, 7 differential lock, 8 lift axle, 9 engine brake
     public static class BinaryProtocol
     {
         public const int Version = 2;
@@ -36,7 +40,7 @@ namespace TruckRemoteServer.Protocol
         public const byte GoodbyeType = 0x04;
 
         private const int ControllerHeaderSize = 16;
-        private const int ServerStateSize = 22;
+        private const int ServerStateSize = 37;
         private const double CentimetersInMeter = 100;
         private const double LevelScale = ushort.MaxValue;
 
@@ -100,12 +104,27 @@ namespace TruckRemoteServer.Protocol
                 ? Clamp((int)Math.Round(truck.Fuel / truck.FuelCapacity * 100), 0, 100)
                 : 0);
             message[21] = (byte)Clamp(truck.Game, 0, byte.MaxValue);
+
+            int flags2 = Flag(truck.AirPressureWarning, 0) | Flag(truck.AirPressureEmergency, 1)
+                | Flag(truck.OilPressureWarning, 2) | Flag(truck.WaterTemperatureWarning, 3)
+                | Flag(truck.BatteryVoltageWarning, 4) | Flag(truck.AdBlueWarning, 5) | Flag(truck.FuelWarning, 6)
+                | Flag(truck.DifferentialLock, 7) | Flag(truck.LiftAxle, 8) | Flag(truck.EngineBrake, 9);
+            WriteUInt16(message, 22, flags2);
+            message[24] = (byte)Clamp(truck.RetarderLevel, 0, byte.MaxValue);
+            message[25] = (byte)Clamp(truck.RetarderStepCount, 0, byte.MaxValue);
+            message[26] = (byte)Clamp((int)Math.Round(truck.Wear * 100), 0, 100);
+            WriteUInt16(message, 27, Clamp(truck.RestStopMinutes, short.MinValue, short.MaxValue));
+            WriteUInt32(message, 29, ToUInt32(truck.RouteDistance));
+            WriteUInt32(message, 33, ToUInt32(truck.RouteTime));
             return message;
         }
 
         private static int Centimeters(float metersPerSecond) => (int)Math.Round(metersPerSecond * CentimetersInMeter);
 
         private static int Clamp(int value, int min, int max) => Math.Max(min, Math.Min(max, value));
+
+        //A non-negative rounded value that fits u32 (more than enough for meters and seconds of a route)
+        private static uint ToUInt32(float value) => (uint)Math.Round(Math.Max(0, Math.Min(uint.MaxValue, (double)value)));
 
         private static bool Bit(int flags, int bit) => (flags & (1 << bit)) != 0;
 

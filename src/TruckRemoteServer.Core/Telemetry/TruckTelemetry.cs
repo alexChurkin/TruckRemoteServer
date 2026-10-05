@@ -38,5 +38,30 @@ namespace TruckRemoteServer.Telemetry
         //Liters
         public float Fuel { get; set; }
         public float FuelCapacity { get; set; }
+
+        //Warning lamps of the dashboard
+        public bool AirPressureWarning { get; set; }
+        public bool AirPressureEmergency { get; set; }
+        public bool OilPressureWarning { get; set; }
+        public bool WaterTemperatureWarning { get; set; }
+        public bool BatteryVoltageWarning { get; set; }
+        public bool AdBlueWarning { get; set; }
+        public bool FuelWarning { get; set; }
+
+        public bool DifferentialLock { get; set; }
+        //The lift axle of the truck or of the trailer is raised
+        public bool LiftAxle { get; set; }
+        public bool EngineBrake { get; set; }
+        //0 - off, up to RetarderStepCount
+        public int RetarderLevel { get; set; }
+        //0 - the truck has no retarder
+        public int RetarderStepCount { get; set; }
+        //The most worn part of the truck and the trailer: 0..1
+        public float Wear { get; set; }
+        //Game time until the driver must rest, minutes
+        public int RestStopMinutes { get; set; }
+        //Navigation: the distance (m) and the estimated time (s) to the end of the route, 0 - no route
+        public float RouteDistance { get; set; }
+        public float RouteTime { get; set; }
     }
 }

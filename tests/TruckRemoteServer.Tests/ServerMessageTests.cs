@@ -6,12 +6,12 @@ namespace TruckRemoteServer.Tests
     public class ServerMessageTests
     {
         [Theory]
-        [InlineData(false, false, false, ServerMessage.LIGHTS_OFF)]
-        [InlineData(true, false, false, ServerMessage.LIGHTS_PARKING)]
-        [InlineData(true, true, false, ServerMessage.LIGHTS_LOW_BEAM)]
-        [InlineData(true, true, true, ServerMessage.LIGHTS_HIGH_BEAM)]
-        [InlineData(true, false, true, ServerMessage.LIGHTS_PARKING)]
-        [InlineData(false, false, true, ServerMessage.LIGHTS_OFF)]
+        [InlineData(false, false, false, ServerMessage.LightsOff)]
+        [InlineData(true, false, false, ServerMessage.LightsParking)]
+        [InlineData(true, true, false, ServerMessage.LightsLowBeam)]
+        [InlineData(true, true, true, ServerMessage.LightsHighBeam)]
+        [InlineData(true, false, true, ServerMessage.LightsParking)]
+        [InlineData(false, false, true, ServerMessage.LightsOff)]
         public void LightsMode(bool parking, bool lowBeam, bool highBeam, int expected)
         {
             Assert.Equal(expected, ServerMessage.LightsMode(parking, lowBeam, highBeam));

@@ -48,24 +48,24 @@ namespace TruckRemoteServer.UI.Controls
             base.OnMouseLeave(e);
         }
 
-        protected override void OnMouseDown(MouseEventArgs e)
+        protected override void OnMouseDown(MouseEventArgs mevent)
         {
             pressed = true;
             Invalidate();
-            base.OnMouseDown(e);
+            base.OnMouseDown(mevent);
         }
 
-        protected override void OnMouseUp(MouseEventArgs e)
+        protected override void OnMouseUp(MouseEventArgs mevent)
         {
             pressed = false;
             Invalidate();
-            base.OnMouseUp(e);
+            base.OnMouseUp(mevent);
         }
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs pevent)
         {
-            e.Graphics.Clear(ParentColor);
-            Drawing.Prepare(e.Graphics);
+            pevent.Graphics.Clear(ParentColor);
+            Drawing.Prepare(pevent.Graphics);
             float radius = 4 * DeviceDpi / 96f;
             Color fill = !Enabled ? Blend(FillColor, ParentColor, 0.5f)
                 : pressed ? Blend(FillColor, ParentColor, 0.25f)
@@ -75,10 +75,10 @@ namespace TruckRemoteServer.UI.Controls
             var bounds = new RectangleF(0.5f, 0.5f, Width - 1.5f, Height - 1.5f);
             using (var path = Drawing.RoundedRectangle(bounds, radius))
             {
-                using (var brush = new SolidBrush(fill)) e.Graphics.FillPath(brush, path);
+                using (var brush = new SolidBrush(fill)) pevent.Graphics.FillPath(brush, path);
                 if (BorderColor.A > 0)
                 {
-                    using (var pen = new Pen(BorderColor)) e.Graphics.DrawPath(pen, path);
+                    using (var pen = new Pen(BorderColor)) pevent.Graphics.DrawPath(pen, path);
                 }
             }
             if (Focused && ShowFocusCues)
@@ -87,26 +87,26 @@ namespace TruckRemoteServer.UI.Controls
                 using (var path = Drawing.RoundedRectangle(ring, radius))
                 using (var pen = new Pen(TextColor, 1.5f))
                 {
-                    e.Graphics.DrawPath(pen, path);
+                    pevent.Graphics.DrawPath(pen, path);
                 }
             }
             Color text = Enabled ? TextColor : Blend(TextColor, fill, 0.5f);
             if (!ShowChevron)
             {
-                TextRenderer.DrawText(e.Graphics, Text, Font, ClientRectangle, text,
+                TextRenderer.DrawText(pevent.Graphics, Text, Font, ClientRectangle, text,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine);
                 return;
             }
             float scale = DeviceDpi / 96f;
             var textBounds = new Rectangle((int)(10 * scale), 0, Width - (int)(34 * scale), Height);
-            TextRenderer.DrawText(e.Graphics, Text, Font, textBounds, text,
+            TextRenderer.DrawText(pevent.Graphics, Text, Font, textBounds, text,
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
             float cx = Width - 16 * scale;
             float cy = Height / 2f;
             float size = 4 * scale;
             using (var pen = new Pen(text, 1.5f * scale))
             {
-                e.Graphics.DrawLines(pen, new[]
+                pevent.Graphics.DrawLines(pen, new[]
                 {
                     new PointF(cx - size, cy - size / 2), new PointF(cx, cy + size / 2), new PointF(cx + size, cy - size / 2)
                 });

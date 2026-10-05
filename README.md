@@ -75,6 +75,13 @@ and can be built on any OS:
     dotnet build TruckRemoteServer.sln -c Release
     dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj
 
+Code checks (all of them run in CI and fail the build):
+
+- [.NET code analyzers](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/overview)
+  (`latest-recommended` rules) and the code style of `.editorconfig` (naming, unused code, formatting)
+  are checked by every build, warnings are errors (`Directory.Build.props`)
+- `dotnet format TruckRemoteServer.sln --verify-no-changes` checks formatting, `dotnet format TruckRemoteServer.sln` fixes it
+
 The result is a single `src/TruckRemoteServer/bin/Release/TruckRemoteServer.exe`: references, translations,
 the native vJoy library, the vJoy setup and the telemetry plugin are embedded into it ([Costura](https://github.com/Fody/Costura)).
 The process is 32-bit, as the vJoy libraries in `lib` are x86 only.

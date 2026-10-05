@@ -9,27 +9,27 @@ namespace TruckRemoteServer.Input
     public class ControllerInputMapper
     {
         //Keys of additional actions in the order the controller sends their counters
-        private static readonly GameKey[] ACTIONS =
+        private static readonly GameKey[] Actions =
         {
             GameKey.Engine, GameKey.Trailer, GameKey.Activate, GameKey.Wipers,
             GameKey.DiffLock, GameKey.LiftAxle, GameKey.Beacon, GameKey.LightHorn
         };
 
-        public static int ActionsCount => ACTIONS.Length;
+        public static int ActionsCount => Actions.Length;
 
         //Part of the new steering value applied at once: smooths the jitter of the phone sensor
-        private const double STEERING_SMOOTHING = 0.6;
+        private const double SteeringSmoothing = 0.6;
         //Steering value (m/s²) times sensitivity gives the axis offset
-        private const double STEERING_SCALE = 34.7;
+        private const double SteeringScale = 34.7;
 
         private readonly IKeyboard keyboard;
         private readonly IVirtualJoystick joystick;
-        private readonly ActionCounters actionCounters = new ActionCounters(ACTIONS.Length);
+        private readonly ActionCounters actionCounters = new ActionCounters(Actions.Length);
         private readonly object inputLock = new object();
 
         private volatile TruckTelemetry truck = TruckTelemetry.Unknown;
 
-        private int steeringAxis = JoystickAxis.CENTER;
+        private int steeringAxis = JoystickAxis.Center;
         private bool brakePressed, gasPressed;
         private int horn;
         private bool leftBlinker, rightBlinker, hazardLights, parkingBrake, lights, cruise;
@@ -99,7 +99,7 @@ namespace TruckRemoteServer.Input
                 int[] clicks = actionCounters.Update(state.ActionCounters);
                 for (int i = 0; i < clicks.Length; i++)
                 {
-                    for (int c = 0; c < clicks[i]; c++) keyboard.Click(ACTIONS[i]);
+                    for (int c = 0; c < clicks[i]; c++) keyboard.Click(Actions[i]);
                 }
                 Toggle(GameKey.LeftBlinker, state.LeftSignalClick, ref leftBlinker);
                 Toggle(GameKey.RightBlinker, state.RightSignalClick, ref rightBlinker);
@@ -119,24 +119,24 @@ namespace TruckRemoteServer.Input
             SetKey(GameKey.Brake, false, ref brakePressed);
             SetKey(GameKey.Gas, false, ref gasPressed);
             SetHorn(0);
-            steeringAxis = JoystickAxis.CENTER;
-            joystick.SetSteering(JoystickAxis.CENTER);
+            steeringAxis = JoystickAxis.Center;
+            joystick.SetSteering(JoystickAxis.Center);
             joystick.SetPedals(0, 0);
         }
 
         private void ApplySteering(double value)
         {
-            int target = JoystickAxis.CENTER + (int)(value * STEERING_SCALE * SteeringSensitivity);
-            int smoothed = (int)(steeringAxis + STEERING_SMOOTHING * (target - steeringAxis));
+            int target = JoystickAxis.Center + (int)(value * SteeringScale * SteeringSensitivity);
+            int smoothed = (int)(steeringAxis + SteeringSmoothing * (target - steeringAxis));
             //Axis range is 0..32768, out of range values must not reach vJoy
-            steeringAxis = Math.Max(0, Math.Min(2 * JoystickAxis.CENTER, smoothed));
+            steeringAxis = Math.Max(0, Math.Min(2 * JoystickAxis.Center, smoothed));
             joystick.SetSteering(steeringAxis);
         }
 
         private static int ToPedalAxis(double level)
         {
             if (double.IsNaN(level)) return 0;
-            return (int)(Math.Max(0, Math.Min(1, level)) * JoystickAxis.MAX);
+            return (int)(Math.Max(0, Math.Min(1, level)) * JoystickAxis.Max);
         }
 
         private void SetKey(GameKey key, bool pressed, ref bool current)

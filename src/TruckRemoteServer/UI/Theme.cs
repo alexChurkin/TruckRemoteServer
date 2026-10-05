@@ -119,8 +119,8 @@ namespace TruckRemoteServer.UI
 
         /* Title bar */
 
-        private const int DWMWA_USE_IMMERSIVE_DARK_MODE_OLD = 19;
-        private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+        private const int DwmwaUseImmersiveDarkModeOld = 19;
+        private const int DwmwaUseImmersiveDarkMode = 20;
 
         //Dark title bar on Windows 10 1809+ and 11 (ignored on older versions)
         public void ApplyToTitleBar(IntPtr window)
@@ -128,9 +128,9 @@ namespace TruckRemoteServer.UI
             int value = IsDark ? 1 : 0;
             try
             {
-                if (DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE, ref value, sizeof(int)) != 0)
+                if (DwmSetWindowAttribute(window, DwmwaUseImmersiveDarkMode, ref value, sizeof(int)) != 0)
                 {
-                    DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, ref value, sizeof(int));
+                    _ = DwmSetWindowAttribute(window, DwmwaUseImmersiveDarkModeOld, ref value, sizeof(int));
                 }
             }
             catch (Exception)

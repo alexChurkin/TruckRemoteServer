@@ -1,4 +1,3 @@
-using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -21,9 +20,9 @@ namespace TruckRemoteServer.UI.Controls
         public TextBox TextBox { get; }
         public Color AccentColor { get; set; } = Color.SeaGreen;
 
-        protected override void OnLayout(LayoutEventArgs e)
+        protected override void OnLayout(LayoutEventArgs levent)
         {
-            base.OnLayout(e);
+            base.OnLayout(levent);
             int padding = (int)(10 * DeviceDpi / 96f);
             TextBox.BackColor = FillColor;
             TextBox.Bounds = new Rectangle(padding, (Height - TextBox.PreferredHeight) / 2,

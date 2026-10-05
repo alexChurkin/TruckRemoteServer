@@ -17,7 +17,7 @@ namespace TruckRemoteServer.Tests
                 blockAllInbound: false);
         }
 
-        private static FirewallRule ProgramRule(bool allow, int profiles = 7, int protocol = FirewallRule.PROTOCOL_UDP)
+        private static FirewallRule ProgramRule(bool allow, int profiles = 7, int protocol = FirewallRule.ProtocolUdp)
         {
             return new FirewallRule
             {

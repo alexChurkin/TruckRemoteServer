@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Windows.Forms;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using Microsoft.Win32;
 using TruckRemoteServer.Localization;
 
@@ -81,50 +81,30 @@ namespace TruckRemoteServer.Setup
             return Status;
         }
 
-        public SetupStatus Uninstall(IWin32Window owner)
-        {
-            if (Status == SetupStatus.Uninstalled)
-                return Status;
-
-            SetupStatus status;
-            try
-            {
-                var ets2State = new GameState(Ets2, Properties.Settings.Default.ETSPath);
-                var atsState = new GameState(Ats, Properties.Settings.Default.ATSPath);
-                ets2State.UninstallPlugin();
-                atsState.UninstallPlugin();
-                status = SetupStatus.Uninstalled;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                status = SetupStatus.Failed;
-            }
-            return status;
-        }
-
-        class GameState
+        sealed class GameState
         {
             const string InstallationSkippedPath = "N/A";
             //RenCloud's scs-sdk-plugin 1.12.1 (revision 12), the usual name lets other telemetry apps share it
             const string TelemetryDllName = "scs-telemetry.dll";
-            const string TelemetryX64DllMd5 = "6b93d8b11981e6754968bb1ae20cf89e";
+            const string TelemetryX64DllSha256 = "1d03dbc7a975e72203c60a7b9998021ceb8800b836bf28a131279979ad386cd4";
             //Plugin installed by older versions (scs-sdk-plugin of 2019 under another name)
             const string LegacyTelemetryDllName = "ets2-telemetry-server.dll";
-            const string LegacyTelemetryX64DllMd5 = "d606f27c94bcae1114d930d8e83b6fa2";
+            const string LegacyTelemetryX64DllSha256 = "29154a0f0621cb78053f38e9bdf24699ab4797c17261b86d8f6c8cb5a4692f24";
 
-            readonly string _gameName;
+            readonly string gameName;
 
             public GameState(string gameName, string gamePath)
             {
-                _gameName = gameName;
+                this.gameName = gameName;
                 GamePath = gamePath;
             }
 
-            string GameDirectoryName {
-                get {
+            string GameDirectoryName
+            {
+                get
+                {
                     string fullName = "Euro Truck Simulator 2";
-                    if (_gameName == Ats)
+                    if (gameName == Ats)
                         fullName = "American Truck Simulator";
                     return fullName;
                 }
@@ -143,7 +123,7 @@ namespace TruckRemoteServer.Setup
                 var baseScsPath = Path.Combine(GamePath, "base.scs");
                 var binPath = Path.Combine(GamePath, "bin");
                 bool validated = File.Exists(baseScsPath) && Directory.Exists(binPath);
-                //Log.InfoFormat("Validating {2} path: '{0}' ... {1}", GamePath, validated ? "OK" : "Fail", _gameName);
+                //Log.InfoFormat("Validating {2} path: '{0}' ... {1}", GamePath, validated ? "OK" : "Fail", gameName);
                 return validated;
             }
 
@@ -155,7 +135,7 @@ namespace TruckRemoteServer.Setup
                 if (!IsPathValid())
                     return false;
 
-                return Md5(GetTelemetryPluginDllFileName(GamePath)) == TelemetryX64DllMd5;
+                return Sha256(GetTelemetryPluginDllFileName(GamePath)) == TelemetryX64DllSha256;
             }
 
             public void InstallPlugin()
@@ -180,26 +160,13 @@ namespace TruckRemoteServer.Setup
                 string legacyDllFileName = Path.Combine(GetPluginPath(GamePath), LegacyTelemetryDllName);
                 try
                 {
-                    if (Md5(legacyDllFileName) == LegacyTelemetryX64DllMd5)
+                    if (Sha256(legacyDllFileName) == LegacyTelemetryX64DllSha256)
                         File.Delete(legacyDllFileName);
                 }
                 catch (Exception)
                 {
                     //The game is running and keeps it loaded: it stays, but it is harmless (nothing reads its memory)
                 }
-            }
-
-            public void UninstallPlugin()
-            {
-                if (GamePath == InstallationSkippedPath)
-                    return;
-
-                Console.WriteLine("Backing up plugin DLL files for " + _gameName);
-                string x64DllFileName = GetTelemetryPluginDllFileName(GamePath);
-                string x64BakFileName = Path.ChangeExtension(x64DllFileName, ".bak");
-                if (File.Exists(x64BakFileName))
-                    File.Delete(x64BakFileName);
-                File.Move(x64DllFileName, x64BakFileName);
             }
 
             static string GetDefaultSteamPath()
@@ -221,11 +188,11 @@ namespace TruckRemoteServer.Setup
                 return Path.Combine(path, TelemetryDllName);
             }
 
-            static string Md5(string fileName)
+            static string Sha256(string fileName)
             {
                 if (!File.Exists(fileName))
                     return null;
-                using (var provider = new MD5CryptoServiceProvider())
+                using (var provider = SHA256.Create())
                 {
                     var bytes = File.ReadAllBytes(fileName);
                     var hash = provider.ComputeHash(bytes);

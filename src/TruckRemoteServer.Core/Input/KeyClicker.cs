@@ -7,10 +7,10 @@ namespace TruckRemoteServer.Input
     //Clicks keys one by one on its own thread. The game reads the keyboard once per frame,
     //so a key pressed and released at once may be missed (especially at low FPS):
     //every key is held for a while, and there is a pause before the next click (the same key may follow)
-    public class KeyClicker<TKey>
+    public sealed class KeyClicker<TKey> : IDisposable
     {
-        public const int DEFAULT_HOLD_MS = 40;
-        public const int DEFAULT_GAP_MS = 30;
+        public const int DefaultHoldMs = 40;
+        public const int DefaultGapMs = 30;
 
         private readonly BlockingCollection<TKey> queue = new BlockingCollection<TKey>();
         private readonly Action<TKey> press;
@@ -19,7 +19,7 @@ namespace TruckRemoteServer.Input
         private readonly int gapMs;
 
         public KeyClicker(Action<TKey> press, Action<TKey> release,
-            int holdMs = DEFAULT_HOLD_MS, int gapMs = DEFAULT_GAP_MS)
+            int holdMs = DefaultHoldMs, int gapMs = DefaultGapMs)
         {
             this.press = press;
             this.release = release;
@@ -40,6 +40,12 @@ namespace TruckRemoteServer.Input
             queue.Add(key);
         }
 
+        //Queued clicks are still made, then the thread ends
+        public void Dispose()
+        {
+            queue.CompleteAdding();
+        }
+
         private void ClickQueuedKeys()
         {
             foreach (TKey key in queue.GetConsumingEnumerable())
@@ -56,6 +62,7 @@ namespace TruckRemoteServer.Input
                 }
                 Thread.Sleep(gapMs);
             }
+            queue.Dispose();
         }
     }
 }

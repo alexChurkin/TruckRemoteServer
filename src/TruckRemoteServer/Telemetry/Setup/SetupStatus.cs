@@ -1,4 +1,4 @@
-﻿namespace TruckRemoteServer.Setup
+namespace TruckRemoteServer.Setup
 
 {
     public enum SetupStatus

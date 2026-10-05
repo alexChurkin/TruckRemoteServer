@@ -37,19 +37,19 @@ namespace TruckRemoteServer
     public class ControllerServer
     {
         //Controller is considered disconnected after this period of silence
-        public const int CONTROLLER_TIMEOUT = 1200;
+        public const int ControllerTimeout = 1200;
         //Socket receive timeout (to check controller's silence periodically)
-        private const int RECEIVE_TIMEOUT = 300;
+        private const int ReceiveTimeoutMs = 300;
         //Truck state is sent 50 times per second, 20 times to a paused controller
-        private const int SEND_INTERVAL = 20;
-        private const int PAUSED_SEND_INTERVAL = 50;
+        private const int SendInterval = 20;
+        private const int PausedSendInterval = 50;
         //Makes Windows not to break UDP socket with WSAECONNRESET after ICMP "Port unreachable"
-        private const int SIO_UDP_CONNRESET = -1744830452;
+        private const int SioUdpConnreset = -1744830452;
 
-        private const string HELLO_MESSAGE = "TruckRemoteHello";
-        private const string HELLO_ANSWER = "Hi!";
-        private const string PAUSED_MESSAGE = "paused";
-        private const string GOODBYE_MESSAGE = "goodbye";
+        private const string HelloMessage = "TruckRemoteHello";
+        private const string HelloAnswer = "Hi!";
+        private const string PausedMessage = "paused";
+        private const string GoodbyeMessage = "goodbye";
 
         private readonly ControllerInputMapper input;
         private readonly ITelemetrySource telemetrySource;
@@ -108,14 +108,14 @@ namespace TruckRemoteServer
                 {
                     try
                     {
-                        socket.IOControl(SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
+                        socket.IOControl(SioUdpConnreset, new byte[] { 0, 0, 0, 0 }, null);
                     }
                     catch (Exception)
                     {
                         //Not Windows: there is no such problem
                     }
                     socket.Bind(new IPEndPoint(IPAddress.Any, port));
-                    socket.ReceiveTimeout = RECEIVE_TIMEOUT;
+                    socket.ReceiveTimeout = ReceiveTimeoutMs;
                 }
                 catch (Exception e)
                 {
@@ -208,7 +208,7 @@ namespace TruckRemoteServer
         {
             lock (stateLock)
             {
-                if (controllerEndPoint != null && MonotonicClock.Millis - lastControllerMessageTime > CONTROLLER_TIMEOUT)
+                if (controllerEndPoint != null && MonotonicClock.Millis - lastControllerMessageTime > ControllerTimeout)
                 {
                     logger.LogInformation("Controller timed out");
                     DisconnectController();
@@ -227,14 +227,14 @@ namespace TruckRemoteServer
                     lastControllerMessageTime = MonotonicClock.Millis;
                     OnMessageFromController(socket, endPoint, message);
                 }
-                else if (message.StartsWith(HELLO_MESSAGE))
+                else if (message.StartsWith(HelloMessage, StringComparison.Ordinal))
                 {
                     //Only one controller is supported. Another device can connect only after
                     //the current one has gone silent; the same device (reconnect) takes over at once
                     if (controllerEndPoint != null)
                     {
                         bool sameDevice = endPoint.Address.Equals(controllerEndPoint.Address);
-                        bool timedOut = MonotonicClock.Millis - lastControllerMessageTime > CONTROLLER_TIMEOUT;
+                        bool timedOut = MonotonicClock.Millis - lastControllerMessageTime > ControllerTimeout;
                         if (!sameDevice && !timedOut) return;
                         DisconnectController();
                     }
@@ -248,7 +248,7 @@ namespace TruckRemoteServer
         {
             logger.LogInformation("Controller connected from {EndPoint}", endPoint);
             input.OnControllerConnected();
-            Answer(socket, endPoint, HELLO_ANSWER);
+            Answer(socket, endPoint, HelloAnswer);
 
             Interlocked.Exchange(ref effectDuration, 0);
             sequenceGate.Reset();
@@ -268,22 +268,22 @@ namespace TruckRemoteServer
             //The same controller resumes the session after a network problem (its messages didn't come for a while
             //or ours didn't reach it). Controls aren't released and toggles aren't synchronized:
             //clicks made meanwhile must still happen
-            if (message.StartsWith(HELLO_MESSAGE))
+            if (message.StartsWith(HelloMessage, StringComparison.Ordinal))
             {
                 logger.LogInformation("Controller resumes the session");
                 sequenceGate.Reset();
-                Answer(socket, endPoint, HELLO_ANSWER);
+                Answer(socket, endPoint, HelloAnswer);
                 return;
             }
 
-            if (message.StartsWith(GOODBYE_MESSAGE))
+            if (message.StartsWith(GoodbyeMessage, StringComparison.Ordinal))
             {
                 logger.LogInformation("Goodbye from controller received");
                 DisconnectController();
                 return;
             }
 
-            if (message.StartsWith(PAUSED_MESSAGE))
+            if (message.StartsWith(PausedMessage, StringComparison.Ordinal))
             {
                 if (!controllerPaused)
                 {
@@ -365,10 +365,10 @@ namespace TruckRemoteServer
                         logger.LogInformation("Send error: {Message}", e.Message);
                     }
 
-                    nextSendTime += controllerPaused ? PAUSED_SEND_INTERVAL : SEND_INTERVAL;
+                    nextSendTime += controllerPaused ? PausedSendInterval : SendInterval;
                     long wait = nextSendTime - clock.ElapsedMilliseconds;
                     //After a long delay (e.g. the PC was busy) messages aren't sent in a burst to catch up
-                    if (wait < -SEND_INTERVAL) nextSendTime = clock.ElapsedMilliseconds;
+                    if (wait < -SendInterval) nextSendTime = clock.ElapsedMilliseconds;
                     if (wait > 0) Thread.Sleep((int)wait);
                 }
             }

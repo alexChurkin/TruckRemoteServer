@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using TruckRemoteServer.Input;
@@ -6,9 +7,9 @@ namespace TruckRemoteServer.Infrastructure
 {
     //Keys are sent as DirectInput scan codes (the game reads them regardless of the keyboard layout).
     //Default key bindings of ETS2/ATS are used
-    public sealed class SendInputKeyboard : IKeyboard
+    public sealed class SendInputKeyboard : IKeyboard, IDisposable
     {
-        private static readonly Dictionary<GameKey, short> SCAN_CODES = new Dictionary<GameKey, short>
+        private static readonly Dictionary<GameKey, short> ScanCodes = new Dictionary<GameKey, short>
         {
             { GameKey.Gas, 0xC8 },           //Up arrow
             { GameKey.Brake, 0xD0 },         //Down arrow
@@ -31,9 +32,9 @@ namespace TruckRemoteServer.Infrastructure
             { GameKey.LightHorn, 0x24 }      //J
         };
 
-        private const int INPUT_KEYBOARD = 1;
-        private const int KEYEVENTF_KEYUP = 0x0002;
-        private const int KEYEVENTF_SCANCODE = 0x0008;
+        private const int InputKeyboard = 1;
+        private const int KeyeventfKeyup = 0x0002;
+        private const int KeyeventfScancode = 0x0008;
 
         //Clicks are queued: a key is held for a while, so the game doesn't miss it
         private readonly KeyClicker<GameKey> clicker;
@@ -45,12 +46,12 @@ namespace TruckRemoteServer.Infrastructure
 
         public void Press(GameKey key)
         {
-            Send(SCAN_CODES[key], KEYEVENTF_SCANCODE);
+            Send(ScanCodes[key], KeyeventfScancode);
         }
 
         public void Release(GameKey key)
         {
-            Send(SCAN_CODES[key], KEYEVENTF_KEYUP | KEYEVENTF_SCANCODE);
+            Send(ScanCodes[key], KeyeventfKeyup | KeyeventfScancode);
         }
 
         public void Click(GameKey key)
@@ -58,12 +59,18 @@ namespace TruckRemoteServer.Infrastructure
             clicker.Click(key);
         }
 
+        public void Dispose()
+        {
+            clicker.Dispose();
+        }
+
         private static void Send(short scanCode, int flags)
         {
-            var input = new INPUT { type = INPUT_KEYBOARD };
+            var input = new INPUT { type = InputKeyboard };
             input.u.ki.wScan = scanCode;
             input.u.ki.dwFlags = flags;
-            SendInput(1, new[] { input }, Marshal.SizeOf(typeof(INPUT)));
+            //0 if the input was blocked (e.g. by a window of a higher integrity level): nothing to do then
+            _ = SendInput(1, new[] { input }, Marshal.SizeOf(typeof(INPUT)));
         }
 
         [DllImport("user32.dll", SetLastError = true)]

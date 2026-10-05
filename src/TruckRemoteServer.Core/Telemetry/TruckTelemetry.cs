@@ -5,15 +5,15 @@ namespace TruckRemoteServer.Telemetry
     {
         public static readonly TruckTelemetry Unknown = new TruckTelemetry();
 
-        public bool EngineOn;
-        public bool ParkingBrake;
-        public bool LeftBlinker;
-        public bool RightBlinker;
-        public bool ParkingLights;
-        public bool LowBeam;
-        public bool HighBeam;
-        public bool Wipers;
-        public bool Beacon;
-        public bool TrailerAttached;
+        public bool EngineOn { get; set; }
+        public bool ParkingBrake { get; set; }
+        public bool LeftBlinker { get; set; }
+        public bool RightBlinker { get; set; }
+        public bool ParkingLights { get; set; }
+        public bool LowBeam { get; set; }
+        public bool HighBeam { get; set; }
+        public bool Wipers { get; set; }
+        public bool Beacon { get; set; }
+        public bool TrailerAttached { get; set; }
     }
 }

@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using TruckRemoteServer.Firewall;
@@ -209,7 +209,7 @@ namespace TruckRemoteServer.Presentation
                     OnFirewallChecked(status, offerFix: false);
                     if (status != FirewallStatus.Allowed)
                     {
-                        view.ShowWarning(Warning.FirewallRuleNotApplied, port.ToString());
+                        view.ShowWarning(Warning.FirewallRuleNotApplied, port.ToString(CultureInfo.InvariantCulture));
                     }
                 }), TaskContinuationOptions.ExecuteSynchronously);
         }

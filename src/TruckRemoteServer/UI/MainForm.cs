@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Reflection;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -15,11 +16,11 @@ namespace TruckRemoteServer.UI
     //Built in code and laid out by LayoutContent(): texts of different languages have different lengths
     public sealed class MainForm : Form, IMainView
     {
-        private const int CONTENT_WIDTH = 440;
-        private const int PORT_MIN = 10000;
-        private const int PORT_MAX = 65535;
+        private const int ContentWidth = 440;
+        private const int PortMin = 10000;
+        private const int PortMax = 65535;
 
-        private static readonly (string Code, string Name)[] LANGUAGES =
+        private static readonly (string Code, string Name)[] Languages =
         {
             ("", null),
             ("en", "English"),
@@ -115,7 +116,7 @@ namespace TruckRemoteServer.UI
                 startStopButton, versionLabel
             });
 
-            foreach (var item in LANGUAGES)
+            foreach (var item in Languages)
             {
                 string code = item.Code;
                 var menuItem = new ToolStripMenuItem { Tag = code, Font = Theme.Body };
@@ -197,10 +198,10 @@ namespace TruckRemoteServer.UI
 
         /* IMainView */
 
-        public void ShowLanguage(string code)
+        public void ShowLanguage(string language)
         {
-            language = code ?? "";
-            Texts.SetLanguage(language);
+            this.language = language ?? "";
+            Texts.SetLanguage(this.language);
             ApplyTexts();
         }
 
@@ -208,9 +209,9 @@ namespace TruckRemoteServer.UI
         {
             showingValues = true;
             this.port = port;
-            portField.TextBox.Text = port.ToString();
+            portField.TextBox.Text = port.ToString(CultureInfo.InvariantCulture);
             sensitivitySlider.Value = sensitivity;
-            sensitivityValue.Text = sensitivity.ToString();
+            sensitivityValue.Text = sensitivity.ToString(CultureInfo.CurrentCulture);
             showingValues = false;
             LayoutContent();
         }
@@ -311,7 +312,7 @@ namespace TruckRemoteServer.UI
 
         private void OnSensitivityChanged(object sender, EventArgs e)
         {
-            sensitivityValue.Text = sensitivitySlider.Value.ToString();
+            sensitivityValue.Text = sensitivitySlider.Value.ToString(CultureInfo.CurrentCulture);
             LayoutContent();
             if (!showingValues) SensitivityChanged?.Invoke(this, sensitivitySlider.Value);
         }
@@ -319,13 +320,13 @@ namespace TruckRemoteServer.UI
         //A wrong port is replaced back by the current one
         private void CommitPort()
         {
-            if (int.TryParse(portField.TextBox.Text, out int value) && value >= PORT_MIN && value <= PORT_MAX)
+            if (int.TryParse(portField.TextBox.Text, out int value) && value >= PortMin && value <= PortMax)
             {
                 toolTip.Hide(portField);
                 if (value != port) PortChanged?.Invoke(this, value);
                 return;
             }
-            portField.TextBox.Text = port.ToString();
+            portField.TextBox.Text = port.ToString(CultureInfo.InvariantCulture);
             toolTip.Show(Texts.Get(T.PortRange), portField, 0, portField.Height + Px(2), 2500);
         }
 
@@ -368,11 +369,11 @@ namespace TruckRemoteServer.UI
             foreach (ToolStripMenuItem item in languageMenu.Items)
             {
                 string code = (string)item.Tag;
-                item.Text = Array.Find(LANGUAGES, l => l.Code == code).Name ?? systemName;
+                item.Text = Array.Find(Languages, l => l.Code == code).Name ?? systemName;
                 item.Checked = code == language;
                 item.AccessibleName = item.Text;
             }
-            languageButton.Text = Array.Find(LANGUAGES, l => l.Code == language).Name ?? systemName;
+            languageButton.Text = Array.Find(Languages, l => l.Code == language).Name ?? systemName;
             languageButton.AccessibleName = Texts.Get(T.Language) + ": " + languageButton.Text;
             ApplyAddressTexts();
             ApplyStateTexts();
@@ -531,7 +532,7 @@ namespace TruckRemoteServer.UI
         private void LayoutContent()
         {
             int pad = Px(24);
-            int width = Px(CONTENT_WIDTH);
+            int width = Px(ContentWidth);
             int gap = Px(12);
             int cardPad = Px(16);
             int inner = width - 2 * cardPad;
@@ -611,7 +612,7 @@ namespace TruckRemoteServer.UI
         {
             if (!banner.Visible) return y;
             int pad = Px(24);
-            int width = Px(CONTENT_WIDTH);
+            int width = Px(ContentWidth);
             int cardPad = Px(16);
             int gap = Px(12);
             button.Size = button.GetPreferredSize(Size.Empty);

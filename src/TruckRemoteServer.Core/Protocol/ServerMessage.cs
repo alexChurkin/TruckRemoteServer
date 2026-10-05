@@ -3,16 +3,16 @@ namespace TruckRemoteServer.Protocol
     //Truck state message sent to the controller
     public static class ServerMessage
     {
-        public const int LIGHTS_OFF = 0;
-        public const int LIGHTS_PARKING = 1;
-        public const int LIGHTS_LOW_BEAM = 2;
-        public const int LIGHTS_HIGH_BEAM = 3;
+        public const int LightsOff = 0;
+        public const int LightsParking = 1;
+        public const int LightsLowBeam = 2;
+        public const int LightsHighBeam = 3;
 
         //High beam without low beam isn't shown as high beam: it is only "flashing" then
         public static int LightsMode(bool parkingLights, bool lowBeam, bool highBeam)
         {
-            if (lowBeam) return highBeam ? LIGHTS_HIGH_BEAM : LIGHTS_LOW_BEAM;
-            return parkingLights ? LIGHTS_PARKING : LIGHTS_OFF;
+            if (lowBeam) return highBeam ? LightsHighBeam : LightsLowBeam;
+            return parkingLights ? LightsParking : LightsOff;
         }
 
         //Base values are read by all controllers, the additional ones (0/1) only by newer controllers:
@@ -25,7 +25,7 @@ namespace TruckRemoteServer.Protocol
         {
             return $"{engineOn},{parkingBrake},{leftBlinker},{rightBlinker},{lightsMode},{ffbDuration}," +
                 $"{Bit(trailerAttached)},{Bit(wipersOn)},{Bit(beaconOn)},{Bit(analogPedalsAvailable)}," +
-                ControllerMessage.SEQUENCE_TAG + sequence;
+                ControllerMessage.SequenceTag + sequence;
         }
 
         private static int Bit(bool value)

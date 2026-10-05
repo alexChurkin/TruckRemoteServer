@@ -8,8 +8,8 @@ namespace TruckRemoteServer.Infrastructure
     //vJoy device 1: steering on X, gas on Y, brake on Z (Y and Z are optional, for analog pedals)
     public sealed class VJoyJoystick : IVirtualJoystick
     {
-        private const uint DEVICE_ID = 1;
-        private const int ERROR_SUCCESS = 0;
+        private const uint DeviceId = 1;
+        private const int ErrorSuccess = 0;
 
         private readonly ILogger<VJoyJoystick> logger;
         private readonly object initLock = new object();
@@ -51,25 +51,25 @@ namespace TruckRemoteServer.Infrastructure
                     return false;
                 }
 
-                VjdStat status = device.GetVJDStatus(DEVICE_ID);
+                VjdStat status = device.GetVJDStatus(DeviceId);
                 bool acquiredNow = status == VjdStat.VJD_STAT_OWN
-                    || (status == VjdStat.VJD_STAT_FREE && device.AcquireVJD(DEVICE_ID));
+                    || (status == VjdStat.VJD_STAT_FREE && device.AcquireVJD(DeviceId));
                 if (!acquiredNow)
                 {
-                    logger.LogWarning("Failed to acquire vJoy device {Id} (status: {Status})", DEVICE_ID, status);
+                    logger.LogWarning("Failed to acquire vJoy device {Id} (status: {Status})", DeviceId, status);
                     return false;
                 }
 
-                device.ResetVJD(DEVICE_ID);
-                pedalAxesExist = device.GetVJDAxisExist(DEVICE_ID, HID_USAGES.HID_USAGE_Y)
-                    && device.GetVJDAxisExist(DEVICE_ID, HID_USAGES.HID_USAGE_Z);
+                device.ResetVJD(DeviceId);
+                pedalAxesExist = device.GetVJDAxisExist(DeviceId, HID_USAGES.HID_USAGE_Y)
+                    && device.GetVJDAxisExist(DeviceId, HID_USAGES.HID_USAGE_Z);
                 if (forceFeedbackCallback == null)
                 {
                     forceFeedbackCallback = OnForceFeedback;
-                    device.FfbRegisterGenCB(forceFeedbackCallback, DEVICE_ID);
+                    device.FfbRegisterGenCB(forceFeedbackCallback, DeviceId);
                 }
                 acquired = true;
-                logger.LogInformation("vJoy device {Id} acquired, pedal axes: {Pedals}", DEVICE_ID, pedalAxesExist);
+                logger.LogInformation("vJoy device {Id} acquired, pedal axes: {Pedals}", DeviceId, pedalAxesExist);
                 return true;
             }
             catch (Exception e)
@@ -83,27 +83,27 @@ namespace TruckRemoteServer.Infrastructure
         public void SetSteering(int value)
         {
             if (!acquired) return;
-            device.SetAxis(value, DEVICE_ID, HID_USAGES.HID_USAGE_X);
+            device.SetAxis(value, DeviceId, HID_USAGES.HID_USAGE_X);
         }
 
         public void SetPedals(int gas, int brake)
         {
             if (!HasPedalAxes) return;
-            device.SetAxis(gas, DEVICE_ID, HID_USAGES.HID_USAGE_Y);
-            device.SetAxis(brake, DEVICE_ID, HID_USAGES.HID_USAGE_Z);
+            device.SetAxis(gas, DeviceId, HID_USAGES.HID_USAGE_Y);
+            device.SetAxis(brake, DeviceId, HID_USAGES.HID_USAGE_Z);
         }
 
         public void Release()
         {
             if (device == null || !acquired) return;
             acquired = false;
-            device.RelinquishVJD(DEVICE_ID);
+            device.RelinquishVJD(DeviceId);
         }
 
         private void OnForceFeedback(IntPtr data, object userData)
         {
             var effect = new vJoy.FFB_EFF_CONSTANT();
-            if (device.Ffb_h_Eff_Constant(data, ref effect) == ERROR_SUCCESS)
+            if (device.Ffb_h_Eff_Constant(data, ref effect) == ErrorSuccess)
             {
                 ForceFeedback?.Invoke((uint)Math.Abs(effect.Magnitude));
             }

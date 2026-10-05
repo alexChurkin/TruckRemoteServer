@@ -8,10 +8,10 @@ namespace TruckRemoteServer.Localization
     //Translations are embedded into the exe as Strings.<language> resources, not as satellite assemblies
     public static class Texts
     {
-        private const string BASE_NAME = "TruckRemoteServer.Localization.Strings";
+        private const string BaseName = "TruckRemoteServer.Localization.Strings";
         private static readonly string[] Translations = { "ru", "be", "uk" };
 
-        private static readonly ResourceManager English = new ResourceManager(BASE_NAME, typeof(Texts).Assembly);
+        private static readonly ResourceManager English = new ResourceManager(BaseName, typeof(Texts).Assembly);
         private static ResourceManager translation;
 
         static Texts()
@@ -27,7 +27,7 @@ namespace TruckRemoteServer.Localization
             Culture = string.IsNullOrEmpty(language) ? CultureInfo.InstalledUICulture : CultureInfo.GetCultureInfo(language);
             string code = Culture.TwoLetterISOLanguageName;
             translation = Array.IndexOf(Translations, code) >= 0
-                ? new ResourceManager(BASE_NAME + "." + code, typeof(Texts).Assembly)
+                ? new ResourceManager(BaseName + "." + code, typeof(Texts).Assembly)
                 : null;
         }
 

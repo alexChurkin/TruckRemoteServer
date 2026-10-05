@@ -113,7 +113,7 @@ namespace TruckRemoteServer.Tests
             mapper.Apply(new ControllerMessage { HasPedalLevels = true, GasLevel = 0.5, BrakeLevel = 2, ActionCounters = new int[8] });
 
             Assert.Equal(16383, joystick.Gas);
-            Assert.Equal(JoystickAxis.MAX, joystick.Brake);
+            Assert.Equal(JoystickAxis.Max, joystick.Brake);
         }
 
         [Fact]
@@ -126,7 +126,7 @@ namespace TruckRemoteServer.Tests
 
             Assert.Contains("release Gas", keyboard.Events);
             Assert.Contains("release Horn", keyboard.Events);
-            Assert.Equal(JoystickAxis.CENTER, joystick.Steering);
+            Assert.Equal(JoystickAxis.Center, joystick.Steering);
             Assert.Equal(0, joystick.Gas);
         }
 

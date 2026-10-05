@@ -7,7 +7,7 @@ namespace TruckRemoteServer.Infrastructure
     //While acquired, the system timer has 1 ms resolution (as games do)
     public sealed class TimerResolution : ITimerResolution
     {
-        private const uint PERIOD_MS = 1;
+        private const uint PeriodMs = 1;
 
         public IDisposable Acquire()
         {
@@ -22,7 +22,7 @@ namespace TruckRemoteServer.Infrastructure
             {
                 try
                 {
-                    active = timeBeginPeriod(PERIOD_MS) == 0;
+                    active = timeBeginPeriod(PeriodMs) == 0;
                 }
                 catch (Exception)
                 {
@@ -34,7 +34,7 @@ namespace TruckRemoteServer.Infrastructure
             {
                 if (!active) return;
                 active = false;
-                timeEndPeriod(PERIOD_MS);
+                _ = timeEndPeriod(PeriodMs);
             }
         }
 

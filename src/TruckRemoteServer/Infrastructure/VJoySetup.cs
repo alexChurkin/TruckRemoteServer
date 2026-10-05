@@ -14,15 +14,15 @@ namespace TruckRemoteServer.Infrastructure
     //The work needs administrator rights, so the exe starts itself elevated with ELEVATED_ARGUMENT
     public sealed class VJoySetup : IJoystickSetup
     {
-        public const string ELEVATED_ARGUMENT = "--setup-vjoy";
+        public const string ElevatedArgument = "--setup-vjoy";
 
-        private const uint DEVICE_ID = 1;
-        private const string SETUP_RESOURCE = "vJoySetup.exe";
+        private const uint DeviceId = 1;
+        private const string SetupResource = "vJoySetup.exe";
         //As recommended before: steering on X, 8 buttons, force feedback. Pedal axes (Y, Z) are added by the user
         //for analog pedals: unbound axes resting in the middle could press the pedals if the game binds them
-        private const string DEVICE_CONFIG = "1 -f -a x -b 8 -e All";
-        private const int SETUP_TIMEOUT_MS = 5 * 60 * 1000;
-        private const int CONFIG_TIMEOUT_MS = 60 * 1000;
+        private const string DeviceConfig = "1 -f -a x -b 8 -e All";
+        private const int SetupTimeoutMs = 5 * 60 * 1000;
+        private const int ConfigTimeoutMs = 60 * 1000;
 
         private static string WorkFolder => Path.Combine(Path.GetTempPath(), "TruckRemoteServer");
         private static string LogFile => Path.Combine(WorkFolder, "vjoy-setup.log");
@@ -33,9 +33,9 @@ namespace TruckRemoteServer.Infrastructure
             {
                 var device = new vJoy();
                 if (!device.vJoyEnabled()) return true;
-                VjdStat status = device.GetVJDStatus(DEVICE_ID);
+                VjdStat status = device.GetVJDStatus(DeviceId);
                 if (status == VjdStat.VJD_STAT_MISS || status == VjdStat.VJD_STAT_UNKN) return true;
-                return !device.GetVJDAxisExist(DEVICE_ID, HID_USAGES.HID_USAGE_X);
+                return !device.GetVJDAxisExist(DeviceId, HID_USAGES.HID_USAGE_X);
             }
             catch (Exception e)
             {
@@ -46,7 +46,7 @@ namespace TruckRemoteServer.Infrastructure
 
         public bool Setup()
         {
-            var startInfo = new ProcessStartInfo(Process.GetCurrentProcess().MainModule.FileName, ELEVATED_ARGUMENT)
+            var startInfo = new ProcessStartInfo(Process.GetCurrentProcess().MainModule.FileName, ElevatedArgument)
             {
                 UseShellExecute = true,
                 Verb = "runas"
@@ -83,15 +83,15 @@ namespace TruckRemoteServer.Infrastructure
                 bool installedNow = configTool == null;
                 if (installedNow)
                 {
-                    string setup = Path.Combine(WorkFolder, SETUP_RESOURCE);
-                    using (Stream resource = typeof(VJoySetup).Assembly.GetManifestResourceStream(SETUP_RESOURCE))
+                    string setup = Path.Combine(WorkFolder, SetupResource);
+                    using (Stream resource = typeof(VJoySetup).Assembly.GetManifestResourceStream(SetupResource))
                     using (FileStream file = File.Create(setup))
                     {
                         resource.CopyTo(file);
                     }
                     string setupLog = Path.Combine(WorkFolder, "vjoy-install.log");
                     int code = Run(setup, "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /LOG=\"" + setupLog + "\"",
-                        SETUP_TIMEOUT_MS);
+                        SetupTimeoutMs);
                     TryDelete(setup);
                     configTool = FindConfigTool();
                     if (code != 0 || configTool == null)
@@ -101,8 +101,8 @@ namespace TruckRemoteServer.Infrastructure
                     }
                 }
 
-                Run(configTool, "enable on", CONFIG_TIMEOUT_MS);
-                if (installedNow || DeviceNeedsConfig()) Run(configTool, DEVICE_CONFIG, CONFIG_TIMEOUT_MS);
+                Run(configTool, "enable on", ConfigTimeoutMs);
+                if (installedNow || DeviceNeedsConfig()) Run(configTool, DeviceConfig, ConfigTimeoutMs);
 
                 bool ready = WaitUntilReady();
                 Log(ready ? "vJoy is ready" : "vJoy isn't ready");
@@ -120,9 +120,9 @@ namespace TruckRemoteServer.Infrastructure
             try
             {
                 var device = new vJoy();
-                VjdStat status = device.GetVJDStatus(DEVICE_ID);
+                VjdStat status = device.GetVJDStatus(DeviceId);
                 return status == VjdStat.VJD_STAT_MISS || status == VjdStat.VJD_STAT_UNKN
-                    || !device.GetVJDAxisExist(DEVICE_ID, HID_USAGES.HID_USAGE_X);
+                    || !device.GetVJDAxisExist(DeviceId, HID_USAGES.HID_USAGE_X);
             }
             catch (Exception e)
             {
@@ -163,7 +163,7 @@ namespace TruckRemoteServer.Infrastructure
 
         private static string[] InstallFolders()
         {
-            const string uninstall = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+            const string Uninstall = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
             var views = Environment.Is64BitOperatingSystem
                 ? new[] { RegistryView.Registry64, RegistryView.Registry32 }
                 : new[] { RegistryView.Registry32 };
@@ -172,9 +172,9 @@ namespace TruckRemoteServer.Infrastructure
                 try
                 {
                     using (RegistryKey root = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view))
-                    using (RegistryKey programs = root.OpenSubKey(uninstall))
+                    using (RegistryKey programs = root.OpenSubKey(Uninstall))
                     {
-                        if (programs == null) return new string[0];
+                        if (programs == null) return Array.Empty<string>();
                         return programs.GetSubKeyNames().Select(name =>
                         {
                             using (RegistryKey program = programs.OpenSubKey(name))
@@ -190,7 +190,7 @@ namespace TruckRemoteServer.Infrastructure
                 catch (Exception e)
                 {
                     Log("Registry: " + e.Message);
-                    return new string[0];
+                    return Array.Empty<string>();
                 }
             }).ToArray();
         }

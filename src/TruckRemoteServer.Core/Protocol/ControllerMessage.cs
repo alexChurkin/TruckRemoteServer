@@ -10,29 +10,29 @@ namespace TruckRemoteServer.Protocol
     //Toggles are flipped on every click, so a lost packet can't lose a click
     public class ControllerMessage
     {
-        private const int REQUIRED_PARTS = 10;
-        private const int PEDAL_LEVELS_INDEX = 10;
-        private const int ACTIONS_INDEX = 12;
-        public const string SEQUENCE_TAG = "#";
+        private const int RequiredParts = 10;
+        private const int PedalLevelsIndex = 10;
+        private const int ActionsIndex = 12;
+        public const string SequenceTag = "#";
 
-        public double Steering;
-        public bool BrakePressed;
-        public bool GasPressed;
-        public bool LeftSignalClick;
-        public bool RightSignalClick;
-        public bool EmergencyClick;
-        public bool ParkingBrakeClick;
-        public bool LightsClick;
-        public int Horn;
-        public bool CruiseClick;
+        public double Steering { get; set; }
+        public bool BrakePressed { get; set; }
+        public bool GasPressed { get; set; }
+        public bool LeftSignalClick { get; set; }
+        public bool RightSignalClick { get; set; }
+        public bool EmergencyClick { get; set; }
+        public bool ParkingBrakeClick { get; set; }
+        public bool LightsClick { get; set; }
+        public int Horn { get; set; }
+        public bool CruiseClick { get; set; }
 
-        public bool HasPedalLevels;
-        public double GasLevel;
-        public double BrakeLevel;
+        public bool HasPedalLevels { get; set; }
+        public double GasLevel { get; set; }
+        public double BrakeLevel { get; set; }
 
-        public int[] ActionCounters = new int[0];
+        public int[] ActionCounters { get; set; } = Array.Empty<int>();
 
-        public long? Sequence;
+        public long? Sequence { get; set; }
 
         //Returns null if the message isn't a controller state.
         //maxActions limits the counters to the actions known by the server
@@ -44,12 +44,12 @@ namespace TruckRemoteServer.Protocol
             try
             {
                 string last = parts[parts.Length - 1];
-                if (last.StartsWith(SEQUENCE_TAG))
+                if (last.StartsWith(SequenceTag, StringComparison.Ordinal))
                 {
                     sequence = long.Parse(last.Substring(1), CultureInfo.InvariantCulture);
                     Array.Resize(ref parts, parts.Length - 1);
                 }
-                if (parts.Length < REQUIRED_PARTS) return null;
+                if (parts.Length < RequiredParts) return null;
 
                 var result = new ControllerMessage
                 {
@@ -66,18 +66,18 @@ namespace TruckRemoteServer.Protocol
                     CruiseClick = bool.Parse(parts[9])
                 };
 
-                if (parts.Length >= PEDAL_LEVELS_INDEX + 2)
+                if (parts.Length >= PedalLevelsIndex + 2)
                 {
                     result.HasPedalLevels = true;
-                    result.GasLevel = ParseDouble(parts[PEDAL_LEVELS_INDEX]);
-                    result.BrakeLevel = ParseDouble(parts[PEDAL_LEVELS_INDEX + 1]);
+                    result.GasLevel = ParseDouble(parts[PedalLevelsIndex]);
+                    result.BrakeLevel = ParseDouble(parts[PedalLevelsIndex + 1]);
                 }
 
-                int actionsCount = Math.Max(0, Math.Min(parts.Length - ACTIONS_INDEX, maxActions));
+                int actionsCount = Math.Max(0, Math.Min(parts.Length - ActionsIndex, maxActions));
                 result.ActionCounters = new int[actionsCount];
                 for (int i = 0; i < actionsCount; i++)
                 {
-                    result.ActionCounters[i] = int.Parse(parts[ACTIONS_INDEX + i], CultureInfo.InvariantCulture);
+                    result.ActionCounters[i] = int.Parse(parts[ActionsIndex + i], CultureInfo.InvariantCulture);
                 }
                 return result;
             }

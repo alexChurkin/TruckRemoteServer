@@ -73,6 +73,13 @@ Truck Remote Server
     dotnet build TruckRemoteServer.sln -c Release
     dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj
 
+Проверки кода (все запускаются в CI и роняют сборку):
+
+- [анализаторы кода .NET](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/overview)
+  (правила `latest-recommended`) и стиль кода из `.editorconfig` (именование, неиспользуемый код, форматирование)
+  проверяются каждой сборкой, предупреждения — ошибки (`Directory.Build.props`)
+- `dotnet format TruckRemoteServer.sln --verify-no-changes` проверяет форматирование, `dotnet format TruckRemoteServer.sln` исправляет его
+
 Результат — один файл `src/TruckRemoteServer/bin/Release/TruckRemoteServer.exe`: зависимости, переводы,
 нативная библиотека vJoy, установщик vJoy и плагин телеметрии встроены в него ([Costura](https://github.com/Fody/Costura)).
 Процесс 32-битный, так как библиотеки vJoy в `lib` есть только для x86.

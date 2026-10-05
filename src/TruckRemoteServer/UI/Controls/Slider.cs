@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace TruckRemoteServer.UI.Controls
@@ -185,7 +186,7 @@ namespace TruckRemoteServer.UI.Controls
 
             public override string Value
             {
-                get => slider.Value.ToString();
+                get => slider.Value.ToString(CultureInfo.CurrentCulture);
                 set
                 {
                     if (int.TryParse(value, out int parsed)) slider.Value = parsed;

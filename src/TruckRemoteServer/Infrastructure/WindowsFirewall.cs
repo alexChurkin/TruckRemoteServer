@@ -11,11 +11,11 @@ namespace TruckRemoteServer.Infrastructure
     //changes are made by netsh started with elevation
     public sealed class WindowsFirewall : IFirewall
     {
-        public const string RULE_NAME = "Truck Remote Server";
+        public const string RuleName = "Truck Remote Server";
 
-        private const int NET_FW_RULE_DIR_IN = 1;
-        private const int NET_FW_ACTION_ALLOW = 1;
-        private static readonly int[] PROFILE_TYPES = { 1, 2, 4 };
+        private const int NetFwRuleDirIn = 1;
+        private const int NetFwActionAllow = 1;
+        private static readonly int[] ProfileTypes = { 1, 2, 4 };
 
         public FirewallStatus Check(string programPath, int port)
         {
@@ -28,7 +28,7 @@ namespace TruckRemoteServer.Infrastructure
                 int activeProfiles = policy.CurrentProfileTypes;
                 bool enabled = false;
                 bool blockAll = false;
-                foreach (int profile in PROFILE_TYPES)
+                foreach (int profile in ProfileTypes)
                 {
                     if ((activeProfiles & profile) == 0) continue;
                     if (policy.FirewallEnabled[profile])
@@ -45,8 +45,8 @@ namespace TruckRemoteServer.Infrastructure
                     {
                         Name = rule.Name,
                         Enabled = rule.Enabled,
-                        Inbound = rule.Direction == NET_FW_RULE_DIR_IN,
-                        Allow = rule.Action == NET_FW_ACTION_ALLOW,
+                        Inbound = rule.Direction == NetFwRuleDirIn,
+                        Allow = rule.Action == NetFwActionAllow,
                         Application = rule.ApplicationName,
                         Protocol = rule.Protocol,
                         LocalPorts = rule.LocalPorts,
@@ -70,7 +70,7 @@ namespace TruckRemoteServer.Infrastructure
             //Deleting fails when there are no rules yet, so commands are joined with "&", not "&&"
             string commands =
                 "netsh advfirewall firewall delete rule name=all dir=in " + program +
-                " & netsh advfirewall firewall add rule name=\"" + RULE_NAME + "\" dir=in action=allow " +
+                " & netsh advfirewall firewall add rule name=\"" + RuleName + "\" dir=in action=allow " +
                 program + " protocol=UDP enable=yes profile=any";
 
             var startInfo = new ProcessStartInfo("cmd.exe", "/c " + commands)

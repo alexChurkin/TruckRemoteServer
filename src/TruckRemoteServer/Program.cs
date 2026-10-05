@@ -19,7 +19,7 @@ namespace TruckRemoteServer
         static int Main(string[] args)
         {
             //The server started itself with administrator rights to install vJoy
-            if (args.Length > 0 && args[0] == VJoySetup.ELEVATED_ARGUMENT) return VJoySetup.RunElevated();
+            if (args.Length > 0 && args[0] == VJoySetup.ElevatedArgument) return VJoySetup.RunElevated();
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

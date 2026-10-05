@@ -8,16 +8,16 @@ namespace TruckRemoteServer.Network
 {
     public class LocalAddress
     {
-        public IPAddress Address;
+        public IPAddress Address { get; set; }
         //Adapters with a default gateway are the real LAN connections
-        public bool HasGateway;
+        public bool HasGateway { get; set; }
         //Virtual machines, VPNs and similar adapters, a phone usually can't reach them
-        public bool IsVirtual;
+        public bool IsVirtual { get; set; }
     }
 
     public static class NetworkUtil
     {
-        private static readonly string[] VIRTUAL_ADAPTER_WORDS =
+        private static readonly string[] VirtualAdapterWords =
         {
             "virtual", "hyper-v", "vmware", "virtualbox", "vpn", "tap-", "wireguard", "tailscale",
             "zerotier", "hamachi", "npcap", "loopback", "bluetooth"
@@ -56,7 +56,7 @@ namespace TruckRemoteServer.Network
                     gateway.Address.AddressFamily == AddressFamily.InterNetwork
                     && !gateway.Address.Equals(IPAddress.Any));
                 string names = (adapter.Name + " " + adapter.Description).ToLowerInvariant();
-                bool isVirtual = VIRTUAL_ADAPTER_WORDS.Any(names.Contains);
+                bool isVirtual = VirtualAdapterWords.Any(names.Contains);
 
                 foreach (UnicastIPAddressInformation info in properties.UnicastAddresses)
                 {

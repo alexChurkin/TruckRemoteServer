@@ -7,7 +7,7 @@ namespace TruckRemoteServer.Input
     public class ActionCounters
     {
         //A bigger jump is considered as a counter of another session, not as clicks
-        public const int MAX_CLICKS_AT_ONCE = 5;
+        public const int MaxClicksAtOnce = 5;
 
         private readonly int[] previous;
 
@@ -32,12 +32,12 @@ namespace TruckRemoteServer.Input
                 int difference = counters[i] - previous[i];
                 if (difference == 0) continue;
 
-                if (difference > 0 && difference <= MAX_CLICKS_AT_ONCE)
+                if (difference > 0 && difference <= MaxClicksAtOnce)
                 {
                     clicks[i] = difference;
                     previous[i] = counters[i];
                 }
-                else if (difference > MAX_CLICKS_AT_ONCE || difference < -MAX_CLICKS_AT_ONCE)
+                else if (difference > MaxClicksAtOnce || difference < -MaxClicksAtOnce)
                 {
                     //Counter was reset (e.g. the app was restarted): taken without clicks
                     previous[i] = counters[i];

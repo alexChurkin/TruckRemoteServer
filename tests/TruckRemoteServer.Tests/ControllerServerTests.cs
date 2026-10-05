@@ -15,7 +15,7 @@ namespace TruckRemoteServer.Tests
     //Real UDP packets on the loopback interface
     public sealed class ControllerServerTests : IDisposable
     {
-        private const string STATE = "0,false,{0},{1},false,false,false,false,0,false,0,0,0,0,0,0,0,0,0,0,#{2}";
+        private const string StateTemplate = "0,false,{0},{1},false,false,false,false,0,false,0,0,0,0,0,0,0,0,0,0,#{2}";
 
         private readonly FakeKeyboard keyboard = new FakeKeyboard();
         private readonly FakeJoystick joystick = new FakeJoystick();
@@ -92,8 +92,8 @@ namespace TruckRemoteServer.Tests
         public void StateMessagesBecomeInput()
         {
             Connect();
-            Send(string.Format(STATE, "false", "false", 1));
-            Send(string.Format(STATE, "true", "true", 2));
+            Send(string.Format(StateTemplate, "false", "false", 1));
+            Send(string.Format(StateTemplate, "true", "true", 2));
 
             WaitFor(() => keyboard.Events.Contains("click LeftBlinker"));
             Assert.Contains("press Gas", keyboard.Events);
@@ -103,11 +103,11 @@ namespace TruckRemoteServer.Tests
         public void LateMessageDoesntMakeAnExtraClick()
         {
             Connect();
-            Send(string.Format(STATE, "false", "false", 1));
-            Send(string.Format(STATE, "false", "true", 3));
+            Send(string.Format(StateTemplate, "false", "false", 1));
+            Send(string.Format(StateTemplate, "false", "true", 3));
             //Came late: its old toggle value would be one more click
-            Send(string.Format(STATE, "false", "false", 2));
-            Send(string.Format(STATE, "false", "true", 4));
+            Send(string.Format(StateTemplate, "false", "false", 2));
+            Send(string.Format(StateTemplate, "false", "true", 4));
             Thread.Sleep(200);
 
             Assert.Single(keyboard.Events, e => e == "click LeftBlinker");
@@ -117,8 +117,8 @@ namespace TruckRemoteServer.Tests
         public void PauseAndGoodbyeReleaseControls()
         {
             Connect();
-            Send(string.Format(STATE, "false", "false", 1));
-            Send(string.Format(STATE, "true", "false", 2));
+            Send(string.Format(StateTemplate, "false", "false", 1));
+            Send(string.Format(StateTemplate, "true", "false", 2));
             WaitFor(() => keyboard.Events.Contains("press Gas"));
 
             Send("paused");
@@ -145,8 +145,8 @@ namespace TruckRemoteServer.Tests
         public void SameControllerResumesWithoutReleasingControls()
         {
             Connect();
-            Send(string.Format(STATE, "false", "false", 1));
-            Send(string.Format(STATE, "true", "false", 2));
+            Send(string.Format(StateTemplate, "false", "false", 1));
+            Send(string.Format(StateTemplate, "true", "false", 2));
             WaitFor(() => keyboard.Events.Contains("press Gas"));
 
             Send("TruckRemoteHello");
@@ -160,11 +160,11 @@ namespace TruckRemoteServer.Tests
         public void SilentControllerIsDisconnected()
         {
             Connect();
-            Send(string.Format(STATE, "false", "false", 1));
-            Send(string.Format(STATE, "true", "false", 2));
+            Send(string.Format(StateTemplate, "false", "false", 1));
+            Send(string.Format(StateTemplate, "true", "false", 2));
             WaitFor(() => keyboard.Events.Contains("press Gas"));
 
-            Thread.Sleep(ControllerServer.CONTROLLER_TIMEOUT + 500);
+            Thread.Sleep(ControllerServer.ControllerTimeout + 500);
 
             Assert.False(server.Status.ControllerConnected);
             Assert.Contains("release Gas", keyboard.Events);

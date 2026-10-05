@@ -17,20 +17,20 @@ namespace TruckRemoteServer.Firewall
 
     public class FirewallRule
     {
-        public const int PROTOCOL_UDP = 17;
-        public const int PROTOCOL_ANY = 256;
+        public const int ProtocolUdp = 17;
+        public const int ProtocolAny = 256;
 
-        public string Name;
-        public bool Enabled;
-        public bool Inbound;
-        public bool Allow;
+        public string Name { get; set; }
+        public bool Enabled { get; set; }
+        public bool Inbound { get; set; }
+        public bool Allow { get; set; }
         //Full path of the program, empty for any program
-        public string Application;
-        public int Protocol = PROTOCOL_ANY;
+        public string Application { get; set; }
+        public int Protocol { get; set; } = ProtocolAny;
         //"*", a port, a range ("1000-2000") or a comma separated list of them
-        public string LocalPorts = "*";
+        public string LocalPorts { get; set; } = "*";
         //Bit mask of NET_FW_PROFILE_TYPE2 (domain 1, private 2, public 4)
-        public int Profiles = 0x7FFFFFFF;
+        public int Profiles { get; set; } = 0x7FFFFFFF;
     }
 
     //Decides whether UDP packets to the server pass Windows Firewall.
@@ -54,7 +54,7 @@ namespace TruckRemoteServer.Firewall
             return rule.Enabled
                 && rule.Inbound
                 && (rule.Profiles & activeProfiles) != 0
-                && (rule.Protocol == FirewallRule.PROTOCOL_UDP || rule.Protocol == FirewallRule.PROTOCOL_ANY)
+                && (rule.Protocol == FirewallRule.ProtocolUdp || rule.Protocol == FirewallRule.ProtocolAny)
                 && (string.IsNullOrEmpty(rule.Application)
                     || string.Equals(rule.Application, programPath, StringComparison.OrdinalIgnoreCase))
                 && PortMatches(rule.LocalPorts, port);

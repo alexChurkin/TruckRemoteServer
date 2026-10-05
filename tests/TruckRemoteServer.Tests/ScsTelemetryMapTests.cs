@@ -7,7 +7,7 @@ namespace TruckRemoteServer.Tests
     //Offsets are checked against scsTelemetryMap_t of scs-sdk-plugin 1.12.1 (computed from the header with C layout rules)
     public class ScsTelemetryMapTests
     {
-        private static byte[] ActiveMap(int revision = ScsTelemetryMap.REVISION)
+        private static byte[] ActiveMap(int revision = ScsTelemetryMap.Revision)
         {
             var data = new byte[32 * 1024];
             data[0] = 1;

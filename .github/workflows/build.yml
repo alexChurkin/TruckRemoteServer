@@ -18,8 +18,13 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      # Code style and formatting of .editorconfig (whitespace, style and analyzer rules)
+      - name: Format
+        run: dotnet format TruckRemoteServer.sln --verify-no-changes --severity warn
+
+      # .NET analyzers and code style are checked by the build, warnings are errors (Directory.Build.props)
       - name: Build
-        run: dotnet build TruckRemoteServer.sln -c Release -warnaserror:CS0168,CS0219,CS0162
+        run: dotnet build TruckRemoteServer.sln -c Release
 
       - name: Test
         run: dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj -c Release --no-build

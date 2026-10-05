@@ -4,8 +4,8 @@ namespace TruckRemoteServer.Input
 {
     public static class JoystickAxis
     {
-        public const int CENTER = 16384;
-        public const int MAX = 32767;
+        public const int Center = 16384;
+        public const int Max = 32767;
     }
 
     //Virtual joystick (vJoy): steering on the X axis, gas and brake on the Y and Z axes

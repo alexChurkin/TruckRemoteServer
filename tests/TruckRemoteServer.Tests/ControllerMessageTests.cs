@@ -8,7 +8,7 @@ namespace TruckRemoteServer.Tests
         [Fact]
         public void ParsesBaseMessageOfOldControllers()
         {
-            var state = ControllerMessage.Parse("-2.5,true,false,true,false,false,true,false,2,true", 8);
+            var state = ControllerMessage.Parse("-2.5,true,false,true,false,false,true,false,2,true");
 
             Assert.NotNull(state);
             Assert.Equal(-2.5, state.Steering);
@@ -19,35 +19,36 @@ namespace TruckRemoteServer.Tests
             Assert.Equal(2, state.Horn);
             Assert.True(state.CruiseClick);
             Assert.False(state.HasPedalLevels);
-            Assert.Empty(state.ActionCounters);
+            Assert.Empty(state.Actions);
         }
 
         [Fact]
         public void ParsesPedalLevelsAndActions()
         {
             var state = ControllerMessage.Parse(
-                "1.0,false,false,false,false,false,false,false,0,false,0.750,0.125,1,0,3", 8);
+                "1.0,false,false,false,false,false,false,false,0,false,0.750,0.125");
 
             Assert.NotNull(state);
             Assert.True(state.HasPedalLevels);
             Assert.Equal(0.75, state.GasLevel);
             Assert.Equal(0.125, state.BrakeLevel);
-            Assert.Equal(new[] { 1, 0, 3 }, state.ActionCounters);
+            Assert.Empty(state.Actions);
         }
 
         [Fact]
-        public void IgnoresActionsUnknownToServer()
+        public void FieldsOfANewerTextProtocolAreSkipped()
         {
-            var state = ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false,0,0,1,2,3", 2);
+            var state = ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false,0,0,1,2,engine:4");
 
-            Assert.Equal(new[] { 1, 2 }, state.ActionCounters);
+            Assert.True(state.HasPedalLevels);
+            Assert.Empty(state.Actions);
         }
 
         [Fact]
         public void KotlinBooleansAreAccepted()
         {
             //Android sends "true"/"false", C# writes "True"/"False"
-            var state = ControllerMessage.Parse("0,True,FALSE,false,false,false,false,false,0,false", 8);
+            var state = ControllerMessage.Parse("0,True,FALSE,false,false,false,false,false,0,false");
 
             Assert.True(state.BrakePressed);
             Assert.False(state.GasPressed);
@@ -56,20 +57,19 @@ namespace TruckRemoteServer.Tests
         [Fact]
         public void SequenceNumberIsTheLastField()
         {
-            var state = ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false,0.5,0,1,2,#42", 8);
+            var state = ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false,0.5,0,#42");
 
             Assert.Equal(42L, state.Sequence);
             Assert.Equal(0.5, state.GasLevel);
-            Assert.Equal(new[] { 1, 2 }, state.ActionCounters);
-            Assert.Null(ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false", 8).Sequence);
+            Assert.Null(ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false").Sequence);
         }
 
         [Fact]
         public void SequenceDoesntCountAsActions()
         {
-            var state = ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false,0,0,#3", 8);
+            var state = ControllerMessage.Parse("0,false,false,false,false,false,false,false,0,false,0,0,#3");
 
-            Assert.Empty(state.ActionCounters);
+            Assert.Empty(state.Actions);
             Assert.Equal(3L, state.Sequence);
         }
 
@@ -78,7 +78,7 @@ namespace TruckRemoteServer.Tests
         [InlineData("0,false,false,false,false,false,false,false,0,#1")]
         public void MalformedSequenceGivesNull(string message)
         {
-            Assert.Null(ControllerMessage.Parse(message, 8));
+            Assert.Null(ControllerMessage.Parse(message));
         }
 
         [Theory]
@@ -87,10 +87,10 @@ namespace TruckRemoteServer.Tests
         [InlineData("0,false,false")]
         [InlineData("abc,false,false,false,false,false,false,false,0,false")]
         [InlineData("0,yes,false,false,false,false,false,false,0,false")]
-        [InlineData("0,false,false,false,false,false,false,false,0,false,0,0,99999999999")]
+        [InlineData("0,false,false,false,false,false,false,false,0,false,x,0")]
         public void MalformedMessageGivesNull(string message)
         {
-            Assert.Null(ControllerMessage.Parse(message, 8));
+            Assert.Null(ControllerMessage.Parse(message));
         }
 
         [Theory]
@@ -99,7 +99,7 @@ namespace TruckRemoteServer.Tests
         [InlineData("-Infinity")]
         public void NotFiniteSteeringBecomesZero(string steering)
         {
-            var state = ControllerMessage.Parse(steering + ",false,false,false,false,false,false,false,0,false", 8);
+            var state = ControllerMessage.Parse(steering + ",false,false,false,false,false,false,false,0,false");
 
             Assert.Equal(0, state.Steering);
         }

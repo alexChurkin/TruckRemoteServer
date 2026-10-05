@@ -58,9 +58,16 @@ The server presses the default game keys, so keep them in the game settings:
 gas and brake **↑**/**↓** (in the digital pedal mode), blinkers **[** and **]**, hazard lights **F**,
 parking brake **Space**, lights **L**, high beam **K**, horn **H**, air horn **N**, cruise control **C**.
 
-The quick actions panel in the app (button at the bottom center) uses:
-engine **E**, trailer **T**, activate **Enter**, flash lights **J**, wipers **P**, beacon **O**,
-differential lock **V**, lift axle **U**.
+The quick actions panel in the app (button at the bottom center, swipe it for more pages) uses:
+
+- truck: engine **E**, trailer **T**, activate **Enter**, flash lights **J**, wipers **P**, beacon **O**,
+  differential lock **V**, lift axle **U**;
+- driving: retarder **;** / **'**, engine brake **B** (held while the button is pressed), quick park **Q**,
+  cruise control speed **=** / **-**, resume cruise control **R**;
+- view: cab camera **1**, chase camera **2**, next camera **9**, map **M**, dashboard display **I**, HUD **F3**,
+  next radio station **Page Down**, quick save **Scroll Lock**.
+
+Some of them (e.g. cruise control speed) have no key in older game versions: bind these keys in the game then.
 
 Enjoy using!
 
@@ -99,6 +106,13 @@ The process is 32-bit, as the vJoy libraries in `lib` are x86 only.
   installs and configures vJoy (in the same exe started with administrator rights), `Telemetry/Setup` installs
   the plugin into the games, `Localization` has the texts (English, Russian, Belarusian, Ukrainian).
 - `tests/TruckRemoteServer.Tests` (.NET 8, xUnit) — tests of the core, including real UDP sessions on the loopback interface.
+
+### Protocol
+
+The phone and the server talk over UDP. Since version 2 (the phone's hello is `TruckRemoteHello2`, the server answers
+`Hi!2`) the messages are binary: the phone's state is 16 bytes plus 2 bytes per clicked or held action, the truck state
+is 9 bytes (`Core/Protocol/BinaryProtocol`). Actions are sent by fixed codes, not by the places of their buttons.
+Older apps and servers keep the text protocol.
 
 ### Telemetry plugin
 

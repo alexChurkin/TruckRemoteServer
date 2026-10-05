@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -46,6 +47,7 @@ namespace TruckRemoteServer
         //Makes Windows not to break UDP socket with WSAECONNRESET after ICMP "Port unreachable"
         private const int SioUdpConnreset = -1744830452;
 
+        //A controller of protocol version 2 adds "2" to the hello and gets "Hi!2" (see BinaryProtocol)
         private const string HelloMessage = "TruckRemoteHello";
         private const string HelloAnswer = "Hi!";
         private const string PausedMessage = "paused";
@@ -63,6 +65,8 @@ namespace TruckRemoteServer
         private volatile Socket serverSocket;
         private volatile IPEndPoint controllerEndPoint;
         private volatile bool controllerPaused;
+        //The controller speaks the binary protocol
+        private volatile bool binaryController;
         private long lastControllerMessageTime;
         //Incremented on every controller connect/disconnect, stops outdated sender threads
         private int controllerSession;
@@ -163,7 +167,8 @@ namespace TruckRemoteServer
 
         private void ReceiveMessages(Socket socket)
         {
-            byte[] buffer = new byte[256];
+            //Messages are small (binary state up to 16 + 2 * 256 bytes)
+            byte[] buffer = new byte[1024];
 
             while (serverSocket == socket)
             {
@@ -190,15 +195,14 @@ namespace TruckRemoteServer
                     break;
                 }
 
-                string message = Encoding.UTF8.GetString(buffer, 0, length);
                 try
                 {
-                    OnMessage(socket, (IPEndPoint)endPoint, message);
+                    OnMessage(socket, (IPEndPoint)endPoint, buffer, length);
                 }
                 catch (Exception e)
                 {
                     //Malformed message shouldn't stop the server
-                    logger.LogInformation("Can't process message \"{Message}\": {Error}", message, e.Message);
+                    logger.LogInformation("Can't process a message of {Length} bytes: {Error}", length, e.Message);
                 }
                 CheckControllerTimeout();
             }
@@ -216,18 +220,21 @@ namespace TruckRemoteServer
             }
         }
 
-        private void OnMessage(Socket socket, IPEndPoint endPoint, string message)
+        private void OnMessage(Socket socket, IPEndPoint endPoint, byte[] data, int length)
         {
             lock (stateLock)
             {
                 if (serverSocket != socket) return;
 
+                bool binary = BinaryProtocol.IsBinary(data, length);
+                string text = binary ? null : Encoding.UTF8.GetString(data, 0, length);
                 if (endPoint.Equals(controllerEndPoint))
                 {
                     lastControllerMessageTime = MonotonicClock.Millis;
-                    OnMessageFromController(socket, endPoint, message);
+                    if (binary) OnBinaryMessageFromController(data, length);
+                    else OnMessageFromController(socket, endPoint, text);
                 }
-                else if (message.StartsWith(HelloMessage, StringComparison.Ordinal))
+                else if (!binary && text.StartsWith(HelloMessage, StringComparison.Ordinal))
                 {
                     //Only one controller is supported. Another device can connect only after
                     //the current one has gone silent; the same device (reconnect) takes over at once
@@ -238,17 +245,24 @@ namespace TruckRemoteServer
                         if (!sameDevice && !timedOut) return;
                         DisconnectController();
                     }
-                    ConnectController(socket, endPoint);
+                    ConnectController(socket, endPoint, text);
                 }
             }
         }
 
+        //Must be called under stateLock: the protocol version is chosen by the hello
+        private void AnswerHello(Socket socket, IPEndPoint endPoint, string hello)
+        {
+            binaryController = hello.Substring(HelloMessage.Length) == BinaryProtocol.Version.ToString(CultureInfo.InvariantCulture);
+            Answer(socket, endPoint, binaryController ? HelloAnswer + BinaryProtocol.Version : HelloAnswer);
+        }
+
         //Must be called under stateLock
-        private void ConnectController(Socket socket, IPEndPoint endPoint)
+        private void ConnectController(Socket socket, IPEndPoint endPoint, string hello)
         {
             logger.LogInformation("Controller connected from {EndPoint}", endPoint);
             input.OnControllerConnected();
-            Answer(socket, endPoint, HelloAnswer);
+            AnswerHello(socket, endPoint, hello);
 
             Interlocked.Exchange(ref effectDuration, 0);
             sequenceGate.Reset();
@@ -272,7 +286,7 @@ namespace TruckRemoteServer
             {
                 logger.LogInformation("Controller resumes the session");
                 sequenceGate.Reset();
-                Answer(socket, endPoint, HelloAnswer);
+                AnswerHello(socket, endPoint, message);
                 return;
             }
 
@@ -285,23 +299,55 @@ namespace TruckRemoteServer
 
             if (message.StartsWith(PausedMessage, StringComparison.Ordinal))
             {
-                if (!controllerPaused)
-                {
-                    controllerPaused = true;
-                    //Nothing should stay pressed while controller is paused
-                    input.ReleaseControls();
-                    Interlocked.Exchange(ref effectDuration, 0);
-                    PostStatus();
-                }
+                PauseController();
                 return;
             }
 
-            ControllerMessage state = ControllerMessage.Parse(message, ControllerInputMapper.ActionsCount);
+            ControllerMessage state = ControllerMessage.Parse(message);
             if (state == null)
             {
                 logger.LogInformation("Unknown message from controller: {Message}", message);
                 return;
             }
+            ApplyControllerState(state);
+        }
+
+        //Must be called under stateLock
+        private void OnBinaryMessageFromController(byte[] data, int length)
+        {
+            switch (data[0])
+            {
+                case BinaryProtocol.GoodbyeType:
+                    logger.LogInformation("Goodbye from controller received");
+                    DisconnectController();
+                    return;
+                case BinaryProtocol.PausedType:
+                    PauseController();
+                    return;
+            }
+            ControllerMessage state = BinaryProtocol.ParseControllerState(data, length);
+            if (state == null)
+            {
+                logger.LogInformation("Unknown binary message from controller, type {Type}", data[0]);
+                return;
+            }
+            ApplyControllerState(state);
+        }
+
+        //Must be called under stateLock
+        private void PauseController()
+        {
+            if (controllerPaused) return;
+            controllerPaused = true;
+            //Nothing should stay pressed while controller is paused
+            input.ReleaseControls();
+            Interlocked.Exchange(ref effectDuration, 0);
+            PostStatus();
+        }
+
+        //Must be called under stateLock
+        private void ApplyControllerState(ControllerMessage state)
+        {
             if (!sequenceGate.Accept(state.Sequence)) return;
 
             if (controllerPaused)
@@ -352,7 +398,7 @@ namespace TruckRemoteServer
                         //Paused controller doesn't read anything, so there's no need to flood it
                         if (!controllerPaused)
                         {
-                            socket.SendTo(Encoding.UTF8.GetBytes(MakeMessage(truck, ++sequence)), endPoint);
+                            socket.SendTo(MakeMessage(truck, ++sequence), endPoint);
                         }
                     }
                     catch (ObjectDisposedException)
@@ -374,12 +420,19 @@ namespace TruckRemoteServer
             }
         }
 
-        private string MakeMessage(TruckTelemetry truck, long sequence)
+        private byte[] MakeMessage(TruckTelemetry truck, long sequence)
         {
             int lightsMode = ServerMessage.LightsMode(truck.ParkingLights, truck.LowBeam, truck.HighBeam);
             int effect = Interlocked.Exchange(ref effectDuration, 0);
-            return ServerMessage.Format(truck.EngineOn, truck.ParkingBrake, truck.LeftBlinker, truck.RightBlinker,
-                lightsMode, effect, truck.TrailerAttached, truck.Wipers, truck.Beacon, joystick.HasPedalAxes, sequence);
+            if (binaryController)
+            {
+                return BinaryProtocol.FormatServerState(truck.EngineOn, truck.ParkingBrake, truck.LeftBlinker,
+                    truck.RightBlinker, lightsMode, effect, truck.TrailerAttached, truck.Wipers, truck.Beacon,
+                    joystick.HasPedalAxes, sequence);
+            }
+            return Encoding.UTF8.GetBytes(ServerMessage.Format(truck.EngineOn, truck.ParkingBrake, truck.LeftBlinker,
+                truck.RightBlinker, lightsMode, effect, truck.TrailerAttached, truck.Wipers, truck.Beacon,
+                joystick.HasPedalAxes, sequence));
         }
 
         private void PostStatus()

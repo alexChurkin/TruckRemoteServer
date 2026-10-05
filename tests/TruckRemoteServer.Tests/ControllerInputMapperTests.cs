@@ -1,3 +1,4 @@
+using System.Linq;
 using TruckRemoteServer.Input;
 using TruckRemoteServer.Protocol;
 using TruckRemoteServer.Telemetry;
@@ -19,7 +20,7 @@ namespace TruckRemoteServer.Tests
         }
 
         private static ControllerMessage State(bool left = false, bool lights = false, bool gas = false,
-            int horn = 0, double steering = 0, params int[] actions)
+            int horn = 0, double steering = 0, params (int Id, int Value)[] actions)
         {
             return new ControllerMessage
             {
@@ -28,17 +29,17 @@ namespace TruckRemoteServer.Tests
                 GasPressed = gas,
                 Horn = horn,
                 Steering = steering,
-                ActionCounters = actions.Length == 0 ? new int[8] : actions
+                Actions = actions.ToDictionary(action => action.Id, action => action.Value)
             };
         }
 
         [Fact]
         public void FirstMessageTakesTogglesWithoutClicks()
         {
-            mapper.Apply(State(left: true, actions: new[] { 3, 0, 0, 0, 0, 0, 0, 0 }));
+            mapper.Apply(State(left: true, actions: (1, 3)));
             Assert.Empty(keyboard.Events);
 
-            mapper.Apply(State(left: false, actions: new[] { 4, 0, 0, 0, 0, 0, 0, 0 }));
+            mapper.Apply(State(left: false, actions: (1, 4)));
             Assert.Equal(new[] { "click Engine", "click LeftBlinker" }, keyboard.Events);
         }
 
@@ -108,9 +109,41 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void ActionsAreFoundByIdWhateverTheirOrder()
+        {
+            mapper.Apply(State());
+            mapper.Apply(State(actions: new[] { (19, 1), (9, 2), (200, 1) }));
+
+            Assert.Equal(new[] { "click Map", "click RetarderUp", "click RetarderUp" }, keyboard.Events);
+        }
+
+        [Fact]
+        public void HoldActionKeepsItsKeyPressed()
+        {
+            mapper.Apply(State());
+            mapper.Apply(State(actions: (11, 1)));
+            mapper.Apply(State(actions: (11, 1)));
+            mapper.Apply(State());
+
+            Assert.Equal(new[] { "press EngineBrake", "release EngineBrake" }, keyboard.Events);
+        }
+
+        [Fact]
+        public void HeldActionIsReleasedWithControls()
+        {
+            mapper.Apply(State());
+            mapper.Apply(State(actions: (11, 1)));
+            keyboard.Clear();
+
+            mapper.ReleaseControls();
+
+            Assert.Contains("release EngineBrake", keyboard.Events);
+        }
+
+        [Fact]
         public void PedalLevelsAreAxes()
         {
-            mapper.Apply(new ControllerMessage { HasPedalLevels = true, GasLevel = 0.5, BrakeLevel = 2, ActionCounters = new int[8] });
+            mapper.Apply(new ControllerMessage { HasPedalLevels = true, GasLevel = 0.5, BrakeLevel = 2 });
 
             Assert.Equal(16383, joystick.Gas);
             Assert.Equal(JoystickAxis.Max, joystick.Brake);

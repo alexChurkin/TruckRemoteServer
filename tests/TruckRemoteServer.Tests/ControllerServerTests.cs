@@ -89,6 +89,47 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void Version2HelloSwitchesToTheBinaryProtocol()
+        {
+            telemetry.Truck = new TruckTelemetry { EngineOn = true, LowBeam = true };
+            Send("TruckRemoteHello2");
+            Assert.Equal("Hi!2", Receive(phone));
+            WaitFor(() => server.Status.ControllerConnected);
+
+            IPEndPoint from = null;
+            byte[] truck = phone.Receive(ref from);
+            Assert.Equal(9, truck.Length);
+            Assert.Equal(1 | 2 << 8, BitConverter.ToUInt16(truck, 5) & (1 | 3 << 8));
+
+            //First state is synchronized, the second one clicks the engine and holds the engine brake
+            SendBytes(BinaryState(1, flags: 0, 1, 0));
+            SendBytes(BinaryState(2, flags: 1 << 1, 1, 1, 11, 1));
+            WaitFor(() => keyboard.Events.Contains("click Engine") && keyboard.Events.Contains("press EngineBrake"));
+            Assert.Contains("press Gas", keyboard.Events);
+
+            //Binary pause releases everything
+            SendBytes(new byte[] { 0x03 });
+            WaitFor(() => server.Status.ControllerPaused);
+            Assert.Contains("release EngineBrake", keyboard.Events);
+        }
+
+        private void SendBytes(byte[] bytes)
+        {
+            phone.Send(bytes, bytes.Length, new IPEndPoint(IPAddress.Loopback, server.Port));
+        }
+
+        private static byte[] BinaryState(uint sequence, int flags, params byte[] actions)
+        {
+            var message = new byte[16 + actions.Length];
+            message[0] = 0x02;
+            BitConverter.GetBytes(sequence).CopyTo(message, 1);
+            BitConverter.GetBytes((ushort)flags).CopyTo(message, 9);
+            message[15] = (byte)(actions.Length / 2);
+            actions.CopyTo(message, 16);
+            return message;
+        }
+
+        [Fact]
         public void StateMessagesBecomeInput()
         {
             Connect();

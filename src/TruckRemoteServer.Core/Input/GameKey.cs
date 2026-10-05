@@ -15,7 +15,7 @@ namespace TruckRemoteServer.Input
         Horn,
         AirHorn,
         CruiseControl,
-        //Additional actions in the order the controller sends their counters
+        //Actions of the controller's panel (see ControllerActions)
         Engine,
         Trailer,
         Activate,
@@ -23,6 +23,21 @@ namespace TruckRemoteServer.Input
         DiffLock,
         LiftAxle,
         Beacon,
-        LightHorn
+        LightHorn,
+        RetarderUp,
+        RetarderDown,
+        EngineBrake,
+        CruiseUp,
+        CruiseDown,
+        CruiseResume,
+        QuickPark,
+        CameraInterior,
+        CameraChase,
+        CameraCycle,
+        Map,
+        DashboardDisplay,
+        Hud,
+        RadioNext,
+        QuickSave
     }
 }

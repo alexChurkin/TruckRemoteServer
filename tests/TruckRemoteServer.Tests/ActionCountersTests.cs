@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TruckRemoteServer.Input;
 using Xunit;
 
@@ -5,57 +6,77 @@ namespace TruckRemoteServer.Tests
 {
     public class ActionCountersTests
     {
+        private static Dictionary<int, int> Counters(params (int Id, int Value)[] counters)
+        {
+            var result = new Dictionary<int, int>();
+            foreach (var (id, value) in counters) result[id] = value;
+            return result;
+        }
+
         [Fact]
         public void IncreasedCountersGiveClicks()
         {
-            var counters = new ActionCounters(3);
+            var counters = new ActionCounters();
 
-            Assert.Equal(new[] { 1, 0, 2 }, counters.Update(new[] { 1, 0, 2 }));
-            Assert.Equal(new[] { 0, 0, 0 }, counters.Update(new[] { 1, 0, 2 }));
-            Assert.Equal(new[] { 1, 1, 0 }, counters.Update(new[] { 2, 1, 2 }));
+            Assert.Equal(Counters((1, 1), (3, 2)), counters.Update(Counters((1, 1), (2, 0), (3, 2))));
+            Assert.Empty(counters.Update(Counters((1, 1), (3, 2))));
+            Assert.Equal(Counters((1, 1), (2, 1)), counters.Update(Counters((1, 2), (2, 1), (3, 2))));
         }
 
         [Fact]
         public void LateOldMessageDoesntRepeatClicks()
         {
-            var counters = new ActionCounters(1);
-            counters.Update(new[] { 3 });
+            var counters = new ActionCounters();
+            counters.Update(Counters((1, 3)));
 
             //Message with the previous value came late, then a normal one
-            Assert.Equal(new[] { 0 }, counters.Update(new[] { 2 }));
-            Assert.Equal(new[] { 0 }, counters.Update(new[] { 3 }));
-            Assert.Equal(new[] { 1 }, counters.Update(new[] { 4 }));
+            Assert.Empty(counters.Update(Counters((1, 2))));
+            Assert.Empty(counters.Update(Counters((1, 3))));
+            Assert.Equal(Counters((1, 1)), counters.Update(Counters((1, 4))));
         }
 
         [Fact]
         public void SyncTakesCountersWithoutClicks()
         {
-            var counters = new ActionCounters(2);
-            counters.Sync(new[] { 10, 20 });
+            var counters = new ActionCounters();
+            counters.Sync(Counters((1, 10), (2, 20)));
 
-            Assert.Equal(new[] { 0, 1 }, counters.Update(new[] { 10, 21 }));
+            Assert.Equal(Counters((2, 1)), counters.Update(Counters((1, 10), (2, 21))));
         }
 
         [Fact]
         public void BigJumpsAreTakenAsResetWithoutClicks()
         {
-            var counters = new ActionCounters(1);
-            counters.Update(new[] { 2 });
+            var counters = new ActionCounters();
+            counters.Update(Counters((1, 2)));
 
-            Assert.Equal(new[] { 0 }, counters.Update(new[] { 50 }));
-            Assert.Equal(new[] { 1 }, counters.Update(new[] { 51 }));
+            Assert.Empty(counters.Update(Counters((1, 50))));
+            Assert.Equal(Counters((1, 1)), counters.Update(Counters((1, 51))));
             //Restarted controller counts from 0 again
-            Assert.Equal(new[] { 0 }, counters.Update(new[] { 0 }));
-            Assert.Equal(new[] { 1 }, counters.Update(new[] { 1 }));
+            Assert.Empty(counters.Update(Counters((1, 0))));
+            Assert.Equal(Counters((1, 1)), counters.Update(Counters((1, 1))));
         }
 
         [Fact]
-        public void ShorterOrLongerCounterListsAreAccepted()
+        public void CountersWrapAround()
         {
-            var counters = new ActionCounters(2);
+            var counters = new ActionCounters();
+            counters.Sync(Counters((1, 254)));
 
-            Assert.Equal(new[] { 1, 0 }, counters.Update(new[] { 1 }));
-            Assert.Equal(new[] { 0, 1 }, counters.Update(new[] { 1, 1, 7 }));
+            //Counters are sent as a byte: 255 -> 0 -> 1 are clicks
+            Assert.Equal(Counters((1, 3)), counters.Update(Counters((1, 1))));
+            //An old message from before the wrap is late, not a reset
+            Assert.Empty(counters.Update(Counters((1, 255))));
+        }
+
+        [Fact]
+        public void ActionClickedFirstTimeGivesClicks()
+        {
+            var counters = new ActionCounters();
+            counters.Sync(Counters());
+
+            //The controller sends only clicked actions: a new id starts from 0
+            Assert.Equal(Counters((19, 1)), counters.Update(Counters((19, 1))));
         }
     }
 }

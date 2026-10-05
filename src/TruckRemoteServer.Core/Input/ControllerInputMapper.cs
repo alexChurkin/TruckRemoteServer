@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TruckRemoteServer.Protocol;
 using TruckRemoteServer.Telemetry;
 
@@ -8,15 +9,6 @@ namespace TruckRemoteServer.Input
     //the rest are keys. Toggles of the controller are flipped on every click, so a click is made on every change
     public class ControllerInputMapper
     {
-        //Keys of additional actions in the order the controller sends their counters
-        private static readonly GameKey[] Actions =
-        {
-            GameKey.Engine, GameKey.Trailer, GameKey.Activate, GameKey.Wipers,
-            GameKey.DiffLock, GameKey.LiftAxle, GameKey.Beacon, GameKey.LightHorn
-        };
-
-        public static int ActionsCount => Actions.Length;
-
         //Part of the new steering value applied at once: smooths the jitter of the phone sensor
         private const double SteeringSmoothing = 0.6;
         //Steering value (m/s²) times sensitivity gives the axis offset
@@ -24,7 +16,9 @@ namespace TruckRemoteServer.Input
 
         private readonly IKeyboard keyboard;
         private readonly IVirtualJoystick joystick;
-        private readonly ActionCounters actionCounters = new ActionCounters(Actions.Length);
+        private readonly ActionCounters actionCounters = new ActionCounters();
+        //Keys of held actions that are pressed now
+        private readonly HashSet<GameKey> heldKeys = new HashSet<GameKey>();
         private readonly object inputLock = new object();
 
         private volatile TruckTelemetry truck = TruckTelemetry.Unknown;
@@ -92,15 +86,11 @@ namespace TruckRemoteServer.Input
                     parkingBrake = state.ParkingBrakeClick;
                     lights = state.LightsClick;
                     cruise = state.CruiseClick;
-                    actionCounters.Sync(state.ActionCounters);
+                    actionCounters.Sync(state.Actions);
                     return;
                 }
 
-                int[] clicks = actionCounters.Update(state.ActionCounters);
-                for (int i = 0; i < clicks.Length; i++)
-                {
-                    for (int c = 0; c < clicks[i]; c++) keyboard.Click(Actions[i]);
-                }
+                ApplyActions(state.Actions);
                 Toggle(GameKey.LeftBlinker, state.LeftSignalClick, ref leftBlinker);
                 Toggle(GameKey.RightBlinker, state.RightSignalClick, ref rightBlinker);
                 Toggle(GameKey.HazardLights, state.EmergencyClick, ref hazardLights);
@@ -114,8 +104,34 @@ namespace TruckRemoteServer.Input
             }
         }
 
+        private void ApplyActions(IReadOnlyDictionary<int, int> actions)
+        {
+            foreach (KeyValuePair<int, int> clicks in actionCounters.Update(actions))
+            {
+                if (!ControllerActions.Clicks.TryGetValue(clicks.Key, out GameKey key)) continue;
+                for (int c = 0; c < clicks.Value; c++) keyboard.Click(key);
+            }
+            foreach (KeyValuePair<int, GameKey> hold in ControllerActions.Holds)
+            {
+                bool held = actions.TryGetValue(hold.Key, out int value) && value != 0;
+                if (held == heldKeys.Contains(hold.Value)) continue;
+                if (held)
+                {
+                    heldKeys.Add(hold.Value);
+                    keyboard.Press(hold.Value);
+                }
+                else
+                {
+                    heldKeys.Remove(hold.Value);
+                    keyboard.Release(hold.Value);
+                }
+            }
+        }
+
         private void ReleaseControlsLocked()
         {
+            foreach (GameKey key in heldKeys) keyboard.Release(key);
+            heldKeys.Clear();
             SetKey(GameKey.Brake, false, ref brakePressed);
             SetKey(GameKey.Gas, false, ref gasPressed);
             SetHorn(0);

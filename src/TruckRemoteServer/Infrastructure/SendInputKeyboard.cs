@@ -29,7 +29,22 @@ namespace TruckRemoteServer.Infrastructure
             { GameKey.DiffLock, 0x2F },      //V
             { GameKey.LiftAxle, 0x16 },      //U
             { GameKey.Beacon, 0x18 },        //O
-            { GameKey.LightHorn, 0x24 }      //J
+            { GameKey.LightHorn, 0x24 },     //J
+            { GameKey.RetarderUp, 0x27 },    //;
+            { GameKey.RetarderDown, 0x28 },  //'
+            { GameKey.EngineBrake, 0x30 },   //B
+            { GameKey.CruiseUp, 0x0D },      //=
+            { GameKey.CruiseDown, 0x0C },    //-
+            { GameKey.CruiseResume, 0x13 },  //R
+            { GameKey.QuickPark, 0x10 },     //Q
+            { GameKey.CameraInterior, 0x02 },//1
+            { GameKey.CameraChase, 0x03 },   //2
+            { GameKey.CameraCycle, 0x0A },   //9
+            { GameKey.Map, 0x32 },           //M
+            { GameKey.DashboardDisplay, 0x17 }, //I
+            { GameKey.Hud, 0x3D },           //F3
+            { GameKey.RadioNext, 0xD1 },     //Page Down
+            { GameKey.QuickSave, 0x46 }      //Scroll Lock
         };
 
         private const int InputKeyboard = 1;

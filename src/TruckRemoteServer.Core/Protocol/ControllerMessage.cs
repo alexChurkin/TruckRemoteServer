@@ -1,18 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace TruckRemoteServer.Protocol
 {
-    //State message of the controller: steering, brake, gas, left signal, right signal, emergency,
-    //parking brake, lights, horn, cruise (all are required),
-    //then optional: gas level, brake level (0..1), action counters (see PCController),
-    //and the last field may be the message number tagged with '#' (newer controllers).
+    //State of the controller. The text protocol (controllers before version 2, see BinaryProtocol for the new one):
+    //steering, brake, gas, left signal, right signal, emergency, parking brake, lights, horn, cruise (all are required),
+    //then optional gas and brake levels (0..1), and the last field may be the message number tagged with '#'.
     //Toggles are flipped on every click, so a lost packet can't lose a click
     public class ControllerMessage
     {
         private const int RequiredParts = 10;
         private const int PedalLevelsIndex = 10;
-        private const int ActionsIndex = 12;
         public const string SequenceTag = "#";
 
         public double Steering { get; set; }
@@ -30,13 +29,13 @@ namespace TruckRemoteServer.Protocol
         public double GasLevel { get; set; }
         public double BrakeLevel { get; set; }
 
-        public int[] ActionCounters { get; set; } = Array.Empty<int>();
+        //Action id -> click counter or held state (not 0 - held), see ControllerActions
+        public IReadOnlyDictionary<int, int> Actions { get; set; } = new Dictionary<int, int>();
 
         public long? Sequence { get; set; }
 
-        //Returns null if the message isn't a controller state.
-        //maxActions limits the counters to the actions known by the server
-        public static ControllerMessage Parse(string message, int maxActions)
+        //Returns null if the message isn't a controller state
+        public static ControllerMessage Parse(string message)
         {
             string[] parts = message.Trim().Split(',');
             long? sequence = null;
@@ -71,13 +70,6 @@ namespace TruckRemoteServer.Protocol
                     result.HasPedalLevels = true;
                     result.GasLevel = ParseDouble(parts[PedalLevelsIndex]);
                     result.BrakeLevel = ParseDouble(parts[PedalLevelsIndex + 1]);
-                }
-
-                int actionsCount = Math.Max(0, Math.Min(parts.Length - ActionsIndex, maxActions));
-                result.ActionCounters = new int[actionsCount];
-                for (int i = 0; i < actionsCount; i++)
-                {
-                    result.ActionCounters[i] = int.Parse(parts[ActionsIndex + i], CultureInfo.InvariantCulture);
                 }
                 return result;
             }

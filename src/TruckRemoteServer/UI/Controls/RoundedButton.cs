@@ -29,8 +29,11 @@ namespace TruckRemoteServer.UI.Controls
         public override Size GetPreferredSize(Size proposedSize)
         {
             Size text = TextRenderer.MeasureText(Text, Font);
-            int minHeight = (int)(32 * DeviceDpi / 96f);
-            return new Size(text.Width + Padding.Horizontal, System.Math.Max(minHeight, text.Height + Padding.Vertical));
+            float scale = DeviceDpi / 96f;
+            int minHeight = (int)(32 * scale);
+            //The chevron layout: the text from 10 px, the chevron in the last 34 px
+            int width = ShowChevron ? text.Width + (int)(46 * scale) : text.Width + Padding.Horizontal;
+            return new Size(width, System.Math.Max(minHeight, text.Height + Padding.Vertical));
         }
 
         protected override void OnMouseEnter(System.EventArgs e)

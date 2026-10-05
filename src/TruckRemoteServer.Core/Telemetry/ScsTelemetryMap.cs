@@ -31,6 +31,7 @@ namespace TruckRemoteServer.Telemetry
         private const int EngineRpmOffset = 952;
         private const int CruiseSpeedOffset = 988;
         private const int FuelOffset = 1000;
+        private const int FuelRangeOffset = 1008;
         //truck_f.wearEngine, wearTransmission, wearCabin, wearChassis, wearWheels
         private const int TruckWearOffset = 1036;
         private const int TruckWearCount = 5;
@@ -96,6 +97,7 @@ namespace TruckRemoteServer.Telemetry
                 EngineRpmMax = ReadFloat(data, EngineRpmMaxOffset),
                 Fuel = ReadFloat(data, FuelOffset),
                 FuelCapacity = ReadFloat(data, FuelCapacityOffset),
+                FuelRange = ReadFloat(data, FuelRangeOffset),
                 EngineOn = data[EngineEnabledOffset] != 0,
                 ParkingBrake = data[ParkingBrakeOffset] != 0,
                 LeftBlinker = data[BlinkerLeftOnOffset] != 0,

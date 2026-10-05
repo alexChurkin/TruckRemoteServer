@@ -53,6 +53,7 @@ namespace TruckRemoteServer.Tests
             BitConverter.GetBytes(1350f).CopyTo(data, 952);
             BitConverter.GetBytes(25f).CopyTo(data, 988);
             BitConverter.GetBytes(120f).CopyTo(data, 1000);
+            BitConverter.GetBytes(640f).CopyTo(data, 1008);
             BitConverter.GetBytes(27.78f).CopyTo(data, 1068);
 
             TruckTelemetry truck = ScsTelemetryMap.Parse(data);
@@ -66,6 +67,7 @@ namespace TruckRemoteServer.Tests
             Assert.Equal(1350f, truck.EngineRpm);
             Assert.Equal(25f, truck.CruiseSpeed);
             Assert.Equal(120f, truck.Fuel);
+            Assert.Equal(640f, truck.FuelRange);
             Assert.Equal(27.78f, truck.SpeedLimit);
         }
 

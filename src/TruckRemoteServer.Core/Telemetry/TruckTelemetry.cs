@@ -38,6 +38,8 @@ namespace TruckRemoteServer.Telemetry
         //Liters
         public float Fuel { get; set; }
         public float FuelCapacity { get; set; }
+        //Kilometers the fuel is enough for (estimated by the game)
+        public float FuelRange { get; set; }
 
         //Warning lamps of the dashboard
         public bool AirPressureWarning { get; set; }

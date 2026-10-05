@@ -90,12 +90,13 @@ namespace TruckRemoteServer.Tests
                 Wear = 0.234f,
                 RestStopMinutes = -40,
                 RouteDistance = 128_400.6f,
-                RouteTime = 6300.2f
+                RouteTime = 6300.2f,
+                FuelRange = 85.4f
             };
             byte[] message = BinaryProtocol.FormatServerState(truck, lightsMode: 3, ffbDuration: 100000,
                 analogPedalsAvailable: true, sequence: 0x100000007);
 
-            Assert.Equal(38, message.Length);
+            Assert.Equal(40, message.Length);
             Assert.Equal(0x02, message[0]);
             Assert.Equal(7u, BitConverter.ToUInt32(message, 1));
             Assert.Equal(1 | 1 << 3 | 1 << 4 | 1 << 6 | 1 << 7 | 3 << 8 | 1 << 10, BitConverter.ToUInt16(message, 5));
@@ -117,6 +118,7 @@ namespace TruckRemoteServer.Tests
             Assert.Equal(128_401u, BitConverter.ToUInt32(message, 29));
             Assert.Equal(6300u, BitConverter.ToUInt32(message, 33));
             Assert.Equal(BinaryProtocol.Revision, message[37]);
+            Assert.Equal(85, BitConverter.ToUInt16(message, 38));
         }
 
         [Fact]

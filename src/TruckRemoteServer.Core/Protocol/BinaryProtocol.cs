@@ -20,14 +20,15 @@ namespace TruckRemoteServer.Protocol
     //  a click counter (mod 256) or 1 while a hold action is held; only clicked and held actions are sent.
     //Paused controller: type 0x03. Goodbye: type 0x04.
     //
-    //Server state (38 bytes; older controllers read the first 22):
+    //Server state (40 bytes; older controllers read the first 22):
     //  type 0x02 | sequence u32 | flags u16 | force feedback duration u16 (ms) |
     //  speed i16 (cm/s, negative when reversing) | speed limit u16 (cm/s, 0 - none) |
     //  cruise speed u16 (cm/s, 0 - off) | gear i8 (negative - reverse) | engine rpm u16 | max rpm u16 |
     //  fuel u8 (percent of the tank) | game u8 (1 - ETS2, 2 - ATS) |
     //  flags2 u16 | retarder level u8 | retarder steps u8 (0 - no retarder) | wear u8 (percent, the most worn part) |
     //  rest stop i16 (game minutes until the driver must rest) | route distance u32 (m) | route time u32 (s) |
-    //  server revision u8 (see Revision; a state of 22 bytes is revision 1, of 37 bytes - 2)
+    //  server revision u8 (see Revision; a state of 22 bytes is revision 1, of 37 bytes - 2) |
+    //  fuel range u16 (km, revision 4+)
     //  flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer attached, 5 wipers,
     //  6 beacon, 7 analog pedals available, 8-9 lights mode (see ServerMessage),
     //  10 telemetry available (the dashboard values are real)
@@ -45,11 +46,11 @@ namespace TruckRemoteServer.Protocol
         public const byte GoodbyeType = 0x04;
         public const byte JobType = 0x05;
 
-        //What the server sends: 3 - the job messages and this byte
-        public const byte Revision = 3;
+        //What the server sends: 3 - the job messages and this byte, 4 - the fuel range
+        public const byte Revision = 4;
 
         private const int ControllerHeaderSize = 16;
-        private const int ServerStateSize = 38;
+        private const int ServerStateSize = 40;
         private const int MaxJobTextBytes = 64;
         private const double CentimetersInMeter = 100;
         private const double LevelScale = ushort.MaxValue;
@@ -127,6 +128,7 @@ namespace TruckRemoteServer.Protocol
             WriteUInt32(message, 29, ToUInt32(truck.RouteDistance));
             WriteUInt32(message, 33, ToUInt32(truck.RouteTime));
             message[37] = Revision;
+            WriteUInt16(message, 38, (int)Math.Min(ushort.MaxValue, ToUInt32(truck.FuelRange)));
             return message;
         }
 

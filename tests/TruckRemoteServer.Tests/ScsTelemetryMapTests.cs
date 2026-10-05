@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using TruckRemoteServer.Telemetry;
 using Xunit;
 
@@ -120,6 +121,22 @@ namespace TruckRemoteServer.Tests
             Assert.Equal(0.12f, truck.Wear);
             Assert.Equal(52_000f, truck.RouteDistance);
             Assert.Equal(2400f, truck.RouteTime);
+        }
+
+        [Fact]
+        public void JobIsReadFromPluginOffsets()
+        {
+            byte[] data = ActiveMap();
+            BitConverter.GetBytes(1000).CopyTo(data, 64); //common_ui.time_abs
+            BitConverter.GetBytes(1190).CopyTo(data, 88); //config_ui.time_abs_delivery
+            Encoding.UTF8.GetBytes("Брёвна").CopyTo(data, 2620); //config_s.cargo
+            Encoding.UTF8.GetBytes("Berlin").CopyTo(data, 2748); //config_s.cityDst
+
+            TruckTelemetry truck = ScsTelemetryMap.Parse(data);
+
+            Assert.Equal("Брёвна", truck.Cargo);
+            Assert.Equal("Berlin", truck.DestinationCity);
+            Assert.Equal(190, truck.DeliveryMinutesLeft);
         }
 
         [Fact]

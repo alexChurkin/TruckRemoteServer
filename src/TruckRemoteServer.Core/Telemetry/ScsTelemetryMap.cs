@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace TruckRemoteServer.Telemetry
 {
@@ -14,6 +15,9 @@ namespace TruckRemoteServer.Telemetry
         //Zone 2: scs_values.telemetry_plugin_revision and game (1 - ETS2, 2 - ATS)
         private const int PluginRevisionOffset = 40;
         private const int GameOffset = 52;
+        //common_ui.time_abs and config_ui.time_abs_delivery: game minutes
+        private const int GameTimeOffset = 64;
+        private const int DeliveryTimeOffset = 88;
         //config_ui.retarderStepCount, truck_ui.retarderBrake
         private const int RetarderStepCountOffset = 76;
         private const int RetarderLevelOffset = 108;
@@ -57,6 +61,11 @@ namespace TruckRemoteServer.Telemetry
         private const int DifferentialLockOffset = TruckBoolsOffset + 42;
         private const int LiftAxleOffset = TruckBoolsOffset + 43;
         private const int TrailerLiftAxleOffset = TruckBoolsOffset + 45;
+        //Zone 9 starts at 2300 with config_s strings of 64 bytes (UTF-8, null-terminated):
+        //truckBrandId, truckBrand, truckId, truckName, cargoId, cargo, cityDstId, cityDst
+        private const int StringSize = 64;
+        private const int CargoOffset = 2300 + 5 * StringSize;
+        private const int DestinationCityOffset = 2300 + 7 * StringSize;
         //Zone 14 starts at 6000 with trailers; trailer[0]: con_b (64 wheel flags), com_b.wheelOnGround[16], com_b.attached
         private const int TrailerAttachedOffset = 6080;
         //then buffer_b[3], com_ui.wheelSubstance[16], con_ui.wheelCount; com_f: cargoDamage, wearChassis, wearWheels, wearBody
@@ -112,8 +121,18 @@ namespace TruckRemoteServer.Telemetry
                 Wear = wear,
                 RestStopMinutes = ReadInt(data, RestStopOffset),
                 RouteDistance = ReadFloat(data, RouteDistanceOffset),
-                RouteTime = ReadFloat(data, RouteTimeOffset)
+                RouteTime = ReadFloat(data, RouteTimeOffset),
+                Cargo = ReadString(data, CargoOffset),
+                DestinationCity = ReadString(data, DestinationCityOffset),
+                DeliveryMinutesLeft = ReadInt(data, DeliveryTimeOffset) - ReadInt(data, GameTimeOffset)
             };
+        }
+
+        private static string ReadString(byte[] data, int offset)
+        {
+            int length = 0;
+            while (length < StringSize && data[offset + length] != 0) length++;
+            return Encoding.UTF8.GetString(data, offset, length);
         }
 
         private static float MaxFloat(byte[] data, int offset, int count)

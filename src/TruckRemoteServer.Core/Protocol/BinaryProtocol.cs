@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using TruckRemoteServer.Telemetry;
 
 namespace TruckRemoteServer.Protocol
@@ -19,18 +20,22 @@ namespace TruckRemoteServer.Protocol
     //  a click counter (mod 256) or 1 while a hold action is held; only clicked and held actions are sent.
     //Paused controller: type 0x03. Goodbye: type 0x04.
     //
-    //Server state (37 bytes; older controllers read the first 22):
+    //Server state (38 bytes; older controllers read the first 22):
     //  type 0x02 | sequence u32 | flags u16 | force feedback duration u16 (ms) |
     //  speed i16 (cm/s, negative when reversing) | speed limit u16 (cm/s, 0 - none) |
     //  cruise speed u16 (cm/s, 0 - off) | gear i8 (negative - reverse) | engine rpm u16 | max rpm u16 |
     //  fuel u8 (percent of the tank) | game u8 (1 - ETS2, 2 - ATS) |
     //  flags2 u16 | retarder level u8 | retarder steps u8 (0 - no retarder) | wear u8 (percent, the most worn part) |
-    //  rest stop i16 (game minutes until the driver must rest) | route distance u32 (m) | route time u32 (s)
+    //  rest stop i16 (game minutes until the driver must rest) | route distance u32 (m) | route time u32 (s) |
+    //  server revision u8 (see Revision; a state of 22 bytes is revision 1, of 37 bytes - 2)
     //  flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer attached, 5 wipers,
     //  6 beacon, 7 analog pedals available, 8-9 lights mode (see ServerMessage),
     //  10 telemetry available (the dashboard values are real)
     //  flags2: 0 air pressure warning, 1 air pressure emergency, 2 oil pressure warning, 3 water temperature warning,
     //  4 battery voltage warning, 5 AdBlue warning, 6 fuel warning, 7 differential lock, 8 lift axle, 9 engine brake
+    //
+    //Job (sent once a second): type 0x05 | delivery minutes left i32 (game time, negative when late) |
+    //  cargo length u8 | cargo UTF-8 | destination city length u8 | destination city UTF-8; no cargo - no job
     public static class BinaryProtocol
     {
         public const int Version = 2;
@@ -38,9 +43,14 @@ namespace TruckRemoteServer.Protocol
         public const byte StateType = 0x02;
         public const byte PausedType = 0x03;
         public const byte GoodbyeType = 0x04;
+        public const byte JobType = 0x05;
+
+        //What the server sends: 3 - the job messages and this byte
+        public const byte Revision = 3;
 
         private const int ControllerHeaderSize = 16;
-        private const int ServerStateSize = 37;
+        private const int ServerStateSize = 38;
+        private const int MaxJobTextBytes = 64;
         private const double CentimetersInMeter = 100;
         private const double LevelScale = ushort.MaxValue;
 
@@ -116,7 +126,35 @@ namespace TruckRemoteServer.Protocol
             WriteUInt16(message, 27, Clamp(truck.RestStopMinutes, short.MinValue, short.MaxValue));
             WriteUInt32(message, 29, ToUInt32(truck.RouteDistance));
             WriteUInt32(message, 33, ToUInt32(truck.RouteTime));
+            message[37] = Revision;
             return message;
+        }
+
+        public static byte[] FormatJob(TruckTelemetry truck)
+        {
+            bool hasJob = !string.IsNullOrEmpty(truck.Cargo);
+            byte[] cargo = hasJob ? Utf8Prefix(truck.Cargo) : Array.Empty<byte>();
+            byte[] city = hasJob ? Utf8Prefix(truck.DestinationCity ?? "") : Array.Empty<byte>();
+            var message = new byte[7 + cargo.Length + city.Length];
+            message[0] = JobType;
+            WriteUInt32(message, 1, (uint)(hasJob ? truck.DeliveryMinutesLeft : 0));
+            message[5] = (byte)cargo.Length;
+            cargo.CopyTo(message, 6);
+            message[6 + cargo.Length] = (byte)city.Length;
+            city.CopyTo(message, 7 + cargo.Length);
+            return message;
+        }
+
+        //At most MaxJobTextBytes, not cutting a character in the middle
+        private static byte[] Utf8Prefix(string text)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+            if (bytes.Length <= MaxJobTextBytes) return bytes;
+            int length = MaxJobTextBytes;
+            while (length > 0 && (bytes[length] & 0xC0) == 0x80) length--;
+            var prefix = new byte[length];
+            Array.Copy(bytes, prefix, length);
+            return prefix;
         }
 
         private static int Centimeters(float metersPerSecond) => (int)Math.Round(metersPerSecond * CentimetersInMeter);

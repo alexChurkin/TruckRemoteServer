@@ -44,6 +44,7 @@ namespace TruckRemoteServer
         //Truck state is sent 50 times per second, 20 times to a paused controller
         private const int SendInterval = 20;
         private const int PausedSendInterval = 50;
+        private const int JobSendEvery = 1000 / SendInterval;
         //Makes Windows not to break UDP socket with WSAECONNRESET after ICMP "Port unreachable"
         private const int SioUdpConnreset = -1744830452;
 
@@ -399,6 +400,11 @@ namespace TruckRemoteServer
                         if (!controllerPaused)
                         {
                             socket.SendTo(MakeMessage(truck, ++sequence), endPoint);
+                            //The job changes rarely, it is sent once a second (a lost message is repeated soon)
+                            if (binaryController && sequence % JobSendEvery == 1)
+                            {
+                                socket.SendTo(BinaryProtocol.FormatJob(truck), endPoint);
+                            }
                         }
                     }
                     catch (ObjectDisposedException)

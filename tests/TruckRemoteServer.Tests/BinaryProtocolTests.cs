@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using TruckRemoteServer.Protocol;
 using TruckRemoteServer.Telemetry;
 using Xunit;
@@ -94,7 +95,7 @@ namespace TruckRemoteServer.Tests
             byte[] message = BinaryProtocol.FormatServerState(truck, lightsMode: 3, ffbDuration: 100000,
                 analogPedalsAvailable: true, sequence: 0x100000007);
 
-            Assert.Equal(37, message.Length);
+            Assert.Equal(38, message.Length);
             Assert.Equal(0x02, message[0]);
             Assert.Equal(7u, BitConverter.ToUInt32(message, 1));
             Assert.Equal(1 | 1 << 3 | 1 << 4 | 1 << 6 | 1 << 7 | 3 << 8 | 1 << 10, BitConverter.ToUInt16(message, 5));
@@ -115,6 +116,42 @@ namespace TruckRemoteServer.Tests
             Assert.Equal(-40, BitConverter.ToInt16(message, 27));
             Assert.Equal(128_401u, BitConverter.ToUInt32(message, 29));
             Assert.Equal(6300u, BitConverter.ToUInt32(message, 33));
+            Assert.Equal(BinaryProtocol.Revision, message[37]);
+        }
+
+        [Fact]
+        public void JobIsFormattedWithUtf8Texts()
+        {
+            var truck = new TruckTelemetry { Cargo = "Брёвна", DestinationCity = "Berlin", DeliveryMinutesLeft = -20 };
+
+            byte[] message = BinaryProtocol.FormatJob(truck);
+
+            Assert.Equal(BinaryProtocol.JobType, message[0]);
+            Assert.Equal(-20, BitConverter.ToInt32(message, 1));
+            int cargoLength = message[5];
+            Assert.Equal("Брёвна", Encoding.UTF8.GetString(message, 6, cargoLength));
+            int cityLength = message[6 + cargoLength];
+            Assert.Equal("Berlin", Encoding.UTF8.GetString(message, 7 + cargoLength, cityLength));
+            Assert.Equal(7 + cargoLength + cityLength, message.Length);
+        }
+
+        [Fact]
+        public void NoJobHasEmptyTexts()
+        {
+            Assert.Equal(new byte[] { BinaryProtocol.JobType, 0, 0, 0, 0, 0, 0 },
+                BinaryProtocol.FormatJob(new TruckTelemetry { DeliveryMinutesLeft = 300 }));
+        }
+
+        [Fact]
+        public void LongJobTextIsCutBetweenCharacters()
+        {
+            var truck = new TruckTelemetry { Cargo = new string('ж', 40), DestinationCity = "X" };
+
+            byte[] message = BinaryProtocol.FormatJob(truck);
+
+            //Two bytes per character: 64 bytes are 32 whole characters
+            Assert.Equal(64, message[5]);
+            Assert.Equal(new string('ж', 32), Encoding.UTF8.GetString(message, 6, 64));
         }
 
         [Fact]

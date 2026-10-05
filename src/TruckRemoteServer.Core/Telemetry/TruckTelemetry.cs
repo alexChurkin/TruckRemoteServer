@@ -63,5 +63,11 @@ namespace TruckRemoteServer.Telemetry
         //Navigation: the distance (m) and the estimated time (s) to the end of the route, 0 - no route
         public float RouteDistance { get; set; }
         public float RouteTime { get; set; }
+
+        //The current job: the cargo name is empty without a job
+        public string Cargo { get; set; } = "";
+        public string DestinationCity { get; set; } = "";
+        //Game minutes until the delivery deadline, negative when late
+        public int DeliveryMinutesLeft { get; set; }
     }
 }

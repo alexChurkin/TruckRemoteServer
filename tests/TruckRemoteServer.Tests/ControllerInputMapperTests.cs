@@ -109,12 +109,13 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
-        public void FinalSteeringOfProtocol2ReachesFullLockAtGravity()
+        public void FinalSteeringOfProtocol2IsAppliedAtOnceWithFullLockAtGravity()
         {
-            for (int i = 0; i < 30; i++) mapper.Apply(new ControllerMessage { Steering = 9.80665 / 2, SteeringIsFinal = true });
-            Assert.InRange(joystick.Steering, 16384 + 8190, 16384 + 8192);
+            //The phone filters the steering, the server doesn't smooth it again
+            mapper.Apply(new ControllerMessage { Steering = 9.80665 / 2, SteeringIsFinal = true });
+            Assert.Equal(16384 + 8192, joystick.Steering);
 
-            for (int i = 0; i < 30; i++) mapper.Apply(new ControllerMessage { Steering = -9.80665, SteeringIsFinal = true });
+            mapper.Apply(new ControllerMessage { Steering = -9.80665, SteeringIsFinal = true });
             Assert.Equal(0, joystick.Steering);
         }
 

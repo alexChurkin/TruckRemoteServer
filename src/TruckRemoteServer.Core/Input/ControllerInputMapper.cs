@@ -9,7 +9,7 @@ namespace TruckRemoteServer.Input
     //the rest are keys. Toggles of the controller are flipped on every click, so a click is made on every change
     public class ControllerInputMapper
     {
-        //Part of the new steering value applied at once: smooths the jitter of the phone sensor
+        //Text protocol: part of the new steering value applied at once, smooths the jitter of the phone sensor
         private const double SteeringSmoothing = 0.6;
         //Text protocol: steering value (m/s²) times sensitivity gives the axis offset.
         //The sensitivity was a setting of the server, now it's set on the phone
@@ -146,8 +146,9 @@ namespace TruckRemoteServer.Input
             double offset = final
                 ? value / FullLockSteering * JoystickAxis.Center
                 : value * SteeringScale * LegacySensitivity;
-            int target = JoystickAxis.Center + (int)offset;
-            int smoothed = (int)(steeringAxis + SteeringSmoothing * (target - steeringAxis));
+            int target = JoystickAxis.Center + (int)Math.Round(offset);
+            //Protocol 2: the phone filters the steering itself (adaptively), smoothing here would only add a lag
+            int smoothed = final ? target : (int)(steeringAxis + SteeringSmoothing * (target - steeringAxis));
             //Axis range is 0..32768, out of range values must not reach vJoy
             steeringAxis = Math.Max(0, Math.Min(2 * JoystickAxis.Center, smoothed));
             joystick.SetSteering(steeringAxis);

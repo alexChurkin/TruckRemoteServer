@@ -17,6 +17,7 @@ namespace TruckRemoteServer.Tests
         private readonly FakeNetwork network = new FakeNetwork();
         private readonly FakePluginSetup pluginSetup = new FakePluginSetup();
         private readonly FakeJoystickSetup joystickSetup = new FakeJoystickSetup();
+        private readonly FakeControlsSetup controlsSetup = new FakeControlsSetup();
         private readonly ControllerInputMapper mapper;
         private readonly ControllerServer server;
         private readonly MainPresenter presenter;
@@ -27,7 +28,7 @@ namespace TruckRemoteServer.Tests
             server = new ControllerServer(mapper, new FakeTelemetry(), joystick, new NoTimerResolution(),
                 NullLogger<ControllerServer>.Instance);
             presenter = new MainPresenter(view, server, joystick, settings, firewall, network, pluginSetup,
-                joystickSetup, "server.exe")
+                joystickSetup, controlsSetup, "server.exe")
             {
                 RunInBackground = work =>
                 {
@@ -164,6 +165,26 @@ namespace TruckRemoteServer.Tests
             view.ChangeLanguage("");
             Assert.Equal("", settings.Language);
             Assert.Equal("", view.Language);
+        }
+
+        [Fact]
+        public void ShownWindowAddsMissingKeysToTheGames()
+        {
+            view.Show();
+
+            Assert.Equal(1, controlsSetup.Applies);
+        }
+
+        [Fact]
+        public void MinimizingToTrayIsOffByDefaultAndSaved()
+        {
+            view.Show();
+            Assert.False(view.MinimizeToTray);
+
+            view.ChangeMinimizeToTray(true);
+            Assert.True(settings.MinimizeToTray);
+            Assert.True(view.MinimizeToTray);
+            Assert.True(settings.Saves > 0);
         }
 
         private static int FreePort()

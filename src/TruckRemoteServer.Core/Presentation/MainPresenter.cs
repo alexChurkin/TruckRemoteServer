@@ -20,12 +20,14 @@ namespace TruckRemoteServer.Presentation
         private readonly INetworkInfo network;
         private readonly ITelemetryPluginSetup pluginSetup;
         private readonly IJoystickSetup joystickSetup;
+        private readonly IGameControlsSetup controlsSetup;
         private readonly string programPath;
         //The last start failed because the port is used by another program
         private bool portBusy;
 
         public MainPresenter(IMainView view, ControllerServer server, IVirtualJoystick joystick, ISettingsStore settings,
-            IFirewall firewall, INetworkInfo network, ITelemetryPluginSetup pluginSetup, IJoystickSetup joystickSetup, string programPath)
+            IFirewall firewall, INetworkInfo network, ITelemetryPluginSetup pluginSetup, IJoystickSetup joystickSetup,
+            IGameControlsSetup controlsSetup, string programPath)
         {
             this.view = view;
             this.server = server;
@@ -35,6 +37,7 @@ namespace TruckRemoteServer.Presentation
             this.network = network;
             this.pluginSetup = pluginSetup;
             this.joystickSetup = joystickSetup;
+            this.controlsSetup = controlsSetup;
             this.programPath = programPath;
 
             view.Shown += (s, e) => OnShown();
@@ -43,6 +46,7 @@ namespace TruckRemoteServer.Presentation
             view.StopRequested += (s, e) => server.Stop();
             view.PortChanged += (s, port) => ChangePort(port);
             view.LanguageChanged += (s, language) => ChangeLanguage(language);
+            view.MinimizeToTrayChanged += (s, enabled) => ChangeMinimizeToTray(enabled);
             view.AllowFirewallRequested += (s, e) => AllowInFirewall();
             view.InstallJoystickRequested += (s, e) => SetupJoystick();
         }
@@ -58,7 +62,7 @@ namespace TruckRemoteServer.Presentation
 
         private void OnShown()
         {
-            view.ShowSettings(settings.Port);
+            view.ShowSettings(settings.Port, settings.MinimizeToTray);
             server.StatusChanged += OnServerStatus;
             network.AddressesChanged += OnAddressesChanged;
             ShowAddresses();
@@ -80,6 +84,8 @@ namespace TruckRemoteServer.Presentation
             StartServer(checkFirewall: false);
             CheckFirewall(offerFix: true);
             CheckJoystick(offerSetup: true);
+            //Some buttons of the phone have no key in the default bindings of the games
+            RunInBackground(controlsSetup.Apply);
         }
 
         private void OnClosing()
@@ -128,6 +134,13 @@ namespace TruckRemoteServer.Presentation
             //Texts of the state are made by the view in the new language
             ShowStatus(server.Status);
             ShowAddresses();
+        }
+
+        private void ChangeMinimizeToTray(bool enabled)
+        {
+            settings.MinimizeToTray = enabled;
+            settings.Save();
+            view.ShowSettings(settings.Port, settings.MinimizeToTray);
         }
 
         private void OnServerStatus(ServerStatus status)

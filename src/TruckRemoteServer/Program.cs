@@ -49,6 +49,7 @@ namespace TruckRemoteServer
             services.AddSingleton<INetworkInfo, SystemNetworkInfo>();
             services.AddSingleton<ITelemetryPluginSetup, TelemetryPluginSetup>();
             services.AddSingleton<IJoystickSetup, VJoySetup>();
+            services.AddSingleton<IGameControlsSetup, GameControlsSetup>();
 
             services.AddSingleton<ControllerInputMapper>();
             services.AddSingleton<ControllerServer>();
@@ -64,6 +65,7 @@ namespace TruckRemoteServer
                 provider.GetRequiredService<INetworkInfo>(),
                 provider.GetRequiredService<ITelemetryPluginSetup>(),
                 provider.GetRequiredService<IJoystickSetup>(),
+                provider.GetRequiredService<IGameControlsSetup>(),
                 Application.ExecutablePath));
             return services.BuildServiceProvider();
         }

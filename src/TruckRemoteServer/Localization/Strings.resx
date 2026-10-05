@@ -49,6 +49,7 @@ Install and set it up now? Administrator rights are needed, Windows may also ask
   <data name="PortHint" xml:space="preserve"><value>The same port must be set in the app. Change it only if this one is used by another program.</value></data>
   <data name="Ok" xml:space="preserve"><value>OK</value></data>
   <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="MinimizeToTray" xml:space="preserve"><value>Minimize to the notification area</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>Open</value></data>
   <data name="TrayExit" xml:space="preserve"><value>Exit</value></data>
   <data name="TrayHint" xml:space="preserve"><value>The server keeps working here. Double-click the icon to open it.</value></data>

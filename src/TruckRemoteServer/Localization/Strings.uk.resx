@@ -49,6 +49,7 @@
   <data name="PortHint" xml:space="preserve"><value>Такий самий порт треба вказати в застосунку. Змінюйте його, лише якщо цей зайнятий іншою програмою.</value></data>
   <data name="Ok" xml:space="preserve"><value>OK</value></data>
   <data name="Cancel" xml:space="preserve"><value>Скасувати</value></data>
+  <data name="MinimizeToTray" xml:space="preserve"><value>Згортати в область сповіщень</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>Відкрити</value></data>
   <data name="TrayExit" xml:space="preserve"><value>Вихід</value></data>
   <data name="TrayHint" xml:space="preserve"><value>Сервер продовжує працювати тут. Двічі клацніть по значку, щоб відкрити його.</value></data>

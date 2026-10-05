@@ -34,8 +34,8 @@ Launching:
 3) Connect the phone to the same network as the PC and start Truck Remote Control: it finds the server by itself.
    If it doesn't, scan the QR code of the server window in the app settings (or enter the address shown there).
 
-The steering (sensitivity, dead zone, curve) is set in the app. The server window has only the port and the language
-(the language of Windows by default) in its **Settings** menu; minimized, the server keeps working in the notification area.
+The steering (sensitivity, dead zone, curve) is set in the app. The server window has only the port, the language
+(the language of Windows by default) and **Minimize to the notification area** (off by default) in its **Settings** menu.
 
 To set vJoy up manually (e.g. if the automatic setup failed), install **vJoySetup.exe** from the
 [vJoy project](https://sourceforge.net/projects/vjoystick/files/Beta%202.x/2.1.9.1-160719/) and configure the 1-st device
@@ -64,11 +64,14 @@ The quick actions panel in the app (button at the bottom center, swipe it for mo
 - truck: engine **E**, trailer **T**, activate **Enter**, flash lights **J**, wipers **P**, beacon **O**,
   differential lock **V**, lift axle **U**;
 - driving: retarder **;** / **'**, engine brake **B** (held while the button is pressed), quick park **Q**,
-  cruise control speed **=** / **-**, resume cruise control **R**;
+  cruise control speed **.** / **,**, resume cruise control **/**;
 - view: cab camera **1**, chase camera **2**, next camera **9**, map **M**, dashboard display **I**, HUD **F3**,
   next radio station **Page Down**, quick save **Scroll Lock**.
 
-Some of them (e.g. cruise control speed) have no key in older game versions: bind these keys in the game then.
+The games have no default keys for the cruise control speed and resume, so the server adds these keys to the key bindings
+of every game profile (`controls.sii`, the original is kept beside it as `controls.truckremote.bak`). A running game
+writes its bindings on exit, so its profiles are changed when it's closed. A key the profile already uses isn't added:
+bind the action in the game then.
 
 Enjoy using!
 

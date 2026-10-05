@@ -6,7 +6,7 @@ using TruckRemoteServer.Input;
 namespace TruckRemoteServer.Infrastructure
 {
     //Keys are sent as DirectInput scan codes (the game reads them regardless of the keyboard layout).
-    //Default key bindings of ETS2/ATS are used
+    //Default key bindings of ETS2/ATS are used where the games have them
     public sealed class SendInputKeyboard : IKeyboard, IDisposable
     {
         private static readonly Dictionary<GameKey, short> ScanCodes = new Dictionary<GameKey, short>
@@ -33,9 +33,10 @@ namespace TruckRemoteServer.Infrastructure
             { GameKey.RetarderUp, 0x27 },    //;
             { GameKey.RetarderDown, 0x28 },  //'
             { GameKey.EngineBrake, 0x30 },   //B
-            { GameKey.CruiseUp, 0x0D },      //=
-            { GameKey.CruiseDown, 0x0C },    //-
-            { GameKey.CruiseResume, 0x13 },  //R
+            //No default keys in the games: these ones are added to their bindings (see GameControlsFile)
+            { GameKey.CruiseUp, 0x34 },      //.
+            { GameKey.CruiseDown, 0x33 },    //,
+            { GameKey.CruiseResume, 0x35 },  // /
             { GameKey.QuickPark, 0x10 },     //Q
             { GameKey.CameraInterior, 0x02 },//1
             { GameKey.CameraChase, 0x03 },   //2

@@ -14,6 +14,9 @@ namespace TruckRemoteServer.Settings
         //"" - the language of Windows, otherwise a language code ("en", "ru", "be", "uk")
         string Language { get; set; }
 
+        //The minimized window is hidden to the notification area instead of staying on the taskbar
+        bool MinimizeToTray { get; set; }
+
         void Save();
     }
 }

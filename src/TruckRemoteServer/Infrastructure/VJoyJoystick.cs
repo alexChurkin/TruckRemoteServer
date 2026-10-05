@@ -10,12 +10,16 @@ namespace TruckRemoteServer.Infrastructure
     {
         private const uint DeviceId = 1;
         private const int ErrorSuccess = 0;
+        private const int ReacquireIntervalMs = 2000;
 
         private readonly ILogger<VJoyJoystick> logger;
         private readonly object initLock = new object();
         private vJoy device;
         private volatile bool acquired;
         private volatile bool pedalAxesExist;
+        //The server is closing: the device isn't taken back
+        private volatile bool released;
+        private int lastReacquireTicks = Environment.TickCount - ReacquireIntervalMs;
         //Native code keeps the callback: the delegate must not be collected
         private vJoy.FfbCbFunc forceFeedbackCallback;
 
@@ -82,22 +86,45 @@ namespace TruckRemoteServer.Infrastructure
 
         public void SetSteering(int value)
         {
-            if (!acquired) return;
-            device.SetAxis(value, DeviceId, HID_USAGES.HID_USAGE_X);
+            if (!acquired && !Reacquire()) return;
+            if (!device.SetAxis(value, DeviceId, HID_USAGES.HID_USAGE_X)) OnDeviceLost();
         }
 
         public void SetPedals(int gas, int brake)
         {
             if (!HasPedalAxes) return;
-            device.SetAxis(gas, DeviceId, HID_USAGES.HID_USAGE_Y);
-            device.SetAxis(brake, DeviceId, HID_USAGES.HID_USAGE_Z);
+            if (!device.SetAxis(gas, DeviceId, HID_USAGES.HID_USAGE_Y)
+                || !device.SetAxis(brake, DeviceId, HID_USAGES.HID_USAGE_Z))
+            {
+                OnDeviceLost();
+            }
         }
 
         public void Release()
         {
             if (device == null || !acquired) return;
             acquired = false;
+            released = true;
             device.RelinquishVJD(DeviceId);
+        }
+
+        //The driver doesn't tell that the device isn't ours anymore (it was reconfigured or restarted, another
+        //program took and left it): the axes just stop being set, so the device is acquired again
+        private void OnDeviceLost()
+        {
+            if (!acquired) return;
+            acquired = false;
+            logger.LogWarning("vJoy device {Id} was lost", DeviceId);
+        }
+
+        //Not on every message of the phone: a missing device is asked for once in a while
+        private bool Reacquire()
+        {
+            if (released) return false;
+            int now = Environment.TickCount;
+            if (unchecked(now - lastReacquireTicks) < ReacquireIntervalMs) return false;
+            lastReacquireTicks = now;
+            return Initialize();
         }
 
         private void OnForceFeedback(IntPtr data, object userData)

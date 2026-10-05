@@ -40,6 +40,7 @@ namespace TruckRemoteServer.Localization
         public const string PortHint = nameof(PortHint);
         public const string Ok = nameof(Ok);
         public const string Cancel = nameof(Cancel);
+        public const string MinimizeToTray = nameof(MinimizeToTray);
         public const string TrayOpen = nameof(TrayOpen);
         public const string TrayExit = nameof(TrayExit);
         public const string TrayHint = nameof(TrayHint);

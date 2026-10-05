@@ -93,6 +93,7 @@ namespace TruckRemoteServer.Tests
         public bool FirewallPromptShown { get; set; }
         public bool JoystickPromptShown { get; set; }
         public string Language { get; set; } = "";
+        public bool MinimizeToTray { get; set; }
         public int Saves;
 
         public void Save() => Saves++;
@@ -159,9 +160,17 @@ namespace TruckRemoteServer.Tests
         }
     }
 
+    public class FakeControlsSetup : IGameControlsSetup
+    {
+        public int Applies;
+
+        public void Apply() => Applies++;
+    }
+
     public class FakeView : IMainView
     {
         public int? Port;
+        public bool MinimizeToTray;
         public IList<string> Addresses;
         public int AddressesPort;
         public ServerState State;
@@ -183,6 +192,7 @@ namespace TruckRemoteServer.Tests
         public event EventHandler StopRequested;
         public event EventHandler<int> PortChanged;
         public event EventHandler<string> LanguageChanged;
+        public event EventHandler<bool> MinimizeToTrayChanged;
         public event EventHandler AllowFirewallRequested;
         public event EventHandler InstallJoystickRequested;
 
@@ -194,10 +204,15 @@ namespace TruckRemoteServer.Tests
         public void AllowFirewall() => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
         public void InstallJoystick() => InstallJoystickRequested?.Invoke(this, EventArgs.Empty);
         public void ChangeLanguage(string language) => LanguageChanged?.Invoke(this, language);
+        public void ChangeMinimizeToTray(bool enabled) => MinimizeToTrayChanged?.Invoke(this, enabled);
 
         public void ShowLanguage(string language) => Language = language;
 
-        public void ShowSettings(int port) => Port = port;
+        public void ShowSettings(int port, bool minimizeToTray)
+        {
+            Port = port;
+            MinimizeToTray = minimizeToTray;
+        }
 
         public void ShowAddresses(IList<string> addresses, int port)
         {

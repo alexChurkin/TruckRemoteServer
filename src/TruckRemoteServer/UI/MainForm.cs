@@ -15,7 +15,7 @@ namespace TruckRemoteServer.UI
     //Passive view: shows what MainPresenter tells and reports user actions.
     //Built in code and laid out by LayoutContent(): texts of different languages have different lengths.
     //Everything the phone needs is in the window (state, address, QR code), the rarely changed settings
-    //(port, language) are in the Settings menu; minimized, the window goes to the notification area
+    //(port, language, minimizing to the notification area) are in the Settings menu
     public sealed class MainForm : Form, IMainView
     {
         private const int ContentWidth = 440;
@@ -56,9 +56,10 @@ namespace TruckRemoteServer.UI
 
         private readonly RoundedButton startStopButton = new RoundedButton();
         private readonly RoundedButton settingsButton = new RoundedButton { ShowChevron = true };
-        private readonly ContextMenuStrip settingsMenu = new ContextMenuStrip { ShowImageMargin = false };
+        private readonly ContextMenuStrip settingsMenu = new ContextMenuStrip { ShowImageMargin = false, ShowCheckMargin = true };
         private readonly ToolStripMenuItem portItem = new ToolStripMenuItem();
         private readonly ToolStripMenuItem languageItem = new ToolStripMenuItem();
+        private readonly ToolStripMenuItem minimizeToTrayItem = new ToolStripMenuItem();
         private readonly Label versionLabel = new Label { AutoSize = true };
 
         private readonly NotifyIcon trayIcon = new NotifyIcon();
@@ -73,6 +74,7 @@ namespace TruckRemoteServer.UI
         private int port;
         private ServerState state = ServerState.Stopped;
         private string language = "";
+        private bool minimizeToTray;
 
         public MainForm()
         {
@@ -116,7 +118,8 @@ namespace TruckRemoteServer.UI
                 languageItem.DropDownItems.Add(menuItem);
             }
             portItem.Click += (s, e) => ChangePort();
-            settingsMenu.Items.AddRange(new ToolStripItem[] { portItem, languageItem });
+            minimizeToTrayItem.Click += (s, e) => MinimizeToTrayChanged?.Invoke(this, !minimizeToTray);
+            settingsMenu.Items.AddRange(new ToolStripItem[] { portItem, languageItem, minimizeToTrayItem });
             settingsMenu.Font = Theme.Body;
             settingsButton.Click += (s, e) => settingsMenu.Show(settingsButton, 0, settingsButton.Height + Px(2));
 
@@ -151,6 +154,7 @@ namespace TruckRemoteServer.UI
         public event EventHandler StopRequested;
         public event EventHandler<int> PortChanged;
         public event EventHandler<string> LanguageChanged;
+        public event EventHandler<bool> MinimizeToTrayChanged;
         public event EventHandler AllowFirewallRequested;
         public event EventHandler InstallJoystickRequested;
 
@@ -169,11 +173,11 @@ namespace TruckRemoteServer.UI
             Shown?.Invoke(this, EventArgs.Empty);
         }
 
-        //Minimized, the server keeps working in the notification area
+        //If the user chose so, the minimized window is hidden to the notification area (the server keeps working there)
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            if (WindowState != FormWindowState.Minimized || !Visible) return;
+            if (!minimizeToTray || WindowState != FormWindowState.Minimized || !Visible) return;
             trayIcon.Visible = true;
             Hide();
             if (trayHintShown) return;
@@ -211,9 +215,10 @@ namespace TruckRemoteServer.UI
             ApplyTexts();
         }
 
-        public void ShowSettings(int port)
+        public void ShowSettings(int port, bool minimizeToTray)
         {
             this.port = port;
+            this.minimizeToTray = minimizeToTray;
             ApplyMenuTexts();
             LayoutContent();
         }
@@ -374,6 +379,8 @@ namespace TruckRemoteServer.UI
             string systemName = Texts.Get(T.LanguageSystem);
             string languageName = Array.Find(Languages, l => l.Code == language).Name ?? systemName;
             languageItem.Text = Texts.Get(T.Language) + ": " + languageName;
+            minimizeToTrayItem.Text = Texts.Get(T.MinimizeToTray);
+            minimizeToTrayItem.Checked = minimizeToTray;
             foreach (ToolStripMenuItem item in languageItem.DropDownItems)
             {
                 string code = (string)item.Tag;

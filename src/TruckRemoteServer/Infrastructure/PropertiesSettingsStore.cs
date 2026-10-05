@@ -31,6 +31,12 @@ namespace TruckRemoteServer.Infrastructure
             set => Values.Language = value ?? "";
         }
 
+        public bool MinimizeToTray
+        {
+            get => Values.MinimizeToTray;
+            set => Values.MinimizeToTray = value;
+        }
+
         public void Save()
         {
             Values.Save();

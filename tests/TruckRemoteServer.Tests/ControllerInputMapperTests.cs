@@ -97,7 +97,7 @@ namespace TruckRemoteServer.Tests
         [Fact]
         public void SteeringIsSmoothedAndLimited()
         {
-            mapper.SteeringSensitivity = 50;
+            //Text protocol: the former sensitivity 50 of the server
             mapper.Apply(State(steering: 5));
             //60% of the way to 16384 + 5 * 34.7 * 50
             Assert.Equal(16384 + (int)(0.6 * 5 * 34.7 * 50), joystick.Steering);
@@ -105,6 +105,16 @@ namespace TruckRemoteServer.Tests
             for (int i = 0; i < 20; i++) mapper.Apply(State(steering: 100));
             Assert.Equal(32768, joystick.Steering);
             for (int i = 0; i < 20; i++) mapper.Apply(State(steering: -100));
+            Assert.Equal(0, joystick.Steering);
+        }
+
+        [Fact]
+        public void FinalSteeringOfProtocol2ReachesFullLockAtGravity()
+        {
+            for (int i = 0; i < 30; i++) mapper.Apply(new ControllerMessage { Steering = 9.80665 / 2, SteeringIsFinal = true });
+            Assert.InRange(joystick.Steering, 16384 + 8190, 16384 + 8192);
+
+            for (int i = 0; i < 30; i++) mapper.Apply(new ControllerMessage { Steering = -9.80665, SteeringIsFinal = true });
             Assert.Equal(0, joystick.Steering);
         }
 

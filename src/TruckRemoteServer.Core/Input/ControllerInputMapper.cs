@@ -11,8 +11,12 @@ namespace TruckRemoteServer.Input
     {
         //Part of the new steering value applied at once: smooths the jitter of the phone sensor
         private const double SteeringSmoothing = 0.6;
-        //Steering value (m/s²) times sensitivity gives the axis offset
+        //Text protocol: steering value (m/s²) times sensitivity gives the axis offset.
+        //The sensitivity was a setting of the server, now it's set on the phone
         private const double SteeringScale = 34.7;
+        private const int LegacySensitivity = 50;
+        //Protocol 2: the phone applies its steering settings, gravity (m/s²) is the full lock
+        private const double FullLockSteering = 9.80665;
 
         private readonly IKeyboard keyboard;
         private readonly IVirtualJoystick joystick;
@@ -36,9 +40,6 @@ namespace TruckRemoteServer.Input
             this.keyboard = keyboard;
             this.joystick = joystick;
         }
-
-        //1..100
-        public int SteeringSensitivity { get; set; } = 50;
 
         //The lights button needs to know the current lights of the truck
         public void UpdateTelemetry(TruckTelemetry telemetry)
@@ -69,7 +70,7 @@ namespace TruckRemoteServer.Input
         {
             lock (inputLock)
             {
-                ApplySteering(state.Steering);
+                ApplySteering(state.Steering, state.SteeringIsFinal);
                 SetKey(GameKey.Brake, state.BrakePressed, ref brakePressed);
                 SetKey(GameKey.Gas, state.GasPressed, ref gasPressed);
                 SetHorn(state.Horn);
@@ -140,9 +141,12 @@ namespace TruckRemoteServer.Input
             joystick.SetPedals(0, 0);
         }
 
-        private void ApplySteering(double value)
+        private void ApplySteering(double value, bool final)
         {
-            int target = JoystickAxis.Center + (int)(value * SteeringScale * SteeringSensitivity);
+            double offset = final
+                ? value / FullLockSteering * JoystickAxis.Center
+                : value * SteeringScale * LegacySensitivity;
+            int target = JoystickAxis.Center + (int)offset;
             int smoothed = (int)(steeringAxis + SteeringSmoothing * (target - steeringAxis));
             //Axis range is 0..32768, out of range values must not reach vJoy
             steeringAxis = Math.Max(0, Math.Min(2 * JoystickAxis.Center, smoothed));

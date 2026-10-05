@@ -12,7 +12,7 @@ namespace TruckRemoteServer.Tests
     {
         private readonly FakeView view = new FakeView();
         private readonly FakeJoystick joystick = new FakeJoystick();
-        private readonly FakeSettings settings = new FakeSettings { Port = 0, Sensitivity = 70 };
+        private readonly FakeSettings settings = new FakeSettings { Port = 0 };
         private readonly FakeFirewall firewall = new FakeFirewall();
         private readonly FakeNetwork network = new FakeNetwork();
         private readonly FakePluginSetup pluginSetup = new FakePluginSetup();
@@ -26,7 +26,7 @@ namespace TruckRemoteServer.Tests
             mapper = new ControllerInputMapper(new FakeKeyboard(), joystick);
             server = new ControllerServer(mapper, new FakeTelemetry(), joystick, new NoTimerResolution(),
                 NullLogger<ControllerServer>.Instance);
-            presenter = new MainPresenter(view, server, mapper, joystick, settings, firewall, network, pluginSetup,
+            presenter = new MainPresenter(view, server, joystick, settings, firewall, network, pluginSetup,
                 joystickSetup, "server.exe")
             {
                 RunInBackground = work =>
@@ -45,8 +45,6 @@ namespace TruckRemoteServer.Tests
             view.Show();
 
             Assert.Equal(0, view.Port);
-            Assert.Equal(70, view.Sensitivity);
-            Assert.Equal(70, mapper.SteeringSensitivity);
             Assert.Equal(new[] { "192.168.1.10" }, view.Addresses);
             Assert.Equal(ServerState.WaitingForController, view.State);
         }
@@ -102,17 +100,6 @@ namespace TruckRemoteServer.Tests
             Assert.True(view.FirewallWarning);
             Assert.False(view.FirewallBusy);
             Assert.Empty(view.Warnings);
-        }
-
-        [Fact]
-        public void SettingsChangesAreSaved()
-        {
-            view.Show();
-            view.ChangeSensitivity(30);
-
-            Assert.Equal(30, mapper.SteeringSensitivity);
-            Assert.Equal(30, settings.Sensitivity);
-            Assert.True(settings.Saves >= 1);
         }
 
         [Fact]

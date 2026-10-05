@@ -13,12 +13,6 @@ namespace TruckRemoteServer.Infrastructure
             set => Values.Port = value;
         }
 
-        public int Sensitivity
-        {
-            get => Values.Sensitivity;
-            set => Values.Sensitivity = value;
-        }
-
         public bool FirewallPromptShown
         {
             get => Values.FirewallPromptShown;

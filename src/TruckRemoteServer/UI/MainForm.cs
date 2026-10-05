@@ -13,12 +13,15 @@ using T = TruckRemoteServer.Localization.TextKeys;
 namespace TruckRemoteServer.UI
 {
     //Passive view: shows what MainPresenter tells and reports user actions.
-    //Built in code and laid out by LayoutContent(): texts of different languages have different lengths
+    //Built in code and laid out by LayoutContent(): texts of different languages have different lengths.
+    //Everything the phone needs is in the window (state, address, QR code), the rarely changed settings
+    //(port, language) are in the Settings menu; minimized, the window goes to the notification area
     public sealed class MainForm : Form, IMainView
     {
         private const int ContentWidth = 440;
-        private const int PortMin = 10000;
-        private const int PortMax = 65535;
+        private const int QrSize = 120;
+        //Scanned by the app: the server address and port
+        private const string QrScheme = "truckremote://";
 
         private static readonly (string Code, string Name)[] Languages =
         {
@@ -40,6 +43,7 @@ namespace TruckRemoteServer.UI
         private readonly Label addressLabel = new Label { AutoSize = true };
         private readonly RoundedButton copyButton = new RoundedButton();
         private readonly Label portInfoLabel = new Label { AutoSize = true };
+        private readonly QrCodeView qrView = new QrCodeView();
         private readonly Label hintLabel = new Label { AutoSize = false };
 
         private readonly RoundedPanel firewallBanner = new RoundedPanel { Visible = false };
@@ -50,30 +54,25 @@ namespace TruckRemoteServer.UI
         private readonly Label joystickLabel = new Label { AutoSize = false };
         private readonly RoundedButton installJoystickButton = new RoundedButton();
 
-        private readonly RoundedPanel steeringCard = new RoundedPanel();
-        private readonly Label steeringTitle = new Label { AutoSize = true };
-        private readonly Label sensitivityLabel = new Label { AutoSize = true };
-        private readonly Label sensitivityValue = new Label { AutoSize = true };
-        private readonly Slider sensitivitySlider = new Slider { Minimum = 1, Maximum = 100 };
-
-        private readonly RoundedPanel settingsCard = new RoundedPanel();
-        private readonly Label settingsTitle = new Label { AutoSize = true };
-        private readonly Label portCaption = new Label { AutoSize = true };
-        private readonly InputField portField = new InputField();
-        private readonly Label languageCaption = new Label { AutoSize = true };
-        private readonly RoundedButton languageButton = new RoundedButton { ShowChevron = true };
-        private readonly ContextMenuStrip languageMenu = new ContextMenuStrip { ShowImageMargin = false, ShowCheckMargin = true };
-
         private readonly RoundedButton startStopButton = new RoundedButton();
+        private readonly RoundedButton settingsButton = new RoundedButton { ShowChevron = true };
+        private readonly ContextMenuStrip settingsMenu = new ContextMenuStrip { ShowImageMargin = false };
+        private readonly ToolStripMenuItem portItem = new ToolStripMenuItem();
+        private readonly ToolStripMenuItem languageItem = new ToolStripMenuItem();
         private readonly Label versionLabel = new Label { AutoSize = true };
+
+        private readonly NotifyIcon trayIcon = new NotifyIcon();
+        private readonly ContextMenuStrip trayMenu = new ContextMenuStrip { ShowImageMargin = false };
+        private readonly ToolStripMenuItem trayOpenItem = new ToolStripMenuItem();
+        private readonly ToolStripMenuItem trayExitItem = new ToolStripMenuItem();
+        //The hint about the notification area is shown once per start
+        private bool trayHintShown;
 
         private Theme theme = Theme.FromSystem();
         private IList<string> addresses = new List<string>();
         private int port;
         private ServerState state = ServerState.Stopped;
         private string language = "";
-        //Values shown by the presenter mustn't be reported back as user changes
-        private bool showingValues;
 
         public MainForm()
         {
@@ -98,22 +97,15 @@ namespace TruckRemoteServer.UI
             addressLabel.Font = Theme.Display;
             portInfoLabel.Font = Theme.Caption;
             hintLabel.Font = Theme.Caption;
-            steeringTitle.Font = Theme.Subtitle;
-            settingsTitle.Font = Theme.Subtitle;
-            portCaption.Font = Theme.Caption;
-            languageCaption.Font = Theme.Caption;
             versionLabel.Font = Theme.Caption;
-            sensitivityValue.Font = Theme.BodyStrong;
 
-            addressCard.Controls.AddRange(new Control[] { addressCaption, addressLabel, copyButton, portInfoLabel, hintLabel });
+            addressCard.Controls.AddRange(new Control[] { addressCaption, addressLabel, copyButton, portInfoLabel, qrView, hintLabel });
             firewallBanner.Controls.AddRange(new Control[] { firewallLabel, allowButton });
             joystickBanner.Controls.AddRange(new Control[] { joystickLabel, installJoystickButton });
-            steeringCard.Controls.AddRange(new Control[] { steeringTitle, sensitivityLabel, sensitivityValue, sensitivitySlider });
-            settingsCard.Controls.AddRange(new Control[] { settingsTitle, portCaption, portField, languageCaption, languageButton });
             Controls.AddRange(new Control[]
             {
-                titleLabel, statusPill, addressCard, joystickBanner, firewallBanner, steeringCard, settingsCard,
-                startStopButton, versionLabel
+                titleLabel, statusPill, addressCard, joystickBanner, firewallBanner,
+                startStopButton, settingsButton, versionLabel
             });
 
             foreach (var item in Languages)
@@ -121,10 +113,22 @@ namespace TruckRemoteServer.UI
                 string code = item.Code;
                 var menuItem = new ToolStripMenuItem { Tag = code, Font = Theme.Body };
                 menuItem.Click += (s, e) => OnLanguageSelected(code);
-                languageMenu.Items.Add(menuItem);
+                languageItem.DropDownItems.Add(menuItem);
             }
-            languageMenu.Font = Theme.Body;
-            languageButton.Click += (s, e) => languageMenu.Show(languageButton, 0, languageButton.Height + Px(2));
+            portItem.Click += (s, e) => ChangePort();
+            settingsMenu.Items.AddRange(new ToolStripItem[] { portItem, languageItem });
+            settingsMenu.Font = Theme.Body;
+            settingsButton.Click += (s, e) => settingsMenu.Show(settingsButton, 0, settingsButton.Height + Px(2));
+
+            trayOpenItem.Click += (s, e) => RestoreFromTray();
+            trayExitItem.Click += (s, e) => Close();
+            trayMenu.Items.AddRange(new ToolStripItem[] { trayOpenItem, trayExitItem });
+            trayMenu.Font = Theme.Body;
+            trayIcon.Icon = Icon;
+            trayIcon.ContextMenuStrip = trayMenu;
+            trayIcon.DoubleClick += (s, e) => RestoreFromTray();
+            trayIcon.BalloonTipClicked += (s, e) => RestoreFromTray();
+
             copyButton.Click += (s, e) => CopyAddress();
             copiedTimer.Tick += (s, e) =>
             {
@@ -135,18 +139,6 @@ namespace TruckRemoteServer.UI
             allowButton.Click += (s, e) => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
             installJoystickButton.Click += (s, e) => InstallJoystickRequested?.Invoke(this, EventArgs.Empty);
             startStopButton.Click += (s, e) => (IsRunning ? StopRequested : StartRequested)?.Invoke(this, EventArgs.Empty);
-            sensitivitySlider.ValueChanged += OnSensitivityChanged;
-            TextBox portBox = portField.TextBox;
-            portBox.MaxLength = 5;
-            portBox.Font = Theme.Body;
-            portBox.KeyDown += (s, e) =>
-            {
-                if (e.KeyCode != Keys.Enter) return;
-                e.SuppressKeyPress = true;
-                CommitPort();
-            };
-            portBox.Leave += (s, e) => CommitPort();
-            portBox.KeyPress += (s, e) => e.Handled = !char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar);
             SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
 
             ApplyTexts();
@@ -158,7 +150,6 @@ namespace TruckRemoteServer.UI
         public event EventHandler StartRequested;
         public event EventHandler StopRequested;
         public event EventHandler<int> PortChanged;
-        public event EventHandler<int> SensitivityChanged;
         public event EventHandler<string> LanguageChanged;
         public event EventHandler AllowFirewallRequested;
         public event EventHandler InstallJoystickRequested;
@@ -178,9 +169,22 @@ namespace TruckRemoteServer.UI
             Shown?.Invoke(this, EventArgs.Empty);
         }
 
+        //Minimized, the server keeps working in the notification area
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            if (WindowState != FormWindowState.Minimized || !Visible) return;
+            trayIcon.Visible = true;
+            Hide();
+            if (trayHintShown) return;
+            trayHintShown = true;
+            trayIcon.ShowBalloonTip(3000, Text, Texts.Get(T.TrayHint), ToolTipIcon.Info);
+        }
+
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             Closing?.Invoke(this, EventArgs.Empty);
+            trayIcon.Visible = false;
             base.OnFormClosing(e);
         }
 
@@ -191,7 +195,9 @@ namespace TruckRemoteServer.UI
                 SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
                 toolTip.Dispose();
                 copiedTimer.Dispose();
-                languageMenu.Dispose();
+                settingsMenu.Dispose();
+                trayMenu.Dispose();
+                trayIcon.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -205,14 +211,10 @@ namespace TruckRemoteServer.UI
             ApplyTexts();
         }
 
-        public void ShowSettings(int port, int sensitivity)
+        public void ShowSettings(int port)
         {
-            showingValues = true;
             this.port = port;
-            portField.TextBox.Text = port.ToString(CultureInfo.InvariantCulture);
-            sensitivitySlider.Value = sensitivity;
-            sensitivityValue.Text = sensitivity.ToString(CultureInfo.CurrentCulture);
-            showingValues = false;
+            ApplyMenuTexts();
             LayoutContent();
         }
 
@@ -221,6 +223,7 @@ namespace TruckRemoteServer.UI
             this.addresses = addresses;
             this.port = port;
             ApplyAddressTexts();
+            ApplyMenuTexts();
             LayoutContent();
         }
 
@@ -310,29 +313,25 @@ namespace TruckRemoteServer.UI
             }
         }
 
-        private void OnSensitivityChanged(object sender, EventArgs e)
+        private void ChangePort()
         {
-            sensitivityValue.Text = sensitivitySlider.Value.ToString(CultureInfo.CurrentCulture);
-            LayoutContent();
-            if (!showingValues) SensitivityChanged?.Invoke(this, sensitivitySlider.Value);
-        }
-
-        //A wrong port is replaced back by the current one
-        private void CommitPort()
-        {
-            if (int.TryParse(portField.TextBox.Text, out int value) && value >= PortMin && value <= PortMax)
+            using (var dialog = new PortDialog(theme, port))
             {
-                toolTip.Hide(portField);
-                if (value != port) PortChanged?.Invoke(this, value);
-                return;
+                if (dialog.ShowDialog(this) == DialogResult.OK && dialog.Port != port) PortChanged?.Invoke(this, dialog.Port);
             }
-            portField.TextBox.Text = port.ToString(CultureInfo.InvariantCulture);
-            toolTip.Show(Texts.Get(T.PortRange), portField, 0, portField.Height + Px(2), 2500);
         }
 
         private void OnLanguageSelected(string code)
         {
             if (code != language) LanguageChanged?.Invoke(this, code);
+        }
+
+        private void RestoreFromTray()
+        {
+            Show();
+            WindowState = FormWindowState.Normal;
+            trayIcon.Visible = false;
+            Activate();
         }
 
         private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
@@ -358,26 +357,30 @@ namespace TruckRemoteServer.UI
             allowButton.Text = Texts.Get(T.FirewallAllow);
             joystickLabel.Text = Texts.Get(T.JoystickWarning);
             installJoystickButton.Text = Texts.Get(T.JoystickInstall);
-            steeringTitle.Text = Texts.Get(T.Steering);
-            sensitivityLabel.Text = Texts.Get(T.Sensitivity);
-            settingsTitle.Text = Texts.Get(T.SettingsTitle);
-            portCaption.Text = Texts.Get(T.Port);
-            languageCaption.Text = Texts.Get(T.Language);
+            settingsButton.Text = Texts.Get(T.SettingsTitle);
+            trayOpenItem.Text = Texts.Get(T.TrayOpen);
+            trayExitItem.Text = Texts.Get(T.TrayExit);
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
             versionLabel.Text = Texts.Format(T.Version, version.ToString(3));
+            ApplyMenuTexts();
+            ApplyAddressTexts();
+            ApplyStateTexts();
+            LayoutContent();
+        }
+
+        private void ApplyMenuTexts()
+        {
+            portItem.Text = Texts.Format(T.PortItem, port);
             string systemName = Texts.Get(T.LanguageSystem);
-            foreach (ToolStripMenuItem item in languageMenu.Items)
+            string languageName = Array.Find(Languages, l => l.Code == language).Name ?? systemName;
+            languageItem.Text = Texts.Get(T.Language) + ": " + languageName;
+            foreach (ToolStripMenuItem item in languageItem.DropDownItems)
             {
                 string code = (string)item.Tag;
                 item.Text = Array.Find(Languages, l => l.Code == code).Name ?? systemName;
                 item.Checked = code == language;
                 item.AccessibleName = item.Text;
             }
-            languageButton.Text = Array.Find(Languages, l => l.Code == language).Name ?? systemName;
-            languageButton.AccessibleName = Texts.Get(T.Language) + ": " + languageButton.Text;
-            ApplyAddressTexts();
-            ApplyStateTexts();
-            LayoutContent();
         }
 
         private void ApplyAddressTexts()
@@ -386,6 +389,9 @@ namespace TruckRemoteServer.UI
             addressLabel.Text = hasAddress ? addresses[0] : Texts.Get(T.NoAddress);
             addressLabel.Font = hasAddress ? Theme.Display : Theme.Subtitle;
             copyButton.Visible = hasAddress;
+            qrView.Visible = hasAddress;
+            qrView.Content = hasAddress ? QrScheme + addresses[0] + ":" + port.ToString(CultureInfo.InvariantCulture) : null;
+            qrView.AccessibleName = Texts.Get(T.QrCode);
             portInfoLabel.Text = addresses.Count > 1
                 ? Texts.Format(T.PortAndMore, port, addresses.Count - 1)
                 : Texts.Format(T.PortOnly, port);
@@ -418,6 +424,9 @@ namespace TruckRemoteServer.UI
                     break;
             }
             startStopButton.Text = Texts.Get(IsRunning ? T.Stop : T.Start);
+            //The tooltip of the notification area is limited to 63 characters
+            string trayText = Text + " — " + statusPill.Text;
+            trayIcon.Text = trayText.Length > 63 ? trayText.Substring(0, 63) : trayText;
         }
 
         /* Theme */
@@ -430,20 +439,18 @@ namespace TruckRemoteServer.UI
 
             titleLabel.ForeColor = theme.Text;
             versionLabel.ForeColor = theme.SecondaryText;
-            foreach (RoundedPanel card in new[] { addressCard, steeringCard, settingsCard })
+            addressCard.FillColor = theme.Card;
+            addressCard.BorderColor = theme.CardBorder;
+            foreach (Control child in addressCard.Controls)
             {
-                card.FillColor = theme.Card;
-                card.BorderColor = theme.CardBorder;
-                foreach (Control child in card.Controls)
-                {
-                    child.BackColor = theme.Card;
-                    child.ForeColor = theme.Text;
-                }
+                child.BackColor = theme.Card;
+                child.ForeColor = theme.Text;
             }
-            foreach (Label secondary in new[] { addressCaption, portInfoLabel, hintLabel, sensitivityLabel, portCaption, languageCaption })
+            foreach (Label secondary in new[] { addressCaption, portInfoLabel, hintLabel })
             {
                 secondary.ForeColor = theme.SecondaryText;
             }
+            qrView.ParentColor = theme.Card;
 
             foreach (RoundedPanel banner in new[] { firewallBanner, joystickBanner })
             {
@@ -458,28 +465,27 @@ namespace TruckRemoteServer.UI
             StyleSecondary(allowButton, theme.WarningBackground);
             StyleSecondary(installJoystickButton, theme.WarningBackground);
             StyleSecondary(copyButton, theme.Card);
+            StyleSecondary(settingsButton, theme.Background);
 
-            sensitivitySlider.ParentColor = theme.Card;
-            sensitivitySlider.FillColor = theme.Accent;
-            sensitivitySlider.TrackColor = theme.ControlBorder;
-            sensitivitySlider.ThumbColor = theme.Control;
-
-            portField.FillColor = theme.Control;
-            portField.BorderColor = theme.ControlBorder;
-            portField.AccentColor = theme.Accent;
-            portField.TextBox.BackColor = theme.Control;
-            portField.TextBox.ForeColor = theme.Text;
-            StyleSecondary(languageButton, theme.Card);
-            languageMenu.Renderer = new ThemedMenuRenderer(theme.Card, theme.ControlBorder,
-                theme.IsDark ? Color.FromArgb(60, 60, 60) : Color.FromArgb(234, 234, 234));
-            languageMenu.BackColor = theme.Card;
-            foreach (ToolStripItem item in languageMenu.Items) item.ForeColor = theme.Text;
+            foreach (ContextMenuStrip menu in new[] { settingsMenu, trayMenu })
+            {
+                StyleMenu(menu);
+            }
+            StyleMenu(languageItem.DropDown);
 
             statusPill.ParentColor = theme.Background;
             statusPill.FillColor = theme.Card;
             statusPill.TextColor = theme.Text;
             ApplyStateTheme();
             Invalidate(true);
+        }
+
+        private void StyleMenu(ToolStripDropDown menu)
+        {
+            menu.Renderer = new ThemedMenuRenderer(theme.Card, theme.ControlBorder,
+                theme.IsDark ? Color.FromArgb(60, 60, 60) : Color.FromArgb(234, 234, 234));
+            menu.BackColor = theme.Card;
+            foreach (ToolStripItem item in menu.Items) item.ForeColor = theme.Text;
         }
 
         //Start is the main action (accent), Stop is a secondary one
@@ -547,57 +553,53 @@ namespace TruckRemoteServer.UI
             statusPill.Location = new Point(pad, y);
             y += statusPill.Height + Px(16);
 
-            //Address of the server: the most important thing for the user
+            //Address of the server: the most important thing for the user, with its QR code for the app
+            int qr = qrView.Visible ? Px(QrSize) : 0;
             int cy = cardPad;
             addressCaption.Location = new Point(cardPad, cy);
             cy += addressCaption.PreferredHeight + Px(2);
-            copyButton.Size = copyButton.GetPreferredSize(Size.Empty);
-            int addressHeight = Math.Max(addressLabel.PreferredHeight, copyButton.Height);
-            addressLabel.Location = new Point(cardPad - Px(4), cy + (addressHeight - addressLabel.PreferredHeight) / 2);
-            copyButton.Location = new Point(width - cardPad - copyButton.Width, cy + (addressHeight - copyButton.Height) / 2);
-            cy += addressHeight + Px(2);
+            addressLabel.Location = new Point(cardPad - Px(4), cy);
+            cy += addressLabel.PreferredHeight + Px(2);
             portInfoLabel.Location = new Point(cardPad, cy);
             cy += portInfoLabel.PreferredHeight + Px(10);
+            if (copyButton.Visible)
+            {
+                copyButton.Size = copyButton.GetPreferredSize(Size.Empty);
+                copyButton.Location = new Point(cardPad, cy);
+                cy += copyButton.Height;
+            }
+            int textHeight = cy;
+            if (qrView.Visible)
+            {
+                qrView.Bounds = new Rectangle(width - cardPad - qr, cardPad, qr, qr);
+                cy = Math.Max(cy, cardPad + qr);
+            }
+            cy += Px(12);
             hintLabel.Size = new Size(inner, MeasureWrapped(hintLabel, inner));
             hintLabel.Location = new Point(cardPad, cy);
             cy += hintLabel.Height + cardPad;
+            //The text column is centered beside the code
+            if (qrView.Visible && textHeight < cardPad + qr)
+            {
+                int shift = (cardPad + qr - textHeight) / 2;
+                foreach (Control control in new Control[] { addressCaption, addressLabel, portInfoLabel, copyButton })
+                {
+                    control.Top += shift;
+                }
+            }
             addressCard.Bounds = new Rectangle(pad, y, width, cy);
             y += cy + gap;
 
             //Warnings: vJoy isn't ready (the phone can't steer), the firewall may block the phone
             y = LayoutBanner(joystickBanner, joystickLabel, installJoystickButton, y);
             y = LayoutBanner(firewallBanner, firewallLabel, allowButton, y);
+            y += Px(8);
 
-            //Steering
-            cy = cardPad;
-            steeringTitle.Location = new Point(cardPad, cy);
-            cy += steeringTitle.PreferredHeight + Px(8);
-            sensitivityLabel.Location = new Point(cardPad, cy);
-            sensitivityValue.Location = new Point(width - cardPad - sensitivityValue.PreferredWidth, cy);
-            cy += Math.Max(sensitivityLabel.PreferredHeight, sensitivityValue.PreferredHeight) + Px(4);
-            sensitivitySlider.Bounds = new Rectangle(cardPad - Px(2), cy, inner + Px(4), Px(24));
-            cy += sensitivitySlider.Height + cardPad - Px(4);
-            steeringCard.Bounds = new Rectangle(pad, y, width, cy);
-            y += cy + gap;
-
-            //Settings: port and language side by side
-            cy = cardPad;
-            settingsTitle.Location = new Point(cardPad, cy);
-            cy += settingsTitle.PreferredHeight + Px(8);
-            int column = (inner - gap) / 2;
-            portCaption.Location = new Point(cardPad, cy);
-            languageCaption.Location = new Point(cardPad + column + gap, cy);
-            cy += Math.Max(portCaption.PreferredHeight, languageCaption.PreferredHeight) + Px(4);
-            int fieldHeight = Px(34);
-            portField.Bounds = new Rectangle(cardPad, cy, Px(120), fieldHeight);
-            languageButton.Bounds = new Rectangle(cardPad + column + gap, cy, column, fieldHeight);
-            cy += fieldHeight + cardPad;
-            settingsCard.Bounds = new Rectangle(pad, y, width, cy);
-            y += cy + Px(20);
-
-            //Main action and the version
+            //Main action, settings and the version
             startStopButton.Size = startStopButton.GetPreferredSize(Size.Empty);
             startStopButton.Location = new Point(pad, y);
+            settingsButton.Size = settingsButton.GetPreferredSize(Size.Empty);
+            settingsButton.Location = new Point(startStopButton.Right + Px(8), y);
             versionLabel.Location = new Point(pad + width - versionLabel.PreferredWidth,
                 y + (startStopButton.Height - versionLabel.PreferredHeight) / 2);
             y += startStopButton.Height + pad;

@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="ServerAddress" xml:space="preserve"><value>Адрес сервера</value></data>
-  <data name="AddressHint" xml:space="preserve"><value>Телефон находит сервер сам. Если не получается, укажите этот адрес в настройках приложения.</value></data>
+  <data name="AddressHint" xml:space="preserve"><value>Телефон находит сервер сам. Если не получается, отсканируйте этот QR-код в настройках приложения или введите там адрес.</value></data>
   <data name="NoAddress" xml:space="preserve"><value>Нет подключения к сети</value></data>
   <data name="PortAndMore" xml:space="preserve"><value>Порт {0} · ещё адресов: {1}</value></data>
   <data name="PortOnly" xml:space="preserve"><value>Порт {0}</value></data>
@@ -20,10 +20,7 @@
   <data name="StatePaused" xml:space="preserve"><value>Телефон на паузе</value></data>
   <data name="Start" xml:space="preserve"><value>Запустить сервер</value></data>
   <data name="Stop" xml:space="preserve"><value>Остановить сервер</value></data>
-  <data name="Steering" xml:space="preserve"><value>Руль</value></data>
-  <data name="Sensitivity" xml:space="preserve"><value>Чувствительность</value></data>
   <data name="SettingsTitle" xml:space="preserve"><value>Настройки</value></data>
-  <data name="Port" xml:space="preserve"><value>Порт</value></data>
   <data name="PortRange" xml:space="preserve"><value>От 10000 до 65535</value></data>
   <data name="Language" xml:space="preserve"><value>Язык</value></data>
   <data name="LanguageSystem" xml:space="preserve"><value>Как в системе</value></data>
@@ -47,4 +44,13 @@
 
 Установить и настроить его сейчас? Нужны права администратора, Windows также может попросить доверять драйверу vJoy.</value></data>
   <data name="JoystickSetupFailed" xml:space="preserve"><value>vJoy не настроился. Установите vJoySetup.exe из релиза вручную и включите ось X у устройства 1 в Configure vJoy.</value></data>
+  <data name="PortItem" xml:space="preserve"><value>Порт: {0}…</value></data>
+  <data name="PortTitle" xml:space="preserve"><value>Порт сервера</value></data>
+  <data name="PortHint" xml:space="preserve"><value>Такой же порт нужно указать в приложении. Меняйте его, только если этот занят другой программой.</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Открыть</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Выход</value></data>
+  <data name="TrayHint" xml:space="preserve"><value>Сервер продолжает работать здесь. Дважды щёлкните по значку, чтобы открыть его.</value></data>
+  <data name="QrCode" xml:space="preserve"><value>QR-код адреса сервера</value></data>
 </root>

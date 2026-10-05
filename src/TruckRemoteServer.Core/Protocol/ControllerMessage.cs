@@ -15,6 +15,8 @@ namespace TruckRemoteServer.Protocol
         public const string SequenceTag = "#";
 
         public double Steering { get; set; }
+        //The phone has applied its steering settings (protocol 2): gravity is the full lock
+        public bool SteeringIsFinal { get; set; }
         public bool BrakePressed { get; set; }
         public bool GasPressed { get; set; }
         public bool LeftSignalClick { get; set; }

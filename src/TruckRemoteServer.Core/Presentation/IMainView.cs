@@ -32,7 +32,6 @@ namespace TruckRemoteServer.Presentation
         event EventHandler StartRequested;
         event EventHandler StopRequested;
         event EventHandler<int> PortChanged;
-        event EventHandler<int> SensitivityChanged;
         event EventHandler<string> LanguageChanged;
         event EventHandler AllowFirewallRequested;
         event EventHandler InstallJoystickRequested;
@@ -40,7 +39,7 @@ namespace TruckRemoteServer.Presentation
         //"" - the language of Windows
         void ShowLanguage(string language);
 
-        void ShowSettings(int port, int sensitivity);
+        void ShowSettings(int port);
 
         //The first address is the most likely one for the phone
         void ShowAddresses(IList<string> addresses, int port);

@@ -32,9 +32,10 @@ Launching:
    - offers to allow the server in Windows Firewall (administrator rights are asked for), otherwise the firewall
      may block the phone. Later the window shows a link to do it if the server is still blocked.
 3) Connect the phone to the same network as the PC and start Truck Remote Control: it finds the server by itself.
-   If it doesn't, enter the address shown in the server window in the app settings.
+   If it doesn't, scan the QR code of the server window in the app settings (or enter the address shown there).
 
-The port, steering sensitivity and language (the language of Windows by default) are set in the server window.
+The steering (sensitivity, dead zone, curve) is set in the app. The server window has only the port and the language
+(the language of Windows by default) in its **Settings** menu; minimized, the server keeps working in the notification area.
 
 To set vJoy up manually (e.g. if the automatic setup failed), install **vJoySetup.exe** from the
 [vJoy project](https://sourceforge.net/projects/vjoystick/files/Beta%202.x/2.1.9.1-160719/) and configure the 1-st device

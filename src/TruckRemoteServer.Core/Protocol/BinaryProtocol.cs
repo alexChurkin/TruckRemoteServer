@@ -9,7 +9,8 @@ namespace TruckRemoteServer.Protocol
     //text messages start with a printable character).
     //
     //Controller state (16 bytes + 2 per action):
-    //  type 0x02 | sequence u32 | steering f32 (m/s², as measured) | flags u16 | gas u16 | brake u16 |
+    //  type 0x02 | sequence u32 | steering f32 (m/s², after the phone's steering settings: ±9.80665 is the full lock) |
+    //  flags u16 | gas u16 | brake u16 |
     //  action count u8 | (action id u8, value u8) * count
     //  flags: 0 brake, 1 gas, 2 left signal, 3 right signal, 4 emergency, 5 parking brake, 6 lights,
     //  7 cruise (clicks are toggles), 8 pedal levels present, 9-10 horn (0 off, 1 horn, 2 air horn).
@@ -54,6 +55,7 @@ namespace TruckRemoteServer.Protocol
             {
                 Sequence = ReadUInt32(data, 1),
                 Steering = float.IsNaN(steering) || float.IsInfinity(steering) ? 0 : steering,
+                SteeringIsFinal = true,
                 BrakePressed = Bit(flags, 0),
                 GasPressed = Bit(flags, 1),
                 LeftSignalClick = Bit(flags, 2),

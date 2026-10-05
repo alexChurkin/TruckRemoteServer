@@ -19,10 +19,7 @@ namespace TruckRemoteServer.Localization
         public const string StatePaused = nameof(StatePaused);
         public const string Start = nameof(Start);
         public const string Stop = nameof(Stop);
-        public const string Steering = nameof(Steering);
-        public const string Sensitivity = nameof(Sensitivity);
         public const string SettingsTitle = nameof(SettingsTitle);
-        public const string Port = nameof(Port);
         public const string PortRange = nameof(PortRange);
         public const string Language = nameof(Language);
         public const string LanguageSystem = nameof(LanguageSystem);
@@ -38,5 +35,14 @@ namespace TruckRemoteServer.Localization
         public const string GameNotFound = nameof(GameNotFound);
         public const string SelectGameFolder = nameof(SelectGameFolder);
         public const string Version = nameof(Version);
+        public const string PortItem = nameof(PortItem);
+        public const string PortTitle = nameof(PortTitle);
+        public const string PortHint = nameof(PortHint);
+        public const string Ok = nameof(Ok);
+        public const string Cancel = nameof(Cancel);
+        public const string TrayOpen = nameof(TrayOpen);
+        public const string TrayExit = nameof(TrayExit);
+        public const string TrayHint = nameof(TrayHint);
+        public const string QrCode = nameof(QrCode);
     }
 }

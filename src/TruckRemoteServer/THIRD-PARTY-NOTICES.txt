@@ -8,6 +8,8 @@ Truck Remote Server includes the following third-party software. Each is license
 - Microsoft.Extensions.DependencyInjection, Microsoft.Extensions.Logging and their dependencies
   (System.Memory, System.Buffers and others), https://github.com/dotnet/runtime
   Copyright (c) .NET Foundation and Contributors
+- QRCoder (the QR code of the server address), https://github.com/Shane32/QRCoder
+  Copyright (c) 2013-2025 Raffael Herrmann
 - Costura (assembly loader embedded into the exe), https://github.com/Fody/Costura
   Copyright (c) 2012 Simon Cropp and contributors
 

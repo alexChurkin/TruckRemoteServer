@@ -90,7 +90,6 @@ namespace TruckRemoteServer.Tests
     public class FakeSettings : ISettingsStore
     {
         public int Port { get; set; }
-        public int Sensitivity { get; set; } = 50;
         public bool FirewallPromptShown { get; set; }
         public bool JoystickPromptShown { get; set; }
         public string Language { get; set; } = "";
@@ -163,7 +162,6 @@ namespace TruckRemoteServer.Tests
     public class FakeView : IMainView
     {
         public int? Port;
-        public int? Sensitivity;
         public IList<string> Addresses;
         public int AddressesPort;
         public ServerState State;
@@ -184,7 +182,6 @@ namespace TruckRemoteServer.Tests
         public event EventHandler StartRequested;
         public event EventHandler StopRequested;
         public event EventHandler<int> PortChanged;
-        public event EventHandler<int> SensitivityChanged;
         public event EventHandler<string> LanguageChanged;
         public event EventHandler AllowFirewallRequested;
         public event EventHandler InstallJoystickRequested;
@@ -194,18 +191,13 @@ namespace TruckRemoteServer.Tests
         public void Start() => StartRequested?.Invoke(this, EventArgs.Empty);
         public void Stop() => StopRequested?.Invoke(this, EventArgs.Empty);
         public void ChangePort(int port) => PortChanged?.Invoke(this, port);
-        public void ChangeSensitivity(int value) => SensitivityChanged?.Invoke(this, value);
         public void AllowFirewall() => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
         public void InstallJoystick() => InstallJoystickRequested?.Invoke(this, EventArgs.Empty);
         public void ChangeLanguage(string language) => LanguageChanged?.Invoke(this, language);
 
         public void ShowLanguage(string language) => Language = language;
 
-        public void ShowSettings(int port, int sensitivity)
-        {
-            Port = port;
-            Sensitivity = sensitivity;
-        }
+        public void ShowSettings(int port) => Port = port;
 
         public void ShowAddresses(IList<string> addresses, int port)
         {

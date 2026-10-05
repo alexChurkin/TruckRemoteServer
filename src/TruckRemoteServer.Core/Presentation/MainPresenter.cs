@@ -14,7 +14,6 @@ namespace TruckRemoteServer.Presentation
     {
         private readonly IMainView view;
         private readonly ControllerServer server;
-        private readonly ControllerInputMapper input;
         private readonly IVirtualJoystick joystick;
         private readonly ISettingsStore settings;
         private readonly IFirewall firewall;
@@ -25,13 +24,11 @@ namespace TruckRemoteServer.Presentation
         //The last start failed because the port is used by another program
         private bool portBusy;
 
-        public MainPresenter(IMainView view, ControllerServer server, ControllerInputMapper input,
-            IVirtualJoystick joystick, ISettingsStore settings, IFirewall firewall, INetworkInfo network,
-            ITelemetryPluginSetup pluginSetup, IJoystickSetup joystickSetup, string programPath)
+        public MainPresenter(IMainView view, ControllerServer server, IVirtualJoystick joystick, ISettingsStore settings,
+            IFirewall firewall, INetworkInfo network, ITelemetryPluginSetup pluginSetup, IJoystickSetup joystickSetup, string programPath)
         {
             this.view = view;
             this.server = server;
-            this.input = input;
             this.joystick = joystick;
             this.settings = settings;
             this.firewall = firewall;
@@ -46,7 +43,6 @@ namespace TruckRemoteServer.Presentation
             view.StopRequested += (s, e) => server.Stop();
             view.PortChanged += (s, port) => ChangePort(port);
             view.LanguageChanged += (s, language) => ChangeLanguage(language);
-            view.SensitivityChanged += (s, value) => SetSensitivity(value);
             view.AllowFirewallRequested += (s, e) => AllowInFirewall();
             view.InstallJoystickRequested += (s, e) => SetupJoystick();
         }
@@ -62,8 +58,7 @@ namespace TruckRemoteServer.Presentation
 
         private void OnShown()
         {
-            input.SteeringSensitivity = settings.Sensitivity;
-            view.ShowSettings(settings.Port, settings.Sensitivity);
+            view.ShowSettings(settings.Port);
             server.StatusChanged += OnServerStatus;
             network.AddressesChanged += OnAddressesChanged;
             ShowAddresses();
@@ -133,13 +128,6 @@ namespace TruckRemoteServer.Presentation
             //Texts of the state are made by the view in the new language
             ShowStatus(server.Status);
             ShowAddresses();
-        }
-
-        private void SetSensitivity(int value)
-        {
-            input.SteeringSensitivity = value;
-            settings.Sensitivity = value;
-            settings.Save();
         }
 
         private void OnServerStatus(ServerStatus status)

@@ -40,8 +40,13 @@ Launching:
 3) Connect the phone to the same network as the PC and start Truck Remote Control: it finds the server by itself.
    If it doesn't, scan the QR code of the server window in the app settings (or enter the address shown there).
 
-The steering (sensitivity, dead zone, curve) is set in the app. The server window has only the port, the language
-(the language of Windows by default) and **Minimize to the notification area** (off by default) in its **Settings** menu.
+The steering (sensitivity, dead zone, curve) is set in the app. The **Settings** menu of the server window has only
+the port, the language (the language of Windows by default), **Minimize to the notification area** (off by default),
+the setup wizard and **Check for updates**. The server checks for a newer version by itself at the start and offers it
+in its window: **Update** replaces the exe and restarts the server.
+
+A tablet or a second phone can show the instruments of the truck beside the phone that drives (**Dashboard mode**
+in the app menu): it finds the server like the controller does, up to 4 of them at once, and controls nothing.
 
 To set vJoy up manually (e.g. if the automatic setup failed), install **vJoySetup.exe** from the
 [vJoy project](https://sourceforge.net/projects/vjoystick/files/Beta%202.x/2.1.9.1-160719/) and configure the 1-st device
@@ -142,9 +147,14 @@ a release with the same tag (`1.3` or `v1.3`): the Release workflow builds it, c
 
 The phone and the server talk over UDP. Since version 2 (the phone's hello is `TruckRemoteHello2`, the server answers
 `Hi!2`) the messages are binary: the phone's state is 16 bytes plus 2 bytes per clicked or held action, the truck state
-is 22 bytes with the dashboard of the app: speed, speed limit, cruise speed, gear, engine rpm, fuel
+is 22 bytes and more with the dashboard of the app: speed, speed limit, cruise speed, gear, engine rpm, fuel
 (`Core/Protocol/BinaryProtocol`). Actions are sent by fixed codes, not by the places of their buttons.
 Older apps and servers keep the text protocol.
+The server state grows by revisions (its revision byte tells the app what it may read): the warnings, the route and
+the job, the fuel range, and the haptics — the road vibration, the surface under the wheels and the counters of the
+haptic events (bumps, collisions, the engine starting and stopping, the blinker relay, gear shifts, the retarder, the
+trailer coupling, fines, deliveries...) found by `Core/Haptics/HapticDetector` in the telemetry. A dashboard (viewer)
+says `TruckRemoteViewer2` and gets the state and the job without controlling anything. The format of every message is described in `BinaryProtocol`.
 
 ### Telemetry plugin
 

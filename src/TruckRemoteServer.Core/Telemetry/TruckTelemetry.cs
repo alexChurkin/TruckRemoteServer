@@ -1,3 +1,5 @@
+using System;
+
 namespace TruckRemoteServer.Telemetry
 {
     //The truck state read from the game (all false/0 when the game or the telemetry plugin isn't running)
@@ -65,6 +67,32 @@ namespace TruckRemoteServer.Telemetry
         //Navigation: the distance (m) and the estimated time (s) to the end of the route, 0 - no route
         public float RouteDistance { get; set; }
         public float RouteTime { get; set; }
+
+        /* Haptics: what the driver feels (see Haptics.HapticDetector) */
+
+        //The game is paused (menu, map): nothing is felt then
+        public bool Paused { get; set; }
+        //Simulation time of the telemetry frame, microseconds (it doesn't advance while the game is paused)
+        public long SimulationTime { get; set; }
+        //Linear acceleration of the truck in its own space, m/s²: X to the right, Y up, Z backwards
+        public float AccelerationX { get; set; }
+        public float AccelerationY { get; set; }
+        public float AccelerationZ { get; set; }
+        //The gear of the gearbox (not of the dashboard): negative - reverse, 0 - neutral
+        public int GearboxGear { get; set; }
+        //The sum of the wear of all parts of the truck and the attached trailer: it jumps on collisions
+        public float Damage { get; set; }
+        //Wheels of the truck: suspension deflection (m), contact with the ground and the roughness of the surface
+        //under the wheel (0 - a road, 1 - the roughest offroad; see SurfaceRoughness)
+        public float[] SuspensionDeflection { get; set; } = Array.Empty<float>();
+        public bool[] WheelOnGround { get; set; } = Array.Empty<bool>();
+        public float[] WheelSurfaceRoughness { get; set; } = Array.Empty<float>();
+        //Some wheel is on a rumble strip
+        public bool OnRumbleStrip { get; set; }
+        //Gameplay events of the plugin: each of them flips when the event happens
+        public bool FinedToggle { get; set; }
+        public bool PaidToggle { get; set; }
+        public bool JobDeliveredToggle { get; set; }
 
         //The current job: the cargo name is empty without a job
         public string Cargo { get; set; } = "";

@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using TruckRemoteServer.Haptics;
 using TruckRemoteServer.Protocol;
 using TruckRemoteServer.Telemetry;
 using Xunit;
@@ -119,6 +120,30 @@ namespace TruckRemoteServer.Tests
             Assert.Equal(6300u, BitConverter.ToUInt32(message, 33));
             Assert.Equal(BinaryProtocol.Revision, message[37]);
             Assert.Equal(85, BitConverter.ToUInt16(message, 38));
+        }
+
+        [Fact]
+        public void HapticsFollowTheState()
+        {
+            var haptics = new HapticDetector();
+            var truck = new TruckTelemetry { Available = true };
+            haptics.Update(truck);
+            haptics.Update(new TruckTelemetry { Available = true, EngineOn = true, FinedToggle = true });
+
+            byte[] message = BinaryProtocol.FormatServerState(truck, 0, 0, false, 1, haptics);
+
+            Assert.Equal(43 + 3 * HapticDetector.EventCount, message.Length);
+            Assert.Equal(0, message[40]);
+            Assert.Equal((byte)HapticSurface.Road, message[41]);
+            Assert.Equal(HapticDetector.EventCount, message[42]);
+            for (int i = 0; i < HapticDetector.EventCount; i++)
+            {
+                var kind = (HapticEvent)message[43 + i * 3];
+                Assert.Equal(i + 1, (int)kind);
+                bool happened = kind == HapticEvent.EngineStart || kind == HapticEvent.Fine;
+                Assert.Equal(happened ? 1 : 0, message[44 + i * 3]);
+                Assert.Equal(happened ? 255 : 0, message[45 + i * 3]);
+            }
         }
 
         [Fact]

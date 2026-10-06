@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Logging.Abstractions;
+using TruckRemoteServer.Haptics;
 using TruckRemoteServer.Input;
 using TruckRemoteServer.Telemetry;
 using Xunit;
@@ -98,7 +99,8 @@ namespace TruckRemoteServer.Tests
 
             IPEndPoint from = null;
             byte[] truck = phone.Receive(ref from);
-            Assert.Equal(40, truck.Length);
+            //The dashboard and the haptics
+            Assert.Equal(43 + 3 * HapticDetector.EventCount, truck.Length);
             Assert.Equal(1 | 2 << 8, BitConverter.ToUInt16(truck, 5) & (1 | 3 << 8));
 
             //First state is synchronized, the second one clicks the engine and holds the engine brake

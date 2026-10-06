@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using TruckRemoteServer.Haptics;
 using TruckRemoteServer.Telemetry;
 
 namespace TruckRemoteServer.Protocol
@@ -20,7 +21,7 @@ namespace TruckRemoteServer.Protocol
     //  a click counter (mod 256) or 1 while a hold action is held; only clicked and held actions are sent.
     //Paused controller: type 0x03. Goodbye: type 0x04.
     //
-    //Server state (40 bytes; older controllers read the first 22):
+    //Server state (43 bytes and 3 per haptic event; older controllers read the first 22 or 40):
     //  type 0x02 | sequence u32 | flags u16 | force feedback duration u16 (ms) |
     //  speed i16 (cm/s, negative when reversing) | speed limit u16 (cm/s, 0 - none) |
     //  cruise speed u16 (cm/s, 0 - off) | gear i8 (negative - reverse) | engine rpm u16 | max rpm u16 |
@@ -28,7 +29,11 @@ namespace TruckRemoteServer.Protocol
     //  flags2 u16 | retarder level u8 | retarder steps u8 (0 - no retarder) | wear u8 (percent, the most worn part) |
     //  rest stop i16 (game minutes until the driver must rest) | route distance u32 (m) | route time u32 (s) |
     //  server revision u8 (see Revision; a state of 22 bytes is revision 1, of 37 bytes - 2) |
-    //  fuel range u16 (km, revision 4+)
+    //  fuel range u16 (km, revision 4+) |
+    //  haptics (revision 6+): road vibration u8 (0..255) | surface u8 (see HapticSurface) |
+    //  event count u8 | (event id u8, counter u8, strength u8 0..255) * count - all events (see HapticEvent),
+    //  an event happened when its counter has changed; the force feedback duration of vJoy is still sent for older
+    //  controllers, newer ones play the haptics instead while the telemetry is available
     //  flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer attached, 5 wipers,
     //  6 beacon, 7 analog pedals available, 8-9 lights mode (see ServerMessage),
     //  10 telemetry available (the dashboard values are real)
@@ -47,11 +52,13 @@ namespace TruckRemoteServer.Protocol
         public const byte JobType = 0x05;
 
         //What the server sends: 3 - the job messages and this byte, 4 - the fuel range;
-        //5 - no new data, the actions 24-41 of the panel are known (see ControllerActions)
-        public const byte Revision = 5;
+        //5 - no new data, the actions 24-41 of the panel are known (see ControllerActions); 6 - haptics
+        public const byte Revision = 6;
 
         private const int ControllerHeaderSize = 16;
-        private const int ServerStateSize = 40;
+        private const int ServerStateBaseSize = 40;
+        private const int HapticsHeaderSize = 3;
+        private const int HapticEventSize = 3;
         private const int MaxJobTextBytes = 64;
         private const double CentimetersInMeter = 100;
         private const double LevelScale = ushort.MaxValue;
@@ -95,13 +102,15 @@ namespace TruckRemoteServer.Protocol
         }
 
         public static byte[] FormatServerState(TruckTelemetry truck, int lightsMode, int ffbDuration,
-            bool analogPedalsAvailable, long sequence)
+            bool analogPedalsAvailable, long sequence, HapticDetector haptics = null)
         {
             int flags = Flag(truck.EngineOn, 0) | Flag(truck.ParkingBrake, 1) | Flag(truck.LeftBlinker, 2)
                 | Flag(truck.RightBlinker, 3) | Flag(truck.TrailerAttached, 4) | Flag(truck.Wipers, 5)
                 | Flag(truck.Beacon, 6) | Flag(analogPedalsAvailable, 7) | ((lightsMode & 0x3) << 8)
                 | Flag(truck.Available, 10);
-            var message = new byte[ServerStateSize];
+            int events = haptics == null ? 0 : HapticDetector.EventCount;
+            int hapticsSize = haptics == null ? 0 : HapticsHeaderSize + events * HapticEventSize;
+            var message = new byte[ServerStateBaseSize + hapticsSize];
             message[0] = StateType;
             WriteUInt32(message, 1, (uint)sequence);
             WriteUInt16(message, 5, flags);
@@ -130,6 +139,21 @@ namespace TruckRemoteServer.Protocol
             WriteUInt32(message, 33, ToUInt32(truck.RouteTime));
             message[37] = Revision;
             WriteUInt16(message, 38, (int)Math.Min(ushort.MaxValue, ToUInt32(truck.FuelRange)));
+
+            if (haptics != null)
+            {
+                message[40] = ToByte(haptics.Road);
+                message[41] = (byte)haptics.Surface;
+                message[42] = (byte)events;
+                for (int i = 0; i < events; i++)
+                {
+                    var kind = (HapticEvent)(i + 1);
+                    int offset = ServerStateBaseSize + HapticsHeaderSize + i * HapticEventSize;
+                    message[offset] = (byte)kind;
+                    message[offset + 1] = haptics.Counter(kind);
+                    message[offset + 2] = ToByte(haptics.Strength(kind));
+                }
+            }
             return message;
         }
 
@@ -159,6 +183,9 @@ namespace TruckRemoteServer.Protocol
             Array.Copy(bytes, prefix, length);
             return prefix;
         }
+
+        //0..1 as 0..255
+        private static byte ToByte(float fraction) => (byte)Clamp((int)Math.Round(fraction * byte.MaxValue), 0, byte.MaxValue);
 
         private static int Centimeters(float metersPerSecond) => (int)Math.Round(metersPerSecond * CentimetersInMeter);
 

@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using TruckRemoteServer.Haptics;
 using TruckRemoteServer.Input;
 using TruckRemoteServer.Protocol;
 using TruckRemoteServer.Telemetry;
@@ -385,6 +386,8 @@ namespace TruckRemoteServer
         {
             long sequence = 0;
             long nextSendTime = 0;
+            //What the driver feels, by the telemetry; the controller starts from the counters of its first message
+            var haptics = new HapticDetector();
             Stopwatch clock = Stopwatch.StartNew();
 
             using (timerResolution.Acquire())
@@ -395,11 +398,12 @@ namespace TruckRemoteServer
                     {
                         TruckTelemetry truck = telemetrySource.Read();
                         input.UpdateTelemetry(truck);
+                        haptics.Update(truck);
 
                         //Paused controller doesn't read anything, so there's no need to flood it
                         if (!controllerPaused)
                         {
-                            socket.SendTo(MakeMessage(truck, ++sequence), endPoint);
+                            socket.SendTo(MakeMessage(truck, haptics, ++sequence), endPoint);
                             //The job changes rarely, it is sent once a second (a lost message is repeated soon)
                             if (binaryController && sequence % JobSendEvery == 1)
                             {
@@ -426,13 +430,14 @@ namespace TruckRemoteServer
             }
         }
 
-        private byte[] MakeMessage(TruckTelemetry truck, long sequence)
+        private byte[] MakeMessage(TruckTelemetry truck, HapticDetector haptics, long sequence)
         {
             int lightsMode = ServerMessage.LightsMode(truck.ParkingLights, truck.LowBeam, truck.HighBeam);
             int effect = Interlocked.Exchange(ref effectDuration, 0);
             if (binaryController)
             {
-                return BinaryProtocol.FormatServerState(truck, lightsMode, effect, joystick.HasPedalAxes, sequence);
+                return BinaryProtocol.FormatServerState(truck, lightsMode, effect, joystick.HasPedalAxes, sequence,
+                    haptics);
             }
             return Encoding.UTF8.GetBytes(ServerMessage.Format(truck.EngineOn, truck.ParkingBrake, truck.LeftBlinker,
                 truck.RightBlinker, lightsMode, effect, truck.TrailerAttached, truck.Wipers, truck.Beacon,

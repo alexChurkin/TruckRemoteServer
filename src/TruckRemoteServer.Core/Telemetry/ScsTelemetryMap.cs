@@ -10,8 +10,10 @@ namespace TruckRemoteServer.Telemetry
         public const string MapName = "Local\\SCSTelemetry";
         public const int Revision = 12;
 
-        //Zone 1
+        //Zone 1: sdkActive, paused, then timestamps (u64): time, simulatedTime (microseconds)
         private const int SdkActiveOffset = 0;
+        private const int PausedOffset = 4;
+        private const int SimulatedTimeOffset = 16;
         //Zone 2: scs_values.telemetry_plugin_revision and game (1 - ETS2, 2 - ATS)
         private const int PluginRevisionOffset = 40;
         private const int GameOffset = 52;
@@ -21,8 +23,13 @@ namespace TruckRemoteServer.Telemetry
         //config_ui.retarderStepCount, truck_ui.retarderBrake
         private const int RetarderStepCountOffset = 76;
         private const int RetarderLevelOffset = 108;
+        //config_ui.truckWheelCount, truck_ui.truck_wheelSubstance[16] (indexes of the substances of zone 13)
+        private const int WheelCountOffset = 80;
+        private const int WheelSubstanceOffset = 120;
+        private const int MaxWheels = 16;
         //Zone 3: common_i.restStop, truck_i.gearDashboard
         private const int RestStopOffset = 500;
+        private const int GearboxGearOffset = 504;
         private const int GearOffset = 508;
         //Zone 4: config_f and truck_f (floats)
         private const int FuelCapacityOffset = 704;
@@ -38,6 +45,7 @@ namespace TruckRemoteServer.Telemetry
         private const int RouteDistanceOffset = 1060;
         private const int RouteTimeOffset = 1064;
         private const int SpeedLimitOffset = 1068;
+        private const int SuspensionDeflectionOffset = 1072;
         //Zone 5 starts at 1500 with config_b (64 wheel flags, isCargoLoaded, specialJob), truck_b follows
         private const int TruckBoolsOffset = 1566;
         private const int ParkingBrakeOffset = TruckBoolsOffset + 0;
@@ -62,14 +70,30 @@ namespace TruckRemoteServer.Telemetry
         private const int DifferentialLockOffset = TruckBoolsOffset + 42;
         private const int LiftAxleOffset = TruckBoolsOffset + 43;
         private const int TrailerLiftAxleOffset = TruckBoolsOffset + 45;
+        //truck_b.truck_wheelOnGround[16] follows cruiseControl
+        private const int WheelOnGroundOffset = TruckBoolsOffset + 24;
+        //Zone 6 starts at 1640 with config_fv (57 floats); truck_fv: lv_acceleration (velocity), av_acceleration,
+        //then accelerationX/Y/Z - the linear acceleration
+        private const int AccelerationOffset = 1892;
         //Zone 9 starts at 2300 with config_s strings of 64 bytes (UTF-8, null-terminated):
         //truckBrandId, truckBrand, truckId, truckName, cargoId, cargo, cityDstId, cityDst
         private const int StringSize = 64;
         private const int CargoOffset = 2300 + 5 * StringSize;
         private const int DestinationCityOffset = 2300 + 7 * StringSize;
+        //Zone 12: special_b events (onJob, jobFinished, jobCancelled, jobDelivered, fined, tollgate, ferry, train);
+        //the plugin flips an event's value every time it happens
+        private const int JobDeliveredOffset = 4303;
+        private const int FinedOffset = 4304;
+        private const int TollgateOffset = 4305;
+        private const int FerryOffset = 4306;
+        private const int TrainOffset = 4307;
+        //Zone 13: names of the substances (surfaces), 25 strings
+        private const int SubstancesOffset = 4400;
+        private const int SubstanceCount = 25;
         //Zone 14 starts at 6000 with trailers; trailer[0]: con_b (64 wheel flags), com_b.wheelOnGround[16], com_b.attached
         private const int TrailerAttachedOffset = 6080;
-        //then buffer_b[3], com_ui.wheelSubstance[16], con_ui.wheelCount; com_f: cargoDamage, wearChassis, wearWheels, wearBody
+        //then buffer_b[3], com_ui.wheelSubstance[16], con_ui.wheelCount; com_f at 6152: cargoDamage, wearChassis,
+        //wearWheels, wearBody (the cargo isn't a part of the trailer's wear)
         private const int TrailerWearOffset = 6156;
         private const int TrailerWearCount = 3;
 
@@ -85,6 +109,26 @@ namespace TruckRemoteServer.Telemetry
             bool trailerAttached = data[TrailerAttachedOffset] != 0;
             float wear = MaxFloat(data, TruckWearOffset, TruckWearCount);
             if (trailerAttached) wear = Math.Max(wear, MaxFloat(data, TrailerWearOffset, TrailerWearCount));
+            float damage = SumFloats(data, TruckWearOffset, TruckWearCount);
+            if (trailerAttached) damage += SumFloats(data, TrailerWearOffset, TrailerWearCount);
+
+            int wheels = Math.Max(0, Math.Min(MaxWheels, ReadInt(data, WheelCountOffset)));
+            var deflection = new float[wheels];
+            var onGround = new bool[wheels];
+            var roughness = new float[wheels];
+            bool rumbleStrip = false;
+            for (int i = 0; i < wheels; i++)
+            {
+                deflection[i] = ReadFloat(data, SuspensionDeflectionOffset + i * 4);
+                onGround[i] = data[WheelOnGroundOffset + i] != 0;
+                int substance = ReadInt(data, WheelSubstanceOffset + i * 4);
+                string name = substance >= 0 && substance < SubstanceCount
+                    ? ReadString(data, SubstancesOffset + substance * StringSize)
+                    : "";
+                roughness[i] = SurfaceRoughness.Of(name);
+                rumbleStrip |= onGround[i] && SurfaceRoughness.IsRumbleStrip(name);
+            }
+
             return new TruckTelemetry
             {
                 Available = true,
@@ -126,7 +170,22 @@ namespace TruckRemoteServer.Telemetry
                 RouteTime = ReadFloat(data, RouteTimeOffset),
                 Cargo = ReadString(data, CargoOffset),
                 DestinationCity = ReadString(data, DestinationCityOffset),
-                DeliveryMinutesLeft = ReadInt(data, DeliveryTimeOffset) - ReadInt(data, GameTimeOffset)
+                DeliveryMinutesLeft = ReadInt(data, DeliveryTimeOffset) - ReadInt(data, GameTimeOffset),
+                Paused = data[PausedOffset] != 0,
+                SimulationTime = ReadLong(data, SimulatedTimeOffset),
+                AccelerationX = ReadFloat(data, AccelerationOffset),
+                AccelerationY = ReadFloat(data, AccelerationOffset + 4),
+                AccelerationZ = ReadFloat(data, AccelerationOffset + 8),
+                GearboxGear = ReadInt(data, GearboxGearOffset),
+                Damage = damage,
+                SuspensionDeflection = deflection,
+                WheelOnGround = onGround,
+                WheelSurfaceRoughness = roughness,
+                OnRumbleStrip = rumbleStrip,
+                FinedToggle = data[FinedOffset] != 0,
+                //Tollgates, ferries and trains are all payments
+                PaidToggle = (data[TollgateOffset] ^ data[FerryOffset] ^ data[TrainOffset]) != 0,
+                JobDeliveredToggle = data[JobDeliveredOffset] != 0
             };
         }
 
@@ -135,6 +194,18 @@ namespace TruckRemoteServer.Telemetry
             int length = 0;
             while (length < StringSize && data[offset + length] != 0) length++;
             return Encoding.UTF8.GetString(data, offset, length);
+        }
+
+        private static float SumFloats(byte[] data, int offset, int count)
+        {
+            float sum = 0;
+            for (int i = 0; i < count; i++) sum += ReadFloat(data, offset + i * 4);
+            return sum;
+        }
+
+        private static long ReadLong(byte[] data, int offset)
+        {
+            return (long)((uint)ReadInt(data, offset) | (ulong)(uint)ReadInt(data, offset + 4) << 32);
         }
 
         private static float MaxFloat(byte[] data, int offset, int count)

@@ -159,6 +159,76 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void HapticValuesAreReadFromPluginOffsets()
+        {
+            byte[] data = ActiveMap();
+            data[4] = 1; //paused
+            BitConverter.GetBytes(123_456_789_012L).CopyTo(data, 16); //simulatedTime
+            BitConverter.GetBytes(2).CopyTo(data, 80); //config_ui.truckWheelCount
+            BitConverter.GetBytes(1).CopyTo(data, 120); //truck_wheelSubstance[0]
+            BitConverter.GetBytes(2).CopyTo(data, 124); //truck_wheelSubstance[1]
+            BitConverter.GetBytes(3).CopyTo(data, 504); //truck_i.gear
+            BitConverter.GetBytes(0.01f).CopyTo(data, 1044); //wearCabin
+            BitConverter.GetBytes(0.02f).CopyTo(data, 1048); //wearChassis
+            BitConverter.GetBytes(0.11f).CopyTo(data, 1072); //truck_wheelSuspDeflection[0]
+            BitConverter.GetBytes(0.12f).CopyTo(data, 1076); //truck_wheelSuspDeflection[1]
+            data[1590] = 1; //truck_wheelOnGround[0]
+            BitConverter.GetBytes(1.5f).CopyTo(data, 1892); //accelerationX
+            BitConverter.GetBytes(-9.5f).CopyTo(data, 1896); //accelerationY
+            BitConverter.GetBytes(30f).CopyTo(data, 1900); //accelerationZ
+            data[4303] = 1; //jobDelivered
+            data[4304] = 1; //fined
+            data[4306] = 1; //ferry
+            Encoding.UTF8.GetBytes("road").CopyTo(data, 4400 + 64);
+            Encoding.UTF8.GetBytes("gravel").CopyTo(data, 4400 + 2 * 64);
+
+            TruckTelemetry truck = ScsTelemetryMap.Parse(data);
+
+            Assert.True(truck.Paused);
+            Assert.Equal(123_456_789_012L, truck.SimulationTime);
+            Assert.Equal(3, truck.GearboxGear);
+            Assert.Equal(0.03f, truck.Damage, 5);
+            Assert.Equal(new[] { 0.11f, 0.12f }, truck.SuspensionDeflection);
+            Assert.Equal(new[] { true, false }, truck.WheelOnGround);
+            Assert.Equal(new[] { 0f, SurfaceRoughness.Of("gravel") }, truck.WheelSurfaceRoughness);
+            Assert.False(truck.OnRumbleStrip);
+            Assert.Equal(1.5f, truck.AccelerationX);
+            Assert.Equal(-9.5f, truck.AccelerationY);
+            Assert.Equal(30f, truck.AccelerationZ);
+            Assert.True(truck.JobDeliveredToggle);
+            Assert.True(truck.FinedToggle);
+            Assert.True(truck.PaidToggle);
+        }
+
+        [Fact]
+        public void TrailerWearIsDamageOnlyWhileAttached()
+        {
+            byte[] data = ActiveMap();
+            BitConverter.GetBytes(0.1f).CopyTo(data, 1036); //wearEngine
+            BitConverter.GetBytes(0.2f).CopyTo(data, 6164); //trailer[0].com_f.wearBody
+            BitConverter.GetBytes(0.5f).CopyTo(data, 6152); //trailer[0].com_f.cargoDamage isn't a wear
+
+            float detached = ScsTelemetryMap.Parse(data).Damage;
+            data[6080] = 1;
+            float attached = ScsTelemetryMap.Parse(data).Damage;
+
+            Assert.Equal(0.1f, detached, 5);
+            Assert.Equal(0.3f, attached, 5);
+        }
+
+        [Fact]
+        public void RumbleStripIsFoundUnderWheelsOnTheGround()
+        {
+            byte[] data = ActiveMap();
+            BitConverter.GetBytes(1).CopyTo(data, 80);
+            Encoding.UTF8.GetBytes("rumble_stripes").CopyTo(data, 4400);
+
+            Assert.False(ScsTelemetryMap.Parse(data).OnRumbleStrip);
+            data[1590] = 1;
+            Assert.True(ScsTelemetryMap.Parse(data).OnRumbleStrip);
+        }
+
+        [Fact]
         public void BlinkerSwitchIsNotTheLamp()
         {
             byte[] data = ActiveMap();

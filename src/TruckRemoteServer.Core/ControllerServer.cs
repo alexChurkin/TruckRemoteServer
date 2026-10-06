@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -54,6 +56,13 @@ namespace TruckRemoteServer
         private const string HelloAnswer = "Hi!";
         private const string PausedMessage = "paused";
         private const string GoodbyeMessage = "goodbye";
+        //A viewer (the dashboard of a tablet or another phone) gets the truck state, it doesn't control anything.
+        //It repeats its hello (version 2: "TruckRemoteViewer2") as a keepalive and is forgotten after a silence
+        private const string ViewerHello = "TruckRemoteViewer";
+        public const int MaxViewers = 4;
+        public const int ViewerTimeout = 3000;
+        private const int ViewerSendInterval = 50;
+        private const int ViewerJobSendEvery = 1000 / ViewerSendInterval;
 
         private readonly ControllerInputMapper input;
         private readonly ITelemetrySource telemetrySource;
@@ -73,6 +82,9 @@ namespace TruckRemoteServer
         //Incremented on every controller connect/disconnect, stops outdated sender threads
         private int controllerSession;
         private int effectDuration;
+        //Viewers and when each was heard last; the viewer sender runs while there are viewers
+        private readonly Dictionary<IPEndPoint, long> viewers = new Dictionary<IPEndPoint, long>();
+        private bool viewerSenderRunning;
 
         public ControllerServer(ControllerInputMapper input, ITelemetrySource telemetrySource,
             IVirtualJoystick joystick, ITimerResolution timerResolution, ILogger<ControllerServer> logger)
@@ -89,6 +101,17 @@ namespace TruckRemoteServer
         public event Action<ServerStatus> StatusChanged;
 
         public int Port { get; private set; }
+
+        public int ViewerCount
+        {
+            get
+            {
+                lock (stateLock)
+                {
+                    return viewers.Count;
+                }
+            }
+        }
 
         public ServerStatus Status
         {
@@ -146,6 +169,7 @@ namespace TruckRemoteServer
             lock (stateLock)
             {
                 DisconnectController();
+                viewers.Clear();
                 Socket socket = serverSocket;
                 serverSocket = null;
                 try
@@ -230,6 +254,16 @@ namespace TruckRemoteServer
 
                 bool binary = BinaryProtocol.IsBinary(data, length);
                 string text = binary ? null : Encoding.UTF8.GetString(data, 0, length);
+                if (!binary && text.StartsWith(ViewerHello, StringComparison.Ordinal))
+                {
+                    OnViewerHello(socket, endPoint);
+                    return;
+                }
+                if (binary && data[0] == BinaryProtocol.GoodbyeType && viewers.Remove(endPoint))
+                {
+                    logger.LogInformation("Viewer {EndPoint} left", endPoint);
+                    return;
+                }
                 if (endPoint.Equals(controllerEndPoint))
                 {
                     lastControllerMessageTime = MonotonicClock.Millis;
@@ -250,6 +284,20 @@ namespace TruckRemoteServer
                     ConnectController(socket, endPoint, text);
                 }
             }
+        }
+
+        //Must be called under stateLock
+        private void OnViewerHello(Socket socket, IPEndPoint endPoint)
+        {
+            bool known = viewers.ContainsKey(endPoint);
+            if (!known && viewers.Count >= MaxViewers) return;
+            viewers[endPoint] = MonotonicClock.Millis;
+            Answer(socket, endPoint, HelloAnswer + BinaryProtocol.Version.ToString(CultureInfo.InvariantCulture));
+            if (known) return;
+            logger.LogInformation("Viewer connected from {EndPoint}", endPoint);
+            if (viewerSenderRunning) return;
+            viewerSenderRunning = true;
+            new Thread(() => SendToViewers(socket)) { IsBackground = true, Name = "UDP viewer sender" }.Start();
         }
 
         //Must be called under stateLock: the protocol version is chosen by the hello
@@ -427,6 +475,58 @@ namespace TruckRemoteServer
                     if (wait < -SendInterval) nextSendTime = clock.ElapsedMilliseconds;
                     if (wait > 0) Thread.Sleep((int)wait);
                 }
+            }
+        }
+
+        //The truck state for the viewers, 20 times per second, the job once a second; stops when the last viewer has
+        //gone silent or the server is stopped
+        private void SendToViewers(Socket socket)
+        {
+            long sequence = 0;
+            while (true)
+            {
+                List<IPEndPoint> targets;
+                lock (stateLock)
+                {
+                    long now = MonotonicClock.Millis;
+                    foreach (IPEndPoint silent in viewers.Where(v => now - v.Value > ViewerTimeout).Select(v => v.Key).ToList())
+                    {
+                        viewers.Remove(silent);
+                        logger.LogInformation("Viewer {EndPoint} timed out", silent);
+                    }
+                    if (serverSocket != socket || viewers.Count == 0)
+                    {
+                        viewerSenderRunning = false;
+                        return;
+                    }
+                    targets = viewers.Keys.ToList();
+                }
+
+                try
+                {
+                    TruckTelemetry truck = telemetrySource.Read();
+                    int lightsMode = ServerMessage.LightsMode(truck.ParkingLights, truck.LowBeam, truck.HighBeam);
+                    byte[] state = BinaryProtocol.FormatServerState(truck, lightsMode, 0, joystick.HasPedalAxes, ++sequence);
+                    byte[] job = sequence % ViewerJobSendEvery == 1 ? BinaryProtocol.FormatJob(truck) : null;
+                    foreach (IPEndPoint viewer in targets)
+                    {
+                        socket.SendTo(state, viewer);
+                        if (job != null) socket.SendTo(job, viewer);
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    lock (stateLock)
+                    {
+                        viewerSenderRunning = false;
+                    }
+                    return;
+                }
+                catch (Exception e)
+                {
+                    logger.LogInformation("Viewer send error: {Message}", e.Message);
+                }
+                Thread.Sleep(ViewerSendInterval);
             }
         }
 

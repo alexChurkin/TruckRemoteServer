@@ -40,6 +40,9 @@ namespace TruckRemoteServer.Protocol
     //  flags2: 0 air pressure warning, 1 air pressure emergency, 2 oil pressure warning, 3 water temperature warning,
     //  4 battery voltage warning, 5 AdBlue warning, 6 fuel warning, 7 differential lock, 8 lift axle, 9 engine brake
     //
+    //Viewers (a dashboard on a tablet or another phone) send the text hello "TruckRemoteViewer2" once a second, get
+    //"Hi!2", the server state (without haptics) 20 times per second and the job once a second; type 0x04 is their goodbye.
+    //
     //Job (sent once a second): type 0x05 | delivery minutes left i32 (game time, negative when late) |
     //  cargo length u8 | cargo UTF-8 | destination city length u8 | destination city UTF-8; no cargo - no job
     public static class BinaryProtocol

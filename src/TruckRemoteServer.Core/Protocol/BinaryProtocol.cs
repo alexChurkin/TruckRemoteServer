@@ -56,7 +56,7 @@ namespace TruckRemoteServer.Protocol
 
         //What the server sends: 3 - the job messages and this byte, 4 - the fuel range;
         //5 - no new data, the actions 24-41 of the panel are known (see ControllerActions); 6 - haptics;
-        //7 - no new data, the action 42 is known (the held light horn)
+        //7 - no new data, the actions 42 and 43 are known (the held light horn and "activate")
         public const byte Revision = 7;
 
         private const int ControllerHeaderSize = 16;

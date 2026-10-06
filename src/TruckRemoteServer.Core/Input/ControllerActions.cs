@@ -56,7 +56,9 @@ namespace TruckRemoteServer.Input
             { 31, GameKey.LookLeft },
             { 32, GameKey.LookRight },
             //The high beam is on while the button is held (revision 7; older controllers click it by 4)
-            { 42, GameKey.LightHorn }
+            { 42, GameKey.LightHorn },
+            //Held to refuel (revision 7; older controllers click it by 3)
+            { 43, GameKey.Activate }
         };
     }
 }

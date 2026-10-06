@@ -49,6 +49,8 @@ namespace TruckRemoteServer.Tests
             //The light horn is clicked by the controllers that don't know it can be held
             Assert.Equal(GameKey.LightHorn, ControllerActions.Clicks[4]);
             Assert.Equal(GameKey.LightHorn, ControllerActions.Holds[42]);
+            Assert.Equal(GameKey.Activate, ControllerActions.Clicks[3]);
+            Assert.Equal(GameKey.Activate, ControllerActions.Holds[43]);
         }
 
         [Fact]

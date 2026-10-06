@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="TruckRemoteServer.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Port" Type="System.Decimal" Scope="User">
+      <Value Profile="(Default)">18250</Value>
+    </Setting>
+    <Setting Name="ETSPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Program Files\Steam\SteamApps\Common\Euro Truck Simulator 2</Value>
+    </Setting>
+    <Setting Name="ATSPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Program Files\Steam\SteamApps\Common\American Truck Simulator</Value>
+    </Setting>
+    <Setting Name="FirewallPromptShown" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="JoystickPromptShown" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SetupWizardShown" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Language" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="MinimizeToTray" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

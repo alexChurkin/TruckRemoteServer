@@ -1,0 +1,15 @@
+<Project>
+
+  <!-- Code analysis of all projects: .NET analyzers (CA rules) with the recommended set and the code style
+       of .editorconfig (IDE rules) are checked by every build, warnings fail it -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Needed for the "unnecessary using" rule (IDE0005) in builds; missing XML comments aren't required -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573;CS1572</NoWarn>
+  </PropertyGroup>
+
+</Project>

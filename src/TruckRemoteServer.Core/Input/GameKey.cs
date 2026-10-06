@@ -1,0 +1,62 @@
+namespace TruckRemoteServer.Input
+{
+    //Game controls made by keys (default ETS2/ATS key bindings, see the keyboard implementation)
+    public enum GameKey
+    {
+        Gas,
+        Brake,
+        LeftBlinker,
+        RightBlinker,
+        HazardLights,
+        ParkingBrake,
+        //Parking lights and low beam
+        Lights,
+        HighBeam,
+        Horn,
+        AirHorn,
+        CruiseControl,
+        //Actions of the controller's panel (see ControllerActions)
+        Engine,
+        Trailer,
+        Activate,
+        Wipers,
+        DiffLock,
+        LiftAxle,
+        Beacon,
+        LightHorn,
+        RetarderUp,
+        RetarderDown,
+        EngineBrake,
+        CruiseUp,
+        CruiseDown,
+        CruiseResume,
+        QuickPark,
+        CameraInterior,
+        CameraChase,
+        CameraCycle,
+        Map,
+        DashboardDisplay,
+        Hud,
+        RadioNext,
+        QuickSave,
+        //Since revision 5
+        Mirrors,
+        CameraTop,
+        CameraRoof,
+        CameraLeanOut,
+        CameraBumper,
+        CameraWheel,
+        CameraDriveBy,
+        LookLeft,
+        LookRight,
+        GearUp,
+        GearDown,
+        RadioPrevious,
+        Radio,
+        AdvisorZoom,
+        AdvisorMode,
+        RoadAssistance,
+        Screenshot,
+        Menu
+    }
+}

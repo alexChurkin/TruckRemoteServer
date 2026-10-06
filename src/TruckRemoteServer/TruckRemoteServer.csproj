@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- .NET Framework 4.7.2 is built into Windows 10/11, so users don't need to install a runtime.
+       SDK-style project builds with "dotnet build" on any OS (reference assemblies come from NuGet). -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>TruckRemoteServer</RootNamespace>
+    <AssemblyName>TruckRemoteServer</AssemblyName>
+    <ApplicationIcon>app_icon.ico</ApplicationIcon>
+    <!-- Version attributes are kept in Properties\AssemblyInfo.cs -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- The program is a single exe: references are embedded by Costura (it loads them whatever version is asked),
+         so there's no exe.config with binding redirects; settings defaults come from Properties\Settings -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+    <!-- Version conflicts of the embedded references are resolved by Costura at runtime -->
+    <NoWarn>$(NoWarn);MSB3276</NoWarn>
+    <DebugType>embedded</DebugType>
+    <!-- 32-bit process, as the released 1.2: vJoyInterfaceWrap and vJoyInterface.dll in lib are x86 only -->
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>true</Prefer32Bit>
+    <!-- Output stays in bin\Release (without the framework subfolder), as before -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TruckRemoteServer.Core\TruckRemoteServer.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.12" />
+    <PackageReference Include="QRCoder" Version="1.8.0" />
+    <!-- Embeds the referenced assemblies into the exe, so the program is a single file -->
+    <PackageReference Include="Costura.Fody" Version="6.2.0" PrivateAssets="all" />
+    <PackageReference Include="Fody" Version="6.9.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Windows.Forms" />
+    <!-- dynamic is used for Windows Firewall COM API -->
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="vJoyInterfaceWrap">
+      <HintPath>lib\vJoyInterfaceWrap.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="UI\MainForm.cs" SubType="Form" />
+    <Compile Update="Properties\Resources.Designer.cs" AutoGen="True" DesignTime="True" DependentUpon="Resources.resx" />
+    <EmbeddedResource Update="Properties\Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
+    <Compile Update="Properties\Settings.Designer.cs" AutoGen="True" DesignTimeSharedInput="True" DependentUpon="Settings.settings" />
+    <None Update="Properties\Settings.settings" Generator="SettingsSingleFileGenerator" LastGenOutput="Settings.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Translations are kept in the exe instead of satellite assemblies in language folders (see Localization\Texts) -->
+    <EmbeddedResource Update="Localization\Strings.*.resx" WithCulture="false" />
+    <!-- Telemetry plugin is installed into the games from the exe -->
+    <EmbeddedResource Include="Ets2Plugins\win_x64\plugins\scs-telemetry.dll" LogicalName="scs-telemetry.dll" />
+    <!-- vJoy 2.1.9.1 setup (official, from SourceForge vjoystick), installed by the server when vJoy is missing -->
+    <EmbeddedResource Include="lib\vJoySetup.exe" LogicalName="vJoySetup.exe" />
+    <!-- Native vJoy library is extracted and loaded by Costura before vJoyInterfaceWrap uses it -->
+    <EmbeddedResource Include="lib\vJoyInterface.dll" Link="costura-win-x86\vJoyInterface.dll" />
+    <None Include="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,35 @@
+Truck Remote Server includes the following third-party software. Each is licensed under the MIT License (text below).
+
+- scs-sdk-plugin 1.12.1 (telemetry plugin installed into ETS2/ATS), https://github.com/RenCloud/scs-sdk-plugin
+  Copyright (c) 2014 Hans; Copyright (c) RenCloud and contributors
+- vJoy 2.1.9.1: the driver setup (installed by the server when vJoy is missing) and vJoyInterfaceWrap,
+  https://github.com/shauleiz/vJoy
+  Copyright (c) 2017 Shaul Eizikovich
+- Microsoft.Extensions.DependencyInjection, Microsoft.Extensions.Logging and their dependencies
+  (System.Memory, System.Buffers and others), https://github.com/dotnet/runtime
+  Copyright (c) .NET Foundation and Contributors
+- QRCoder (the QR code of the server address), https://github.com/Shane32/QRCoder
+  Copyright (c) 2013-2025 Raffael Herrmann
+- Costura (assembly loader embedded into the exe), https://github.com/Fody/Costura
+  Copyright (c) 2012 Simon Cropp and contributors
+
+
+The MIT License (MIT)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

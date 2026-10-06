@@ -1,0 +1,67 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          # The same SDK (and analyzer rules) as global.json
+          global-json-file: global.json
+
+      # Code style and formatting of .editorconfig (whitespace, style and analyzer rules)
+      - name: Format
+        run: dotnet format TruckRemoteServer.sln --verify-no-changes --severity warn
+
+      # .NET analyzers and code style are checked by the build, warnings are errors (Directory.Build.props)
+      - name: Build
+        run: dotnet build TruckRemoteServer.sln -c Release
+
+      - name: Test
+        run: dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj -c Release --no-build
+
+      # The program is a single exe (references, translations, vJoy library and setup, the telemetry plugin are embedded)
+      - uses: actions/upload-artifact@v6
+        with:
+          name: TruckRemoteServer
+          path: |
+            src/TruckRemoteServer/bin/Release/TruckRemoteServer.exe
+            src/TruckRemoteServer/bin/Release/THIRD-PARTY-NOTICES.txt
+
+      # Smoke test of the window on a clean Windows and its look for reviews
+      - name: Screenshots
+        run: ./.github/scripts/screenshots.ps1 -Exe "${{ github.workspace }}\src\TruckRemoteServer\bin\Release\TruckRemoteServer.exe" -Out screenshots
+        shell: pwsh
+
+      # The runner has administrator rights: the silent vJoy setup is checked on a real Windows
+      # (driver installation may be impossible on a CI image, so this step doesn't fail the build)
+      - name: vJoy setup
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $exe = "${{ github.workspace }}\src\TruckRemoteServer\bin\Release\TruckRemoteServer.exe"
+          $process = Start-Process -FilePath $exe -ArgumentList '--setup-vjoy' -Wait -PassThru
+          Write-Host "Exit code: $($process.ExitCode)"
+          $folder = Join-Path $env:TEMP 'TruckRemoteServer'
+          Get-Content (Join-Path $folder 'vjoy-setup.log') -ErrorAction SilentlyContinue
+          Get-Content (Join-Path $folder 'vjoy-install.log') -Tail 40 -ErrorAction SilentlyContinue
+          Get-ChildItem 'C:\Program Files\vJoy' -Recurse -Filter 'vJoyConfig.exe' -ErrorAction SilentlyContinue | ForEach-Object {
+            & $_.FullName -t 1
+          }
+          exit $process.ExitCode
+
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: screenshots
+          path: screenshots/
+          if-no-files-found: ignore

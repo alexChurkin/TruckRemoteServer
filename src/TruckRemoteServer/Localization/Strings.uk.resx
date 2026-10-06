@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ServerAddress" xml:space="preserve"><value>Адреса сервера</value></data>
+  <data name="AddressHint" xml:space="preserve"><value>Телефон знаходить сервер сам. Якщо не виходить, відскануйте цей QR-код у налаштуваннях застосунку або введіть там адресу.</value></data>
+  <data name="NoAddress" xml:space="preserve"><value>Немає підключення до мережі</value></data>
+  <data name="PortAndMore" xml:space="preserve"><value>Порт {0} · ще адрес: {1}</value></data>
+  <data name="PortOnly" xml:space="preserve"><value>Порт {0}</value></data>
+  <data name="OtherAddresses" xml:space="preserve"><value>Усі адреси цього ПК (спробуйте наступну, якщо телефон не підключається):</value></data>
+  <data name="Copy" xml:space="preserve"><value>Копіювати</value></data>
+  <data name="Copied" xml:space="preserve"><value>Скопійовано</value></data>
+  <data name="StateStopped" xml:space="preserve"><value>Сервер зупинено</value></data>
+  <data name="StatePortBusy" xml:space="preserve"><value>Порт {0} зайнятий іншою програмою</value></data>
+  <data name="StateWaiting" xml:space="preserve"><value>Очікування телефона</value></data>
+  <data name="StateConnected" xml:space="preserve"><value>Телефон підключено</value></data>
+  <data name="StateNoJoystick" xml:space="preserve"><value>Телефон підключено, vJoy недоступний</value></data>
+  <data name="StatePaused" xml:space="preserve"><value>Телефон на паузі</value></data>
+  <data name="Start" xml:space="preserve"><value>Запустити сервер</value></data>
+  <data name="Stop" xml:space="preserve"><value>Зупинити сервер</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Налаштування</value></data>
+  <data name="PortRange" xml:space="preserve"><value>Від 10000 до 65535</value></data>
+  <data name="Language" xml:space="preserve"><value>Мова</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>Як у системі</value></data>
+  <data name="FirewallWarning" xml:space="preserve"><value>Брандмауер Windows може блокувати телефон.</value></data>
+  <data name="FirewallAllow" xml:space="preserve"><value>Дозволити</value></data>
+  <data name="FirewallQuestion" xml:space="preserve"><value>Брандмауер Windows може блокувати підключення телефона.
+
+Дозволити Truck Remote Server у брандмауері? Знадобляться права адміністратора.</value></data>
+  <data name="FirewallNotApplied" xml:space="preserve"><value>Правило брандмауера не застосувалося. Дозвольте Truck Remote Server (UDP-порт {0}) у брандмауері вручну.</value></data>
+  <data name="PluginNotInstalled" xml:space="preserve"><value>Плагін телеметрії не встановлено: {0}
+
+Керування працює і без нього, лише стан вантажівки не показується на телефоні.</value></data>
+  <data name="GameNotFound" xml:space="preserve"><value>{0} не знайдено. Якщо гру не встановлено, натисніть «Скасувати», щоб пропустити її, інакше натисніть «OK» і виберіть її папку.
+
+Наприклад: {1}</value></data>
+  <data name="SelectGameFolder" xml:space="preserve"><value>Виберіть папку {0}</value></data>
+  <data name="Version" xml:space="preserve"><value>Версія {0}</value></data>
+  <data name="JoystickWarning" xml:space="preserve"><value>vJoy не встановлено або не налаштовано: телефон не може кермувати.</value></data>
+  <data name="JoystickInstall" xml:space="preserve"><value>Встановити</value></data>
+  <data name="JoystickQuestion" xml:space="preserve"><value>vJoy (драйвер віртуального джойстика) не встановлено або не налаштовано, без нього телефон не може кермувати.
+
+Встановити й налаштувати його зараз? Потрібні права адміністратора, Windows також може попросити довіряти драйверу vJoy.</value></data>
+  <data name="JoystickSetupFailed" xml:space="preserve"><value>vJoy не налаштувався. Встановіть vJoySetup.exe з релізу вручну й увімкніть вісь X у пристрою 1 у Configure vJoy.</value></data>
+  <data name="PortItem" xml:space="preserve"><value>Порт: {0}…</value></data>
+  <data name="PortTitle" xml:space="preserve"><value>Порт сервера</value></data>
+  <data name="PortHint" xml:space="preserve"><value>Такий самий порт треба вказати в застосунку. Змінюйте його, лише якщо цей зайнятий іншою програмою.</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Скасувати</value></data>
+  <data name="MinimizeToTray" xml:space="preserve"><value>Згортати в область сповіщень</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Відкрити</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Вихід</value></data>
+  <data name="TrayHint" xml:space="preserve"><value>Сервер продовжує працювати тут. Двічі клацніть по значку, щоб відкрити його.</value></data>
+  <data name="QrCode" xml:space="preserve"><value>QR-код адреси сервера</value></data>
+  <data name="WizardMenu" xml:space="preserve"><value>Майстер налаштування…</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>Налаштування сервера</value></data>
+  <data name="WizardSubtitle" xml:space="preserve"><value>Усе, що потрібно телефону, щоб вести вантажівку. Виправте позначене, потім під’єднайте телефон і перевірте керування.</value></data>
+  <data name="WizardPlugin" xml:space="preserve"><value>Плагін телеметрії</value></data>
+  <data name="WizardJoystick" xml:space="preserve"><value>vJoy: кермо і педалі</value></data>
+  <data name="WizardFirewall" xml:space="preserve"><value>Брандмауер Windows</value></data>
+  <data name="WizardControls" xml:space="preserve"><value>Керування в грі</value></data>
+  <data name="WizardPhone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="WizardChecking" xml:space="preserve"><value>Перевірка…</value></data>
+  <data name="WizardWorking" xml:space="preserve"><value>Встановлення…</value></data>
+  <data name="WizardWorkingAdmin" xml:space="preserve"><value>Виконується… Дозвольте зміни у вікні Windows.</value></data>
+  <data name="WizardPluginDone" xml:space="preserve"><value>Встановлено: телефон показує прилади й вібрує разом із вантажівкою.</value></data>
+  <data name="WizardPluginMissing" xml:space="preserve"><value>Не встановлено: телефон керує вантажівкою, але без приладів і вібрації дороги.</value></data>
+  <data name="WizardPluginFailed" xml:space="preserve"><value>Не встановлено: {0}</value></data>
+  <data name="WizardJoystickDone" xml:space="preserve"><value>Готово: телефон кермує через пристрій vJoy 1.</value></data>
+  <data name="WizardJoystickMissing" xml:space="preserve"><value>Не налаштовано: без нього телефон не може кермувати й плавно натискати педалі.</value></data>
+  <data name="WizardJoystickFailed" xml:space="preserve"><value>Налаштування не допомогло. Перезавантажте комп’ютер і спробуйте знову або перевстановіть vJoy.</value></data>
+  <data name="WizardFirewallDone" xml:space="preserve"><value>Пакети телефона пропускаються.</value></data>
+  <data name="WizardFirewallBlocked" xml:space="preserve"><value>Блокує телефон: дозвольте сервер у брандмауері.</value></data>
+  <data name="WizardFirewallFailed" xml:space="preserve"><value>Правило не допомогло: сервер може блокувати інший брандмауер або антивірус.</value></data>
+  <data name="WizardControlsDone" xml:space="preserve"><value>Робить сервер: профілі ETS2 і ATS отримують vJoy і клавіші круїз-контролю. Запущена гра отримає їх після закриття.</value></data>
+  <data name="WizardPhoneWaiting" xml:space="preserve"><value>Відкрийте Truck Remote на телефоні: він сам знайде сервер, якщо телефон у тій самій мережі Wi-Fi, що й комп’ютер. Або відскануйте цей код: Налаштування → Підключення → Сканувати QR-код сервера.</value></data>
+  <data name="WizardPhoneDone" xml:space="preserve"><value>Під’єднано. Нахиліть телефон і натисніть педалі: смужки рухаються так, як це отримає гра.</value></data>
+  <data name="WizardPhoneNoServer" xml:space="preserve"><value>Сервер не запущено: його порт зайнятий. Виберіть інший порт у налаштуваннях.</value></data>
+  <data name="WizardSteering" xml:space="preserve"><value>Кермо</value></data>
+  <data name="WizardGas" xml:space="preserve"><value>Газ</value></data>
+  <data name="WizardBrake" xml:space="preserve"><value>Гальмо</value></data>
+  <data name="WizardRetry" xml:space="preserve"><value>Ще раз</value></data>
+  <data name="WizardDone" xml:space="preserve"><value>Готово</value></data>
+  <data name="CheckForUpdates" xml:space="preserve"><value>Перевірити оновлення</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Доступний Truck Remote Server {0}</value></data>
+  <data name="UpdateInstall" xml:space="preserve"><value>Оновити</value></data>
+  <data name="UpdateInstalling" xml:space="preserve"><value>Оновлення…</value></data>
+  <data name="UpToDate" xml:space="preserve"><value>У вас остання версія сервера.</value></data>
+</root>

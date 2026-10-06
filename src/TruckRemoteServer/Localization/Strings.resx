@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ServerAddress" xml:space="preserve"><value>Server address</value></data>
+  <data name="AddressHint" xml:space="preserve"><value>The phone finds the server by itself. If it doesn't, scan this QR code in the app settings or enter the address there.</value></data>
+  <data name="NoAddress" xml:space="preserve"><value>No network connection</value></data>
+  <data name="PortAndMore" xml:space="preserve"><value>Port {0} · other addresses: {1}</value></data>
+  <data name="PortOnly" xml:space="preserve"><value>Port {0}</value></data>
+  <data name="OtherAddresses" xml:space="preserve"><value>All addresses of this PC (try the next one if the phone can't connect):</value></data>
+  <data name="Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Copied" xml:space="preserve"><value>Copied</value></data>
+  <data name="StateStopped" xml:space="preserve"><value>Server stopped</value></data>
+  <data name="StatePortBusy" xml:space="preserve"><value>Port {0} is used by another program</value></data>
+  <data name="StateWaiting" xml:space="preserve"><value>Waiting for the phone</value></data>
+  <data name="StateConnected" xml:space="preserve"><value>Phone connected</value></data>
+  <data name="StateNoJoystick" xml:space="preserve"><value>Phone connected, vJoy isn't available</value></data>
+  <data name="StatePaused" xml:space="preserve"><value>Phone paused</value></data>
+  <data name="Start" xml:space="preserve"><value>Start server</value></data>
+  <data name="Stop" xml:space="preserve"><value>Stop server</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
+  <data name="PortRange" xml:space="preserve"><value>From 10000 to 65535</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="LanguageSystem" xml:space="preserve"><value>System default</value></data>
+  <data name="FirewallWarning" xml:space="preserve"><value>Windows Firewall may block the phone.</value></data>
+  <data name="FirewallAllow" xml:space="preserve"><value>Allow</value></data>
+  <data name="FirewallQuestion" xml:space="preserve"><value>Windows Firewall may block connections from the phone.
+
+Allow Truck Remote Server in the firewall? Administrator rights are required.</value></data>
+  <data name="FirewallNotApplied" xml:space="preserve"><value>The firewall rule wasn't applied. Allow Truck Remote Server (UDP port {0}) in your firewall manually.</value></data>
+  <data name="PluginNotInstalled" xml:space="preserve"><value>The telemetry plugin wasn't installed: {0}
+
+The controls work without it, only the truck state isn't shown on the phone.</value></data>
+  <data name="GameNotFound" xml:space="preserve"><value>{0} wasn't found. If it isn't installed, press Cancel to skip it, otherwise press OK and select its folder.
+
+For example: {1}</value></data>
+  <data name="SelectGameFolder" xml:space="preserve"><value>Select the {0} folder</value></data>
+  <data name="Version" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="JoystickWarning" xml:space="preserve"><value>vJoy isn't installed or set up: the phone can't steer.</value></data>
+  <data name="JoystickInstall" xml:space="preserve"><value>Install</value></data>
+  <data name="JoystickQuestion" xml:space="preserve"><value>vJoy (a virtual joystick driver) isn't installed or set up, without it the phone can't steer.
+
+Install and set it up now? Administrator rights are needed, Windows may also ask to trust the vJoy driver.</value></data>
+  <data name="JoystickSetupFailed" xml:space="preserve"><value>vJoy wasn't set up. Install vJoySetup.exe from the release manually and enable the X axis of device 1 in Configure vJoy.</value></data>
+  <data name="PortItem" xml:space="preserve"><value>Port: {0}…</value></data>
+  <data name="PortTitle" xml:space="preserve"><value>Server port</value></data>
+  <data name="PortHint" xml:space="preserve"><value>The same port must be set in the app. Change it only if this one is used by another program.</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="MinimizeToTray" xml:space="preserve"><value>Minimize to the notification area</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Exit</value></data>
+  <data name="TrayHint" xml:space="preserve"><value>The server keeps working here. Double-click the icon to open it.</value></data>
+  <data name="QrCode" xml:space="preserve"><value>QR code of the server address</value></data>
+  <data name="WizardMenu" xml:space="preserve"><value>Setup wizard…</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>Setting up the server</value></data>
+  <data name="WizardSubtitle" xml:space="preserve"><value>Everything the phone needs to drive the truck. Fix what is marked, then connect the phone and try the controls.</value></data>
+  <data name="WizardPlugin" xml:space="preserve"><value>Telemetry plugin</value></data>
+  <data name="WizardJoystick" xml:space="preserve"><value>vJoy: steering and pedals</value></data>
+  <data name="WizardFirewall" xml:space="preserve"><value>Windows Firewall</value></data>
+  <data name="WizardControls" xml:space="preserve"><value>Game controls</value></data>
+  <data name="WizardPhone" xml:space="preserve"><value>Phone</value></data>
+  <data name="WizardChecking" xml:space="preserve"><value>Checking…</value></data>
+  <data name="WizardWorking" xml:space="preserve"><value>Installing…</value></data>
+  <data name="WizardWorkingAdmin" xml:space="preserve"><value>Working… Allow the changes in the window of Windows.</value></data>
+  <data name="WizardPluginDone" xml:space="preserve"><value>Installed: the phone shows the dashboard and vibrates with the truck.</value></data>
+  <data name="WizardPluginMissing" xml:space="preserve"><value>Not installed: the phone drives the truck, but shows no dashboard and has no vibration of the road.</value></data>
+  <data name="WizardPluginFailed" xml:space="preserve"><value>Not installed: {0}</value></data>
+  <data name="WizardJoystickDone" xml:space="preserve"><value>Ready: the phone steers through vJoy device 1.</value></data>
+  <data name="WizardJoystickMissing" xml:space="preserve"><value>Not set up: without it the phone can't steer or press the pedals smoothly.</value></data>
+  <data name="WizardJoystickFailed" xml:space="preserve"><value>The setup didn't help. Restart the PC and try again, or reinstall vJoy.</value></data>
+  <data name="WizardFirewallDone" xml:space="preserve"><value>The packets of the phone are let in.</value></data>
+  <data name="WizardFirewallBlocked" xml:space="preserve"><value>Blocks the phone: allow the server in the firewall.</value></data>
+  <data name="WizardFirewallFailed" xml:space="preserve"><value>The rule didn't help: another firewall or an antivirus may block the server.</value></data>
+  <data name="WizardControlsDone" xml:space="preserve"><value>Done by the server: profiles of ETS2 and ATS get vJoy and the keys of the cruise control. A running game gets them after it is closed.</value></data>
+  <data name="WizardPhoneWaiting" xml:space="preserve"><value>Open Truck Remote on the phone: it finds the server by itself when the phone is on the same Wi-Fi as the PC. Or scan this code: Settings → Connection → Scan the QR code of the server.</value></data>
+  <data name="WizardPhoneDone" xml:space="preserve"><value>Connected. Tilt the phone and press the pedals: the bars move as the game gets them.</value></data>
+  <data name="WizardPhoneNoServer" xml:space="preserve"><value>The server isn't running: its port is busy. Choose another port in Settings.</value></data>
+  <data name="WizardSteering" xml:space="preserve"><value>Steering</value></data>
+  <data name="WizardGas" xml:space="preserve"><value>Gas</value></data>
+  <data name="WizardBrake" xml:space="preserve"><value>Brake</value></data>
+  <data name="WizardRetry" xml:space="preserve"><value>Try again</value></data>
+  <data name="WizardDone" xml:space="preserve"><value>Done</value></data>
+  <data name="CheckForUpdates" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Truck Remote Server {0} is available</value></data>
+  <data name="UpdateInstall" xml:space="preserve"><value>Update</value></data>
+  <data name="UpdateInstalling" xml:space="preserve"><value>Updating…</value></data>
+  <data name="UpToDate" xml:space="preserve"><value>You have the latest version of the server.</value></data>
+</root>

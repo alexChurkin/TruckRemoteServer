@@ -1,25 +1,43 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29020.237
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TruckRemoteServer", "TruckRemoteServer.csproj", "{B0B6E04E-8685-4113-9634-07703B248130}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BF7887B9-A52A-4675-B15F-4FC3C8B1B8D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TruckRemoteServer", "src\TruckRemoteServer\TruckRemoteServer.csproj", "{A191B7CD-53E8-4CDC-BCDF-0A671C006037}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TruckRemoteServer.Core", "src\TruckRemoteServer.Core\TruckRemoteServer.Core.csproj", "{CCEB38BB-EBC9-4145-BE72-3025D6E0AFFC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{23C2FA83-7008-4FF5-A0A1-4C2FC34BFA23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TruckRemoteServer.Tests", "tests\TruckRemoteServer.Tests\TruckRemoteServer.Tests.csproj", "{206DD770-E247-4D0A-8CCA-58E34C893CDB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B0B6E04E-8685-4113-9634-07703B248130}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B0B6E04E-8685-4113-9634-07703B248130}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B0B6E04E-8685-4113-9634-07703B248130}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B0B6E04E-8685-4113-9634-07703B248130}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {17D28B79-373E-4628-BC2C-32CD6D26E849}
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A191B7CD-53E8-4CDC-BCDF-0A671C006037}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A191B7CD-53E8-4CDC-BCDF-0A671C006037}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A191B7CD-53E8-4CDC-BCDF-0A671C006037}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A191B7CD-53E8-4CDC-BCDF-0A671C006037}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCEB38BB-EBC9-4145-BE72-3025D6E0AFFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCEB38BB-EBC9-4145-BE72-3025D6E0AFFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCEB38BB-EBC9-4145-BE72-3025D6E0AFFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCEB38BB-EBC9-4145-BE72-3025D6E0AFFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{206DD770-E247-4D0A-8CCA-58E34C893CDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{206DD770-E247-4D0A-8CCA-58E34C893CDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{206DD770-E247-4D0A-8CCA-58E34C893CDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{206DD770-E247-4D0A-8CCA-58E34C893CDB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A191B7CD-53E8-4CDC-BCDF-0A671C006037} = {BF7887B9-A52A-4675-B15F-4FC3C8B1B8D7}
+		{CCEB38BB-EBC9-4145-BE72-3025D6E0AFFC} = {BF7887B9-A52A-4675-B15F-4FC3C8B1B8D7}
+		{206DD770-E247-4D0A-8CCA-58E34C893CDB} = {23C2FA83-7008-4FF5-A0A1-4C2FC34BFA23}
 	EndGlobalSection
 EndGlobal

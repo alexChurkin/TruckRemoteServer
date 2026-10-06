@@ -74,7 +74,7 @@ parking brake **Space**, lights **L**, high beam **K**, horn **H**, air horn **N
 
 The quick actions panel in the app (button at the bottom center, swipe it for more pages) uses:
 
-- truck: engine **E**, trailer **T**, activate **Enter**, flash lights **J** (held while the button is pressed), wipers **P**, beacon **O**,
+- truck: engine **E**, trailer **T**, activate **Enter** and flash lights **J** (both held while the button is pressed), wipers **P**, beacon **O**,
   differential lock **V**, lift axle **U**;
 - driving: retarder **;** / **'**, engine brake **B** (held while the button is pressed), quick park **Q**,
   cruise control speed **.** / **,**, resume cruise control **/**;

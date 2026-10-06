@@ -171,10 +171,15 @@ namespace TruckRemoteServer.Tests
         [Fact]
         public void TheWizardIsShownOnceByItself()
         {
+            //Saved already while the window is open: the server may be closed then
+            bool savedWhileShown = false;
+            view.WhileShown = () => savedWhileShown = settings.SetupWizardShown;
+
             wizard.Run();
 
             Assert.Equal(1, view.Shows);
             Assert.True(settings.SetupWizardShown);
+            Assert.True(savedWhileShown);
         }
 
         private static void WaitFor(Func<bool> condition)

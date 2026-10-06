@@ -99,13 +99,14 @@ namespace TruckRemoteServer.Presentation
         //The state of a step as it was shown last
         public StepState State(SetupStep step) => states.TryGetValue(step, out StepState state) ? state : StepState.Checking;
 
-        //Shows the window until it's closed; the wizard isn't shown by itself again
+        //Shows the window until it's closed. The wizard isn't shown by itself again, and that is saved before
+        //the window is shown: the server may be closed (from the tray, by the system) while it is open
         public void Run()
         {
-            Check();
-            view.ShowModal();
             settings.SetupWizardShown = true;
             settings.Save();
+            Check();
+            view.ShowModal();
         }
 
         //Checks every step (the slow ones in background)

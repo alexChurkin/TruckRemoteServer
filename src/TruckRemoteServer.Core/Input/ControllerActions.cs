@@ -54,7 +54,9 @@ namespace TruckRemoteServer.Input
         {
             { 11, GameKey.EngineBrake },
             { 31, GameKey.LookLeft },
-            { 32, GameKey.LookRight }
+            { 32, GameKey.LookRight },
+            //The high beam is on while the button is held (revision 7; older controllers click it by 4)
+            { 42, GameKey.LightHorn }
         };
     }
 }

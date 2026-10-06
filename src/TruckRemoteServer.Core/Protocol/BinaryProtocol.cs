@@ -55,8 +55,9 @@ namespace TruckRemoteServer.Protocol
         public const byte JobType = 0x05;
 
         //What the server sends: 3 - the job messages and this byte, 4 - the fuel range;
-        //5 - no new data, the actions 24-41 of the panel are known (see ControllerActions); 6 - haptics
-        public const byte Revision = 6;
+        //5 - no new data, the actions 24-41 of the panel are known (see ControllerActions); 6 - haptics;
+        //7 - no new data, the action 42 is known (the held light horn)
+        public const byte Revision = 7;
 
         private const int ControllerHeaderSize = 16;
         private const int ServerStateBaseSize = 40;

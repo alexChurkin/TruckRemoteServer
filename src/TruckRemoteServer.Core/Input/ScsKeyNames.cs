@@ -3,8 +3,9 @@ using System.Collections.Generic;
 
 namespace TruckRemoteServer.Input
 {
-    //Keys as controls.sii of the games names them ("keyboard.e", "keyboard.lshift", "keyboard.period"): the names
-    //follow the DirectInput key codes, written in lower case; the variants of a name the games have used are all known
+    //Keys as controls.sii of the games names them ("keyboard.e", "keyboard.key1", "keyboard.uarrow"). The names are
+    //the ones of the key table of ETS2 and ATS 1.61 (the digits are key1..key0, the arrows are uarrow, darrow, larrow
+    //and rarrow, and so on); the DirectInput style variants are known too
     public static class ScsKeyNames
     {
         private static readonly Dictionary<string, KeyStroke> Keys = Build();
@@ -57,7 +58,8 @@ namespace TruckRemoteServer.Input
 
             //The digits row: 1..9 are 0x02..0x0A, 0 is 0x0B
             for (int digit = 1; digit <= 9; digit++) Add((short)(digit + 1), false, digit.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            Add(0x0B, false, "0");
+            Add(0x0B, false, "0", "key0");
+            for (int digit = 1; digit <= 9; digit++) Add((short)(digit + 1), false, "key" + digit.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
             //F1..F10 are 0x3B..0x44, F11 and F12 are apart
             for (int f = 1; f <= 10; f++) Add((short)(0x3A + f), false, "f" + f.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -77,21 +79,21 @@ namespace TruckRemoteServer.Input
             Add(0x28, false, "apostrophe");
             Add(0x29, false, "grave");
             Add(0x2A, false, "lshift");
-            Add(0x2B, false, "backslash");
+            Add(0x2B, false, "bslash", "backslash");
             Add(0x33, false, "comma");
             Add(0x34, false, "period");
             Add(0x35, false, "slash");
             Add(0x36, false, "rshift");
             Add(0x38, false, "lalt", "lmenu");
             Add(0x39, false, "space");
-            Add(0x3A, false, "capslock", "capital");
-            Add(0x46, false, "scroll", "scrolllock");
+            Add(0x3A, false, "caps", "capslock", "capital");
+            Add(0x46, false, "scrollock", "scroll", "scrolllock");
 
             //The numeric keypad
             Add(0x37, false, "multiply", "nummultiply", "numpadstar");
             Add(0x4A, false, "subtract", "numminus", "numpadminus");
             Add(0x4E, false, "add", "numplus", "numpadplus");
-            Add(0x53, false, "decimal", "numdecimal", "numpadperiod");
+            Add(0x53, false, "numperiod", "decimal", "numdecimal", "numpadperiod");
             Add(0x52, false, "num0", "numpad0");
             Add(0x4F, false, "num1", "numpad1");
             Add(0x50, false, "num2", "numpad2");
@@ -105,20 +107,20 @@ namespace TruckRemoteServer.Input
             Add(0x45, false, "numlock");
 
             //The extended keys: without the flag their codes are keys of the numeric keypad
-            Add(0x35, true, "divide", "numdivide", "numpadslash");
+            Add(0x35, true, "numslash", "divide", "numdivide", "numpadslash");
             Add(0x1C, true, "numenter", "numpadenter");
             Add(0x1D, true, "rctrl", "rcontrol");
             Add(0x38, true, "ralt", "rmenu");
-            Add(0x48, true, "up");
-            Add(0x50, true, "down");
-            Add(0x4B, true, "left");
-            Add(0x4D, true, "right");
+            Add(0x48, true, "uarrow", "up");
+            Add(0x50, true, "darrow", "down");
+            Add(0x4B, true, "larrow", "left");
+            Add(0x4D, true, "rarrow", "right");
             Add(0x47, true, "home");
             Add(0x4F, true, "end");
             Add(0x49, true, "pgup", "prior", "pageup");
             Add(0x51, true, "pgdn", "next", "pagedown");
-            Add(0x52, true, "insert");
-            Add(0x53, true, "delete");
+            Add(0x52, true, "ins", "insert");
+            Add(0x53, true, "del", "delete");
             return keys;
         }
     }

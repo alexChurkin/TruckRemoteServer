@@ -8,12 +8,13 @@ namespace TruckRemoteServer.Input
     //A line looks like: config_lines[381]: "mix engine `keyboard.e?0 | semantical.engine?0`"
     public static class PlayerBindings
     {
-        //The mixes (actions of the game) of the keys the server presses. The names of the panel's actions of
-        //revision 5 aren't confirmed in a real profile: an action that isn't found keeps its default key
+        //The mixes (actions of the game) of the keys the server presses, as controls.sii of ETS2 and ATS 1.61 names
+        //them. The gas and the brake are the digital mixes: the analog ones are the axes of the joystick.
+        //An action that isn't found keeps its default key
         public static readonly IReadOnlyDictionary<GameKey, string> Mixes = new Dictionary<GameKey, string>
         {
-            { GameKey.Gas, "aforward" },
-            { GameKey.Brake, "abackward" },
+            { GameKey.Gas, "dforward" },
+            { GameKey.Brake, "dbackward" },
             { GameKey.LeftBlinker, "lblinker" },
             { GameKey.RightBlinker, "rblinker" },
             { GameKey.HazardLights, "flasher4way" },
@@ -54,14 +55,14 @@ namespace TruckRemoteServer.Input
             { GameKey.RadioPrevious, "radioprev" },
             { GameKey.Radio, "radio" },
             { GameKey.QuickSave, "quicksave" },
-            { GameKey.Mirrors, "mirrors" },
+            { GameKey.Mirrors, "showmirrors" },
             { GameKey.LookLeft, "lookleft" },
             { GameKey.LookRight, "lookright" },
             { GameKey.GearUp, "gearup" },
             { GameKey.GearDown, "geardown" },
-            { GameKey.AdvisorZoom, "advzoom" },
-            { GameKey.AdvisorMode, "advmode" },
-            { GameKey.RoadAssistance, "assistance" },
+            { GameKey.AdvisorZoom, "advzoomout" },
+            { GameKey.AdvisorMode, "advoptions" },
+            { GameKey.RoadAssistance, "services" },
             { GameKey.Screenshot, "screenshot" },
             { GameKey.Menu, "menu" }
         };
@@ -71,6 +72,20 @@ namespace TruckRemoteServer.Input
         private static readonly Regex KeyTerm = new Regex(@"^keyboard\.([a-z0-9_]+)(\?\d+)?$", RegexOptions.IgnoreCase);
         private static readonly Regex ModifierTerm = new Regex(
             @"^modifier\(\s*keyboard\.([a-z0-9_]+)(\?\d+)?\s*,\s*keyboard\.([a-z0-9_]+)(\?\d+)?\s*\)$", RegexOptions.IgnoreCase);
+        //modifier(shift_only, keyboard.e?0): the games write a key with a modifier so, the first argument is a mix
+        //that tells which of Shift, Ctrl and Alt are held
+        private static readonly Regex ModifierMixTerm = new Regex(
+            @"^modifier\(\s*([a-z0-9_]+)\s*,\s*keyboard\.([a-z0-9_]+)(\?\d+)?\s*\)$", RegexOptions.IgnoreCase);
+
+        //The key held by a modifier mix, null for no_modifier. Two modifiers at once aren't pressed by the server
+        private static readonly Dictionary<string, string> ModifierMixes =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "no_modifier", null },
+                { "shift_only", "lshift" },
+                { "ctrl_only", "lctrl" },
+                { "alt_only", "lalt" }
+            };
 
         //The keys of the actions found in the file. An action the file has but with no key the server can press
         //(only a joystick, a long press, nothing) is in the result as null: no key is pressed for it, a default key
@@ -107,6 +122,14 @@ namespace TruckRemoteServer.Input
                     && ScsKeyNames.TryGet(modified.Groups[3].Value, out KeyStroke main))
                 {
                     return main.With(modifier);
+                }
+
+                Match mixed = ModifierMixTerm.Match(term);
+                if (mixed.Success
+                    && ModifierMixes.TryGetValue(mixed.Groups[1].Value, out string held)
+                    && ScsKeyNames.TryGet(mixed.Groups[2].Value, out KeyStroke plain))
+                {
+                    return held != null && ScsKeyNames.TryGet(held, out KeyStroke holder) ? plain.With(holder) : plain;
                 }
             }
             return null;

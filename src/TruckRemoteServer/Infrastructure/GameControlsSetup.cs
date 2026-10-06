@@ -12,7 +12,8 @@ namespace TruckRemoteServer.Infrastructure
 {
     //Sets up controls.sii of every ETS2 and ATS profile (Documents\<game>) as GameControlsFile tells: vJoy and the keys.
     //The profiles are checked once in a while: a profile may be created or a game installed while the server is running,
-    //and a running game writes its bindings on exit (its profiles are changed after it is closed)
+    //and a running game writes its bindings on exit (its profiles are changed after it is closed).
+    //The keys the player has bound in the profile played last are the keys the server presses (KeyBindings)
     public sealed class GameControlsSetup : IGameControlsSetup, IDisposable
     {
         private const string ControlsFileName = "controls.sii";
@@ -34,16 +35,21 @@ namespace TruckRemoteServer.Infrastructure
         private static readonly Encoding FileEncoding = Encoding.GetEncoding(28591);
 
         private readonly ILogger<GameControlsSetup> logger;
+        private readonly KeyBindings bindings;
         private readonly object timerLock = new object();
         //Files that have the keys: they are read again only after they are changed
         private readonly Dictionary<string, DateTime> checkedFiles = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
         private Timer timer;
         private bool disposed;
         private int checking;
+        //The controls.sii the bindings were read from, and its time then
+        private string bindingsFile;
+        private DateTime bindingsTime;
 
-        public GameControlsSetup(ILogger<GameControlsSetup> logger)
+        public GameControlsSetup(ILogger<GameControlsSetup> logger, KeyBindings bindings)
         {
             this.logger = logger;
+            this.bindings = bindings;
         }
 
         public void Apply()
@@ -71,10 +77,12 @@ namespace TruckRemoteServer.Infrastructure
             if (Interlocked.Exchange(ref checking, 1) == 1) return;
             try
             {
+                var profiles = new List<string>();
                 foreach ((string folder, string process) in Games)
                 {
-                    Check(folder, process);
+                    Check(folder, process, profiles);
                 }
+                ReadBindings(profiles);
             }
             finally
             {
@@ -82,22 +90,25 @@ namespace TruckRemoteServer.Infrastructure
             }
         }
 
-        private void Check(string gameFolder, string processName)
+        //The profiles of the game are added to the list; a running game's profiles aren't changed
+        private void Check(string gameFolder, string processName, List<string> allProfiles)
         {
             try
             {
-                if (IsRunning(processName)) return;
-
                 string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                string vJoyDevice = FindVJoyDevice(Path.Combine(documents, gameFolder, GlobalControlsFileName));
+                var profiles = new List<string>();
                 foreach (string profileFolder in ProfileFolders)
                 {
-                    string profiles = Path.Combine(documents, gameFolder, profileFolder);
-                    if (!Directory.Exists(profiles)) continue;
-                    foreach (string profile in Directory.GetDirectories(profiles))
-                    {
-                        SetUp(Path.Combine(profile, ControlsFileName), vJoyDevice);
-                    }
+                    string folder = Path.Combine(documents, gameFolder, profileFolder);
+                    if (Directory.Exists(folder)) profiles.AddRange(Directory.GetDirectories(folder));
+                }
+                allProfiles.AddRange(profiles);
+                if (IsRunning(processName)) return;
+
+                string vJoyDevice = FindVJoyDevice(Path.Combine(documents, gameFolder, GlobalControlsFileName));
+                foreach (string profile in profiles)
+                {
+                    SetUp(Path.Combine(profile, ControlsFileName), vJoyDevice);
                 }
             }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException
@@ -107,6 +118,68 @@ namespace TruckRemoteServer.Infrastructure
                 logger.LogWarning(e, "Controls of {Game} weren't changed", gameFolder);
             }
         }
+
+        //The bindings of the profile played last (its saves or bindings were written last), read again when it changes
+        private void ReadBindings(List<string> profiles)
+        {
+            string latest = null;
+            DateTime latestActivity = DateTime.MinValue;
+            foreach (string profile in profiles)
+            {
+                DateTime activity;
+                try
+                {
+                    activity = LastActivity(profile);
+                }
+                catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+                {
+                    continue;
+                }
+                if (activity <= latestActivity) continue;
+                latestActivity = activity;
+                latest = Path.Combine(profile, ControlsFileName);
+            }
+            try
+            {
+                if (latest == null || !File.Exists(latest))
+                {
+                    if (bindingsFile != null) bindings.Use(null);
+                    bindingsFile = null;
+                    return;
+                }
+                DateTime written = File.GetLastWriteTimeUtc(latest);
+                if (string.Equals(latest, bindingsFile, StringComparison.OrdinalIgnoreCase) && written == bindingsTime) return;
+
+                IReadOnlyDictionary<GameKey, KeyStroke> keys = PlayerBindings.Parse(File.ReadAllText(latest, FileEncoding));
+                bindings.Use(keys);
+                bindingsFile = latest;
+                bindingsTime = written;
+                logger.LogInformation("Key bindings of {File}: {Count} actions", latest, keys.Count);
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                //Read again on the next check
+                logger.LogWarning(e, "Key bindings of {File} weren't read", latest);
+                bindingsFile = null;
+            }
+        }
+
+        //When the profile was played last: the game writes its saves (autosaves too) and profile.sii into it.
+        //Not controls.sii: the server changes it in every profile
+        private static DateTime LastActivity(string profile)
+        {
+            DateTime last = File.GetLastWriteTimeUtc(Path.Combine(profile, "profile.sii"));
+            string saves = Path.Combine(profile, "save");
+            if (!Directory.Exists(saves)) return last;
+            foreach (string save in Directory.GetDirectories(saves))
+            {
+                last = Max(last, File.GetLastWriteTimeUtc(Path.Combine(save, "info.sii")));
+                last = Max(last, File.GetLastWriteTimeUtc(Path.Combine(save, "game.sii")));
+            }
+            return last;
+        }
+
+        private static DateTime Max(DateTime a, DateTime b) => a > b ? a : b;
 
         private static bool IsRunning(string processName)
         {

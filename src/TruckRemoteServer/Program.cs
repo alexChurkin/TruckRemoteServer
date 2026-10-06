@@ -40,6 +40,7 @@ namespace TruckRemoteServer
             var services = new ServiceCollection();
             services.AddLogging(logging => logging.AddDebug().SetMinimumLevel(LogLevel.Information));
 
+            services.AddSingleton<KeyBindings>();
             services.AddSingleton<IKeyboard, SendInputKeyboard>();
             services.AddSingleton<IVirtualJoystick, VJoyJoystick>();
             services.AddSingleton<ITelemetrySource, ScsTelemetrySource>();

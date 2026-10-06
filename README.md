@@ -61,7 +61,9 @@ If the axes aren't enabled, the app shows a hint and keeps using the arrow keys.
 
 ### Keys
 
-The server presses the default game keys, so keep them in the game settings:
+The server presses the keys bound in the profile played last (it reads `controls.sii` of the profile, also a key with
+Shift, Ctrl or Alt), so keys changed in the game settings keep working; an action without a key in the profile isn't
+pressed. An action the profile doesn't have gets the default key of the game:
 gas and brake **↑**/**↓** (in the digital pedal mode), blinkers **[** and **]**, hazard lights **F**,
 parking brake **Space**, lights **L**, high beam **K**, horn **H**, air horn **N**, cruise control **C**.
 

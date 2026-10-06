@@ -97,6 +97,23 @@ namespace TruckRemoteServer.Setup
             {
                 this.gameName = gameName;
                 GamePath = gamePath;
+                RedetectSkipped();
+            }
+
+            //A game that was skipped (it wasn't installed then) may be installed now: it is looked for again,
+            //without asking the user about it
+            void RedetectSkipped()
+            {
+                if (GamePath != InstallationSkippedPath) return;
+                try
+                {
+                    DetectPath();
+                }
+                catch (Exception)
+                {
+                    //Steam isn't found
+                }
+                if (GamePath == InstallationSkippedPath || !IsPathValid()) GamePath = InstallationSkippedPath;
             }
 
             string GameDirectoryName

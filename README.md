@@ -69,9 +69,15 @@ The quick actions panel in the app (button at the bottom center, swipe it for mo
   next radio station **Page Down**, quick save **Scroll Lock**.
 
 The games have no default keys for the cruise control speed and resume, so the server adds these keys to the key bindings
-of every game profile (`controls.sii`, the original is kept beside it as `controls.truckremote.bak`). A running game
-writes its bindings on exit, so its profiles are changed when it's closed. A key the profile already uses isn't added:
-bind the action in the game then.
+of every game profile (`controls.sii`, the original is kept beside it as `controls.truckremote.bak`). A key the profile
+already uses isn't added: bind the action in the game then.
+
+In the same file the server makes vJoy the controller of a profile that has none: the steering on the X axis, the gas
+on Y and the brake on Z (a new profile has no controller and both pedals on one axis). A profile with another controller
+or with your own axes isn't touched.
+
+A running game writes its bindings on exit, so its profiles are changed when it's closed: after the first start of
+a game with a new profile, close the game once while the server is running and start it again.
 
 Enjoy using!
 

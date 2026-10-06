@@ -85,7 +85,7 @@ namespace TruckRemoteServer.Presentation
             CheckFirewall(offerFix: true);
             CheckJoystick(offerSetup: true);
             //Some buttons of the phone have no key in the default bindings of the games
-            RunInBackground(controlsSetup.Apply);
+            controlsSetup.Apply();
         }
 
         private void OnClosing()

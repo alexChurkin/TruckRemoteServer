@@ -5,14 +5,16 @@ using TruckRemoteServer.Input;
 
 namespace TruckRemoteServer.Infrastructure
 {
-    //Keys are sent as DirectInput scan codes (the game reads them regardless of the keyboard layout).
+    //Keys are sent as scan codes (the game reads them regardless of the keyboard layout). The keys of the extended
+    //part of the keyboard are sent with the extended flag: the games read them so both through DirectInput
+    //(di8.keyboard of older profiles) and through the system input (sys.keyboard of new ones).
     //Default key bindings of ETS2/ATS are used where the games have them
     public sealed class SendInputKeyboard : IKeyboard, IDisposable
     {
         private static readonly Dictionary<GameKey, short> ScanCodes = new Dictionary<GameKey, short>
         {
-            { GameKey.Gas, 0xC8 },           //Up arrow
-            { GameKey.Brake, 0xD0 },         //Down arrow
+            { GameKey.Gas, 0x48 },           //Up arrow (extended)
+            { GameKey.Brake, 0x50 },         //Down arrow (extended)
             { GameKey.LeftBlinker, 0x1A },   //[
             { GameKey.RightBlinker, 0x1B },  //]
             { GameKey.HazardLights, 0x21 },  //F
@@ -44,11 +46,18 @@ namespace TruckRemoteServer.Infrastructure
             { GameKey.Map, 0x32 },           //M
             { GameKey.DashboardDisplay, 0x17 }, //I
             { GameKey.Hud, 0x3D },           //F3
-            { GameKey.RadioNext, 0xD1 },     //Page Down
+            { GameKey.RadioNext, 0x51 },     //Page Down (extended)
             { GameKey.QuickSave, 0x46 }      //Scroll Lock
         };
 
+        //Without the flag their scan codes are the keys of the numeric keypad
+        private static readonly HashSet<GameKey> ExtendedKeys = new HashSet<GameKey>
+        {
+            GameKey.Gas, GameKey.Brake, GameKey.RadioNext
+        };
+
         private const int InputKeyboard = 1;
+        private const int KeyeventfExtendedkey = 0x0001;
         private const int KeyeventfKeyup = 0x0002;
         private const int KeyeventfScancode = 0x0008;
 
@@ -62,12 +71,12 @@ namespace TruckRemoteServer.Infrastructure
 
         public void Press(GameKey key)
         {
-            Send(ScanCodes[key], KeyeventfScancode);
+            Send(ScanCodes[key], KeyeventfScancode | ExtendedFlag(key));
         }
 
         public void Release(GameKey key)
         {
-            Send(ScanCodes[key], KeyeventfKeyup | KeyeventfScancode);
+            Send(ScanCodes[key], KeyeventfKeyup | KeyeventfScancode | ExtendedFlag(key));
         }
 
         public void Click(GameKey key)
@@ -78,6 +87,11 @@ namespace TruckRemoteServer.Infrastructure
         public void Dispose()
         {
             clicker.Dispose();
+        }
+
+        private static int ExtendedFlag(GameKey key)
+        {
+            return ExtendedKeys.Contains(key) ? KeyeventfExtendedkey : 0;
         }
 
         private static void Send(short scanCode, int flags)

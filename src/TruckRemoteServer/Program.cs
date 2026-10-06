@@ -59,6 +59,7 @@ namespace TruckRemoteServer
             services.AddSingleton(provider => new MainPresenter(
                 provider.GetRequiredService<IMainView>(),
                 provider.GetRequiredService<ControllerServer>(),
+                provider.GetRequiredService<ControllerInputMapper>(),
                 provider.GetRequiredService<IVirtualJoystick>(),
                 provider.GetRequiredService<ISettingsStore>(),
                 provider.GetRequiredService<IFirewall>(),

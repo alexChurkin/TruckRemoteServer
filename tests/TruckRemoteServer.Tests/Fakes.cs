@@ -92,6 +92,7 @@ namespace TruckRemoteServer.Tests
         public int Port { get; set; }
         public bool FirewallPromptShown { get; set; }
         public bool JoystickPromptShown { get; set; }
+        public bool SetupWizardShown { get; set; }
         public string Language { get; set; } = "";
         public bool MinimizeToTray { get; set; }
         public int Saves;
@@ -195,6 +196,18 @@ namespace TruckRemoteServer.Tests
         public event EventHandler<bool> MinimizeToTrayChanged;
         public event EventHandler AllowFirewallRequested;
         public event EventHandler InstallJoystickRequested;
+        public event EventHandler SetupWizardRequested;
+
+        public FakeWizardView Wizard = new FakeWizardView();
+        public int Wizards;
+
+        public void OpenSetupWizard() => SetupWizardRequested?.Invoke(this, EventArgs.Empty);
+
+        public ISetupWizardView CreateSetupWizard()
+        {
+            Wizards++;
+            return Wizard;
+        }
 
         public void Show() => Shown?.Invoke(this, EventArgs.Empty);
         public void Close() => Closing?.Invoke(this, EventArgs.Empty);
@@ -251,6 +264,42 @@ namespace TruckRemoteServer.Tests
         }
 
         public void ShowWarning(Warning warning, string detail) => Warnings.Add(warning);
+
+        public void RunOnUiThread(Action action) => action();
+    }
+
+    public class FakeWizardView : ISetupWizardView
+    {
+        public readonly Dictionary<SetupStep, StepState> Steps = new Dictionary<SetupStep, StepState>();
+        public readonly Dictionary<SetupStep, string> Details = new Dictionary<SetupStep, string>();
+        public IList<string> Addresses;
+        public ControlsSnapshot Controls;
+        //What the user does while the window is open
+        public Action WhileShown;
+        public int Shows;
+
+        public event EventHandler<SetupStep> FixRequested;
+        public event EventHandler Tick;
+
+        public void Fix(SetupStep step) => FixRequested?.Invoke(this, step);
+
+        public void RaiseTick() => Tick?.Invoke(this, EventArgs.Empty);
+
+        public void ShowStep(SetupStep setupStep, StepState state, string detail)
+        {
+            Steps[setupStep] = state;
+            Details[setupStep] = detail;
+        }
+
+        public void ShowAddresses(IList<string> addresses, int port) => Addresses = addresses;
+
+        public void ShowControls(ControlsSnapshot controls) => Controls = controls;
+
+        public void ShowModal()
+        {
+            Shows++;
+            WhileShown?.Invoke();
+        }
 
         public void RunOnUiThread(Action action) => action();
     }

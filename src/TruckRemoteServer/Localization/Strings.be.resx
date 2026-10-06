@@ -54,4 +54,33 @@
   <data name="TrayExit" xml:space="preserve"><value>Выхад</value></data>
   <data name="TrayHint" xml:space="preserve"><value>Сервер працягвае працаваць тут. Двойчы пстрыкніце па значку, каб адкрыць яго.</value></data>
   <data name="QrCode" xml:space="preserve"><value>QR-код адраса сервера</value></data>
+  <data name="WizardMenu" xml:space="preserve"><value>Майстар налады…</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>Налада сервера</value></data>
+  <data name="WizardSubtitle" xml:space="preserve"><value>Усё, што трэба тэлефону, каб весці грузавік. Выпраўце адзначанае, потым падключыце тэлефон і праверце кіраванне.</value></data>
+  <data name="WizardPlugin" xml:space="preserve"><value>Плагін тэлеметрыі</value></data>
+  <data name="WizardJoystick" xml:space="preserve"><value>vJoy: руль і педалі</value></data>
+  <data name="WizardFirewall" xml:space="preserve"><value>Брандмаўэр Windows</value></data>
+  <data name="WizardControls" xml:space="preserve"><value>Кіраванне ў гульні</value></data>
+  <data name="WizardPhone" xml:space="preserve"><value>Тэлефон</value></data>
+  <data name="WizardChecking" xml:space="preserve"><value>Праверка…</value></data>
+  <data name="WizardWorking" xml:space="preserve"><value>Усталяванне…</value></data>
+  <data name="WizardWorkingAdmin" xml:space="preserve"><value>Выконваецца… Дазвольце змены ў акне Windows.</value></data>
+  <data name="WizardPluginDone" xml:space="preserve"><value>Усталяваны: тэлефон паказвае прыборы і вібруе разам з грузавіком.</value></data>
+  <data name="WizardPluginMissing" xml:space="preserve"><value>Не ўсталяваны: тэлефон кіруе грузавіком, але без прыбораў і вібрацыі дарогі.</value></data>
+  <data name="WizardPluginFailed" xml:space="preserve"><value>Не ўсталяваны: {0}</value></data>
+  <data name="WizardJoystickDone" xml:space="preserve"><value>Гатовы: тэлефон рулюе праз прыладу vJoy 1.</value></data>
+  <data name="WizardJoystickMissing" xml:space="preserve"><value>Не наладжаны: без яго тэлефон не можа руліць і плаўна націскаць педалі.</value></data>
+  <data name="WizardJoystickFailed" xml:space="preserve"><value>Налада не дапамагла. Перазагрузіце камп’ютар і паспрабуйце зноў або пераўсталюйце vJoy.</value></data>
+  <data name="WizardFirewallDone" xml:space="preserve"><value>Пакеты тэлефона прапускаюцца.</value></data>
+  <data name="WizardFirewallBlocked" xml:space="preserve"><value>Блакуе тэлефон: дазвольце сервер у брандмаўэры.</value></data>
+  <data name="WizardFirewallFailed" xml:space="preserve"><value>Правіла не дапамагло: сервер можа блакаваць іншы брандмаўэр або антывірус.</value></data>
+  <data name="WizardControlsDone" xml:space="preserve"><value>Робіць сервер: профілі ETS2 і ATS атрымліваюць vJoy і клавішы круіз-кантролю. Запушчаная гульня атрымае іх пасля закрыцця.</value></data>
+  <data name="WizardPhoneWaiting" xml:space="preserve"><value>Адкрыйце Truck Remote на тэлефоне: ён сам знойдзе сервер, калі тэлефон у той жа сетцы Wi-Fi, што і камп’ютар. Або адсканіруйце гэты код: Налады → Падключэнне → Сканаваць QR-код сервера.</value></data>
+  <data name="WizardPhoneDone" xml:space="preserve"><value>Падключаны. Нахіліце тэлефон і націсніце педалі: палоскі рухаюцца так, як гэта атрымае гульня.</value></data>
+  <data name="WizardPhoneNoServer" xml:space="preserve"><value>Сервер не запушчаны: яго порт заняты. Абярыце іншы порт у наладах.</value></data>
+  <data name="WizardSteering" xml:space="preserve"><value>Руль</value></data>
+  <data name="WizardGas" xml:space="preserve"><value>Газ</value></data>
+  <data name="WizardBrake" xml:space="preserve"><value>Тормаз</value></data>
+  <data name="WizardRetry" xml:space="preserve"><value>Яшчэ раз</value></data>
+  <data name="WizardDone" xml:space="preserve"><value>Гатова</value></data>
 </root>

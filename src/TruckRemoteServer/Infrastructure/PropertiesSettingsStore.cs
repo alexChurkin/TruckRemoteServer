@@ -25,6 +25,12 @@ namespace TruckRemoteServer.Infrastructure
             set => Values.JoystickPromptShown = value;
         }
 
+        public bool SetupWizardShown
+        {
+            get => Values.SetupWizardShown;
+            set => Values.SetupWizardShown = value;
+        }
+
         public string Language
         {
             get => Values.Language ?? "";

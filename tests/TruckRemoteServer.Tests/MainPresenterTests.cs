@@ -12,7 +12,8 @@ namespace TruckRemoteServer.Tests
     {
         private readonly FakeView view = new FakeView();
         private readonly FakeJoystick joystick = new FakeJoystick();
-        private readonly FakeSettings settings = new FakeSettings { Port = 0 };
+        //The wizard of the first start is tested apart (see FirstStartOpensTheSetupWizard)
+        private readonly FakeSettings settings = new FakeSettings { Port = 0, SetupWizardShown = true };
         private readonly FakeFirewall firewall = new FakeFirewall();
         private readonly FakeNetwork network = new FakeNetwork();
         private readonly FakePluginSetup pluginSetup = new FakePluginSetup();
@@ -27,7 +28,7 @@ namespace TruckRemoteServer.Tests
             mapper = new ControllerInputMapper(new FakeKeyboard(), joystick);
             server = new ControllerServer(mapper, new FakeTelemetry(), joystick, new NoTimerResolution(),
                 NullLogger<ControllerServer>.Instance);
-            presenter = new MainPresenter(view, server, joystick, settings, firewall, network, pluginSetup,
+            presenter = new MainPresenter(view, server, mapper, joystick, settings, firewall, network, pluginSetup,
                 joystickSetup, controlsSetup, "server.exe")
             {
                 RunInBackground = work =>
@@ -48,6 +49,35 @@ namespace TruckRemoteServer.Tests
             Assert.Equal(0, view.Port);
             Assert.Equal(new[] { "192.168.1.10" }, view.Addresses);
             Assert.Equal(ServerState.WaitingForController, view.State);
+        }
+
+        [Fact]
+        public void FirstStartOpensTheSetupWizardInsteadOfTheQuestions()
+        {
+            settings.SetupWizardShown = false;
+            firewall.Status = FirewallStatus.NoRule;
+            joystickSetup.Ready = false;
+            //The user fixes the firewall in the wizard
+            view.Wizard.WhileShown = () => view.Wizard.Fix(SetupStep.Firewall);
+            view.Show();
+
+            Assert.Equal(1, view.Wizards);
+            Assert.Equal(0, view.FirewallQuestions);
+            Assert.Equal(0, view.JoystickQuestions);
+            Assert.True(settings.SetupWizardShown);
+            //The banners show what is left after the wizard
+            Assert.False(view.FirewallWarning);
+            Assert.True(view.JoystickWarning);
+        }
+
+        [Fact]
+        public void LaterStartsDoNotOpenTheWizardButTheMenuDoes()
+        {
+            view.Show();
+            Assert.Equal(0, view.Wizards);
+
+            view.OpenSetupWizard();
+            Assert.Equal(1, view.Wizards);
         }
 
         [Fact]

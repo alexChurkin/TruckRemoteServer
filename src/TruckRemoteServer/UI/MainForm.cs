@@ -60,6 +60,7 @@ namespace TruckRemoteServer.UI
         private readonly ToolStripMenuItem portItem = new ToolStripMenuItem();
         private readonly ToolStripMenuItem languageItem = new ToolStripMenuItem();
         private readonly ToolStripMenuItem minimizeToTrayItem = new ToolStripMenuItem();
+        private readonly ToolStripMenuItem wizardItem = new ToolStripMenuItem();
         private readonly Label versionLabel = new Label { AutoSize = true };
 
         private readonly NotifyIcon trayIcon = new NotifyIcon();
@@ -119,7 +120,11 @@ namespace TruckRemoteServer.UI
             }
             portItem.Click += (s, e) => ChangePort();
             minimizeToTrayItem.Click += (s, e) => MinimizeToTrayChanged?.Invoke(this, !minimizeToTray);
-            settingsMenu.Items.AddRange(new ToolStripItem[] { portItem, languageItem, minimizeToTrayItem });
+            wizardItem.Click += (s, e) => SetupWizardRequested?.Invoke(this, EventArgs.Empty);
+            settingsMenu.Items.AddRange(new ToolStripItem[]
+            {
+                portItem, languageItem, minimizeToTrayItem, new ToolStripSeparator(), wizardItem
+            });
             settingsMenu.Font = Theme.Body;
             settingsButton.Click += (s, e) => settingsMenu.Show(settingsButton, 0, settingsButton.Height + Px(2));
 
@@ -157,6 +162,7 @@ namespace TruckRemoteServer.UI
         public event EventHandler<bool> MinimizeToTrayChanged;
         public event EventHandler AllowFirewallRequested;
         public event EventHandler InstallJoystickRequested;
+        public event EventHandler SetupWizardRequested;
 
         private bool IsRunning => state == ServerState.WaitingForController || state == ServerState.ControllerConnected
             || state == ServerState.ControllerConnectedWithoutJoystick || state == ServerState.ControllerPaused;
@@ -285,6 +291,13 @@ namespace TruckRemoteServer.UI
             MessageBox.Show(this, text, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
+        public ISetupWizardView CreateSetupWizard()
+        {
+            //The window may be hidden in the notification area
+            RestoreFromTray();
+            return new SetupWizardDialog(theme, this);
+        }
+
         public void RunOnUiThread(Action action)
         {
             if (IsDisposed) return;
@@ -381,6 +394,7 @@ namespace TruckRemoteServer.UI
             languageItem.Text = Texts.Get(T.Language) + ": " + languageName;
             minimizeToTrayItem.Text = Texts.Get(T.MinimizeToTray);
             minimizeToTrayItem.Checked = minimizeToTray;
+            wizardItem.Text = Texts.Get(T.WizardMenu);
             foreach (ToolStripMenuItem item in languageItem.DropDownItems)
             {
                 string code = (string)item.Tag;

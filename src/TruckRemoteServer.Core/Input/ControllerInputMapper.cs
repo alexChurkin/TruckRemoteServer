@@ -26,6 +26,7 @@ namespace TruckRemoteServer.Input
         private readonly object inputLock = new object();
 
         private volatile TruckTelemetry truck = TruckTelemetry.Unknown;
+        private volatile ControlsSnapshot controls = ControlsSnapshot.Released;
 
         private int steeringAxis = JoystickAxis.Center;
         private bool brakePressed, gasPressed;
@@ -40,6 +41,9 @@ namespace TruckRemoteServer.Input
             this.keyboard = keyboard;
             this.joystick = joystick;
         }
+
+        //The steering and the pedals as they were applied last (read by the window on its thread)
+        public ControlsSnapshot Controls => controls;
 
         //The lights button needs to know the current lights of the truck
         public void UpdateTelemetry(TruckTelemetry telemetry)
@@ -75,6 +79,10 @@ namespace TruckRemoteServer.Input
                 SetKey(GameKey.Gas, state.GasPressed, ref gasPressed);
                 SetHorn(state.Horn);
                 if (state.HasPedalLevels) joystick.SetPedals(ToPedalAxis(state.GasLevel), ToPedalAxis(state.BrakeLevel));
+                controls = new ControlsSnapshot(
+                    (double)(steeringAxis - JoystickAxis.Center) / JoystickAxis.Center,
+                    state.HasPedalLevels ? Level(state.GasLevel) : (state.GasPressed ? 1 : 0),
+                    state.HasPedalLevels ? Level(state.BrakeLevel) : (state.BrakePressed ? 1 : 0));
 
                 //Toggle values are only synchronized on the first message after (re)connect,
                 //otherwise their difference with the previous session would cause false clicks
@@ -139,6 +147,7 @@ namespace TruckRemoteServer.Input
             steeringAxis = JoystickAxis.Center;
             joystick.SetSteering(JoystickAxis.Center);
             joystick.SetPedals(0, 0);
+            controls = ControlsSnapshot.Released;
         }
 
         private void ApplySteering(double value, bool final)
@@ -156,8 +165,12 @@ namespace TruckRemoteServer.Input
 
         private static int ToPedalAxis(double level)
         {
-            if (double.IsNaN(level)) return 0;
-            return (int)(Math.Max(0, Math.Min(1, level)) * JoystickAxis.Max);
+            return (int)(Level(level) * JoystickAxis.Max);
+        }
+
+        private static double Level(double level)
+        {
+            return double.IsNaN(level) ? 0 : Math.Max(0, Math.Min(1, level));
         }
 
         private void SetKey(GameKey key, bool pressed, ref bool current)

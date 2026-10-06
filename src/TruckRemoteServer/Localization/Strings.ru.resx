@@ -54,4 +54,33 @@
   <data name="TrayExit" xml:space="preserve"><value>Выход</value></data>
   <data name="TrayHint" xml:space="preserve"><value>Сервер продолжает работать здесь. Дважды щёлкните по значку, чтобы открыть его.</value></data>
   <data name="QrCode" xml:space="preserve"><value>QR-код адреса сервера</value></data>
+  <data name="WizardMenu" xml:space="preserve"><value>Мастер настройки…</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>Настройка сервера</value></data>
+  <data name="WizardSubtitle" xml:space="preserve"><value>Всё, что нужно телефону, чтобы вести грузовик. Исправьте отмеченное, затем подключите телефон и проверьте управление.</value></data>
+  <data name="WizardPlugin" xml:space="preserve"><value>Плагин телеметрии</value></data>
+  <data name="WizardJoystick" xml:space="preserve"><value>vJoy: руль и педали</value></data>
+  <data name="WizardFirewall" xml:space="preserve"><value>Брандмауэр Windows</value></data>
+  <data name="WizardControls" xml:space="preserve"><value>Управление в игре</value></data>
+  <data name="WizardPhone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="WizardChecking" xml:space="preserve"><value>Проверка…</value></data>
+  <data name="WizardWorking" xml:space="preserve"><value>Установка…</value></data>
+  <data name="WizardWorkingAdmin" xml:space="preserve"><value>Выполняется… Разрешите изменения в окне Windows.</value></data>
+  <data name="WizardPluginDone" xml:space="preserve"><value>Установлен: телефон показывает приборы и вибрирует вместе с грузовиком.</value></data>
+  <data name="WizardPluginMissing" xml:space="preserve"><value>Не установлен: телефон управляет грузовиком, но без приборов и вибрации дороги.</value></data>
+  <data name="WizardPluginFailed" xml:space="preserve"><value>Не установлен: {0}</value></data>
+  <data name="WizardJoystickDone" xml:space="preserve"><value>Готов: телефон рулит через устройство vJoy 1.</value></data>
+  <data name="WizardJoystickMissing" xml:space="preserve"><value>Не настроен: без него телефон не может рулить и плавно нажимать педали.</value></data>
+  <data name="WizardJoystickFailed" xml:space="preserve"><value>Настройка не помогла. Перезагрузите компьютер и попробуйте снова или переустановите vJoy.</value></data>
+  <data name="WizardFirewallDone" xml:space="preserve"><value>Пакеты телефона пропускаются.</value></data>
+  <data name="WizardFirewallBlocked" xml:space="preserve"><value>Блокирует телефон: разрешите сервер в брандмауэре.</value></data>
+  <data name="WizardFirewallFailed" xml:space="preserve"><value>Правило не помогло: сервер может блокировать другой брандмауэр или антивирус.</value></data>
+  <data name="WizardControlsDone" xml:space="preserve"><value>Делает сервер: профили ETS2 и ATS получают vJoy и клавиши круиз-контроля. Запущенная игра получит их после закрытия.</value></data>
+  <data name="WizardPhoneWaiting" xml:space="preserve"><value>Откройте Truck Remote на телефоне: он сам найдёт сервер, если телефон в той же сети Wi-Fi, что и компьютер. Или отсканируйте этот код: Настройки → Подключение → Сканировать QR-код сервера.</value></data>
+  <data name="WizardPhoneDone" xml:space="preserve"><value>Подключён. Наклоните телефон и нажмите педали: полоски двигаются так, как это получит игра.</value></data>
+  <data name="WizardPhoneNoServer" xml:space="preserve"><value>Сервер не запущен: его порт занят. Выберите другой порт в настройках.</value></data>
+  <data name="WizardSteering" xml:space="preserve"><value>Руль</value></data>
+  <data name="WizardGas" xml:space="preserve"><value>Газ</value></data>
+  <data name="WizardBrake" xml:space="preserve"><value>Тормоз</value></data>
+  <data name="WizardRetry" xml:space="preserve"><value>Ещё раз</value></data>
+  <data name="WizardDone" xml:space="preserve"><value>Готово</value></data>
 </root>

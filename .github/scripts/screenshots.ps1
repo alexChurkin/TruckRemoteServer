@@ -1,5 +1,5 @@
 # Starts the server on a clean Windows (CI), dismisses the first-start dialogs and takes screenshots
-# of the main window: light theme, dark theme and Russian. Also a smoke test: the app must start.
+# of the setup wizard and the main window: light theme, dark theme and Russian. Also a smoke test: the app must start.
 param([string]$Exe, [string]$Out)
 
 $ErrorActionPreference = 'Stop'
@@ -49,9 +49,9 @@ function Close-Dialogs($process) {
     }
 }
 
-function Capture($process, [string]$name) {
+function Capture($process, [string]$name, [IntPtr]$window = [IntPtr]::Zero) {
     $process.Refresh()
-    $handle = $process.MainWindowHandle
+    $handle = if ($window -ne [IntPtr]::Zero) { $window } else { $process.MainWindowHandle }
     [void][Win]::SetForegroundWindow($handle)
     Start-Sleep -Milliseconds 800
     $rect = New-Object Win+RECT
@@ -94,6 +94,17 @@ function Run([string]$name, [int]$light) {
     $wow64 = $false; [void][Win]::IsWow64Process($process.Handle, [ref]$wow64)
     if (-not $wow64) { throw 'The server runs as a 64-bit process, vJoy libraries cannot be loaded' }
     Close-Dialogs $process
+    # The setup wizard of a first start is over the main window: it's taken too, then Esc closes it
+    $process.Refresh()
+    $wizard = Get-Windows $process.Id |
+        Where-Object { $_.Class -like 'WindowsForms*' -and $_.Handle -ne $process.MainWindowHandle } |
+        Select-Object -First 1
+    if ($wizard) {
+        Start-Sleep -Milliseconds 1500
+        Capture $process "wizard-$name" $wizard.Handle
+        [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
+        Start-Sleep -Milliseconds 800
+    }
     Capture $process $name
     $process.CloseMainWindow() | Out-Null
     if (-not $process.WaitForExit(10000)) { $process.Kill() }

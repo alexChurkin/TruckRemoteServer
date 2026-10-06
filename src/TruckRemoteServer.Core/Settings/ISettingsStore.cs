@@ -11,6 +11,9 @@ namespace TruckRemoteServer.Settings
         //The vJoy setup is offered once, later only the button is shown
         bool JoystickPromptShown { get; set; }
 
+        //The setup wizard is shown on the first start, later it is opened from the Settings menu
+        bool SetupWizardShown { get; set; }
+
         //"" - the language of Windows, otherwise a language code ("en", "ru", "be", "uk")
         string Language { get; set; }
 

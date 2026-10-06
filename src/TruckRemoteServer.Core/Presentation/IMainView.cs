@@ -36,6 +36,7 @@ namespace TruckRemoteServer.Presentation
         event EventHandler<bool> MinimizeToTrayChanged;
         event EventHandler AllowFirewallRequested;
         event EventHandler InstallJoystickRequested;
+        event EventHandler SetupWizardRequested;
 
         //"" - the language of Windows
         void ShowLanguage(string language);
@@ -56,6 +57,9 @@ namespace TruckRemoteServer.Presentation
         bool AskInstallJoystick();
 
         void ShowWarning(Warning warning, string detail);
+
+        //The window of the setup wizard over this one, not shown yet
+        ISetupWizardView CreateSetupWizard();
 
         //Presenter gets events of the server and the system on other threads
         void RunOnUiThread(Action action);

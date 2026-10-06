@@ -45,5 +45,34 @@ namespace TruckRemoteServer.Localization
         public const string TrayExit = nameof(TrayExit);
         public const string TrayHint = nameof(TrayHint);
         public const string QrCode = nameof(QrCode);
+        public const string WizardMenu = nameof(WizardMenu);
+        public const string WizardTitle = nameof(WizardTitle);
+        public const string WizardSubtitle = nameof(WizardSubtitle);
+        public const string WizardPlugin = nameof(WizardPlugin);
+        public const string WizardJoystick = nameof(WizardJoystick);
+        public const string WizardFirewall = nameof(WizardFirewall);
+        public const string WizardControls = nameof(WizardControls);
+        public const string WizardPhone = nameof(WizardPhone);
+        public const string WizardChecking = nameof(WizardChecking);
+        public const string WizardWorking = nameof(WizardWorking);
+        public const string WizardWorkingAdmin = nameof(WizardWorkingAdmin);
+        public const string WizardPluginDone = nameof(WizardPluginDone);
+        public const string WizardPluginMissing = nameof(WizardPluginMissing);
+        public const string WizardPluginFailed = nameof(WizardPluginFailed);
+        public const string WizardJoystickDone = nameof(WizardJoystickDone);
+        public const string WizardJoystickMissing = nameof(WizardJoystickMissing);
+        public const string WizardJoystickFailed = nameof(WizardJoystickFailed);
+        public const string WizardFirewallDone = nameof(WizardFirewallDone);
+        public const string WizardFirewallBlocked = nameof(WizardFirewallBlocked);
+        public const string WizardFirewallFailed = nameof(WizardFirewallFailed);
+        public const string WizardControlsDone = nameof(WizardControlsDone);
+        public const string WizardPhoneWaiting = nameof(WizardPhoneWaiting);
+        public const string WizardPhoneDone = nameof(WizardPhoneDone);
+        public const string WizardPhoneNoServer = nameof(WizardPhoneNoServer);
+        public const string WizardSteering = nameof(WizardSteering);
+        public const string WizardGas = nameof(WizardGas);
+        public const string WizardBrake = nameof(WizardBrake);
+        public const string WizardRetry = nameof(WizardRetry);
+        public const string WizardDone = nameof(WizardDone);
     }
 }

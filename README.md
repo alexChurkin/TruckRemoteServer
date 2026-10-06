@@ -22,15 +22,21 @@ on older systems install it from [Microsoft](https://dotnet.microsoft.com/downlo
 
 Launching:
 1) Put **TruckRemoteServer.exe** wherever you want: it's a single file, everything it needs is inside
-2) Launch **TruckRemoteServer.exe**. On the first start it:
-   - offers to install **vJoy** (the virtual joystick driver the phone steers through) if it isn't installed
-     or set up: vJoy 2.1.9.1 is inside the server, it's installed silently and its 1-st device is configured
-     (administrator rights are asked for, Windows may ask to trust the vJoy driver). Later the window shows
-     an **Install** button while vJoy isn't ready;
-   - installs the telemetry plugin into ETS2 and ATS (the games are looked for in all Steam libraries;
-     if a game isn't found, the server asks for its folder, **Cancel** skips the game);
-   - offers to allow the server in Windows Firewall (administrator rights are asked for), otherwise the firewall
-     may block the phone. Later the window shows a link to do it if the server is still blocked.
+2) Launch **TruckRemoteServer.exe**. It installs the telemetry plugin into ETS2 and ATS by itself (the games are
+   looked for in all Steam libraries; if a game isn't found, the server asks for its folder, **Cancel** skips it).
+   On the first start the **setup wizard** shows what the server needs, each part with its state and a button
+   that fixes it (later it's in **Settings → Setup wizard…**):
+   - the **telemetry plugin** (the dashboard and the vibration of the phone);
+   - **vJoy**, the virtual joystick driver the phone steers through: vJoy 2.1.9.1 is inside the server, it's
+     installed silently and its 1-st device is configured (administrator rights are asked for, Windows may ask
+     to trust the vJoy driver);
+   - **Windows Firewall**: the server is allowed in it (administrator rights are asked for), otherwise it may
+     block the phone;
+   - the **game controls**, set up by the server (see below);
+   - the **phone**: the QR code of the server and, once the phone is connected, its steering and pedals as bars,
+     so the controls can be tried before the game is started.
+   Without the wizard the main window shows an **Install** button while vJoy isn't ready and a link while the
+   firewall blocks the server.
 3) Connect the phone to the same network as the PC and start Truck Remote Control: it finds the server by itself.
    If it doesn't, scan the QR code of the server window in the app settings (or enter the address shown there).
 

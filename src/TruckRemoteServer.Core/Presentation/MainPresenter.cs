@@ -14,6 +14,7 @@ namespace TruckRemoteServer.Presentation
     {
         private readonly IMainView view;
         private readonly ControllerServer server;
+        private readonly ControllerInputMapper input;
         private readonly IVirtualJoystick joystick;
         private readonly ISettingsStore settings;
         private readonly IFirewall firewall;
@@ -25,12 +26,13 @@ namespace TruckRemoteServer.Presentation
         //The last start failed because the port is used by another program
         private bool portBusy;
 
-        public MainPresenter(IMainView view, ControllerServer server, IVirtualJoystick joystick, ISettingsStore settings,
-            IFirewall firewall, INetworkInfo network, ITelemetryPluginSetup pluginSetup, IJoystickSetup joystickSetup,
-            IGameControlsSetup controlsSetup, string programPath)
+        public MainPresenter(IMainView view, ControllerServer server, ControllerInputMapper input, IVirtualJoystick joystick,
+            ISettingsStore settings, IFirewall firewall, INetworkInfo network, ITelemetryPluginSetup pluginSetup,
+            IJoystickSetup joystickSetup, IGameControlsSetup controlsSetup, string programPath)
         {
             this.view = view;
             this.server = server;
+            this.input = input;
             this.joystick = joystick;
             this.settings = settings;
             this.firewall = firewall;
@@ -49,6 +51,7 @@ namespace TruckRemoteServer.Presentation
             view.MinimizeToTrayChanged += (s, enabled) => ChangeMinimizeToTray(enabled);
             view.AllowFirewallRequested += (s, e) => AllowInFirewall();
             view.InstallJoystickRequested += (s, e) => SetupJoystick();
+            view.SetupWizardRequested += (s, e) => OpenSetupWizard();
         }
 
         //For tests: firewall and vJoy checks run on this scheduler
@@ -82,10 +85,26 @@ namespace TruckRemoteServer.Presentation
             }
 
             StartServer(checkFirewall: false);
-            CheckFirewall(offerFix: true);
-            CheckJoystick(offerSetup: true);
             //Some buttons of the phone have no key in the default bindings of the games
             controlsSetup.Apply();
+
+            //The first start goes through the setup wizard, it asks the questions of the firewall and vJoy itself
+            bool firstStart = !settings.SetupWizardShown;
+            CheckFirewall(offerFix: !firstStart);
+            CheckJoystick(offerSetup: !firstStart);
+            //After the window is shown and the server is started
+            if (firstStart) view.RunOnUiThread(OpenSetupWizard);
+        }
+
+        private void OpenSetupWizard()
+        {
+            ISetupWizardView wizardView = view.CreateSetupWizard();
+            new SetupWizard(wizardView, server, input, joystick, settings, firewall, network, pluginSetup,
+                joystickSetup, programPath, RunInBackground).Run();
+            //What the wizard has fixed: the banners of the window and the state
+            CheckFirewall(offerFix: false);
+            CheckJoystick(offerSetup: false);
+            ShowStatus(server.Status);
         }
 
         private void OnClosing()

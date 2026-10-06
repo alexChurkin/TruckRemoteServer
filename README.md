@@ -45,8 +45,8 @@ the port, the language (the language of Windows by default), **Minimize to the n
 the setup wizard and **Check for updates**. The server checks for a newer version by itself at the start and offers it
 in its window: **Update** replaces the exe and restarts the server.
 
-A tablet or a second phone can show the instruments of the truck beside the phone that drives (**Dashboard mode**
-in the app menu): it finds the server like the controller does, up to 4 of them at once, and controls nothing.
+A tablet or a second phone can show the instruments of the truck beside the phone that drives (the **Dashboard** mode of
+the app): it finds the server like the controller does, up to 4 of them at once, and controls nothing.
 
 To set vJoy up manually (e.g. if the automatic setup failed), install **vJoySetup.exe** from the
 [vJoy project](https://sourceforge.net/projects/vjoystick/files/Beta%202.x/2.1.9.1-160719/) and configure the 1-st device
@@ -74,7 +74,7 @@ parking brake **Space**, lights **L**, high beam **K**, horn **H**, air horn **N
 
 The quick actions panel in the app (button at the bottom center, swipe it for more pages) uses:
 
-- truck: engine **E**, trailer **T**, activate **Enter**, flash lights **J**, wipers **P**, beacon **O**,
+- truck: engine **E**, trailer **T**, activate **Enter**, flash lights **J** (held while the button is pressed), wipers **P**, beacon **O**,
   differential lock **V**, lift axle **U**;
 - driving: retarder **;** / **'**, engine brake **B** (held while the button is pressed), quick park **Q**,
   cruise control speed **.** / **,**, resume cruise control **/**;

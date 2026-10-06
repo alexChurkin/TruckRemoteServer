@@ -5,8 +5,10 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
 using TruckRemoteServer.Input;
 using TruckRemoteServer.Presentation;
+using TruckRemoteServer.Telemetry;
 
 namespace TruckRemoteServer.Infrastructure
 {
@@ -23,11 +25,15 @@ namespace TruckRemoteServer.Infrastructure
         private const string BackupFileName = "controls.truckremote.bak";
         private const int CheckIntervalMs = 5000;
 
-        private static readonly (string Folder, string Process)[] Games =
+        //The Steam id of a game is the folder of its profiles kept in the Steam Cloud
+        private static readonly (string Folder, string Process, int Game, string SteamId)[] Games =
         {
-            ("Euro Truck Simulator 2", "eurotrucks2"),
-            ("American Truck Simulator", "amtrucks")
+            ("Euro Truck Simulator 2", "eurotrucks2", TruckTelemetry.GameEts2, "227300"),
+            ("American Truck Simulator", "amtrucks", TruckTelemetry.GameAts, "270880")
         };
+
+        //The settings of a profile (the speed units among them)
+        private const string ConfigFileName = "config.cfg";
 
         private static readonly string[] ProfileFolders = { "profiles", "steam_profiles" };
 
@@ -36,6 +42,7 @@ namespace TruckRemoteServer.Infrastructure
 
         private readonly ILogger<GameControlsSetup> logger;
         private readonly KeyBindings bindings;
+        private readonly GameUnits units;
         private readonly object timerLock = new object();
         //Files that have the keys: they are read again only after they are changed
         private readonly Dictionary<string, DateTime> checkedFiles = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
@@ -46,10 +53,11 @@ namespace TruckRemoteServer.Infrastructure
         private string bindingsFile;
         private DateTime bindingsTime;
 
-        public GameControlsSetup(ILogger<GameControlsSetup> logger, KeyBindings bindings)
+        public GameControlsSetup(ILogger<GameControlsSetup> logger, KeyBindings bindings, GameUnits units)
         {
             this.logger = logger;
             this.bindings = bindings;
+            this.units = units;
         }
 
         public void Apply()
@@ -78,9 +86,12 @@ namespace TruckRemoteServer.Infrastructure
             try
             {
                 var profiles = new List<string>();
-                foreach ((string folder, string process) in Games)
+                foreach ((string folder, string process, int game, string steamId) in Games)
                 {
-                    Check(folder, process, profiles);
+                    var gameProfiles = new List<string>();
+                    Check(folder, process, gameProfiles);
+                    ReadUnits(game, steamId, gameProfiles);
+                    profiles.AddRange(gameProfiles);
                 }
                 ReadBindings(profiles);
             }
@@ -162,6 +173,59 @@ namespace TruckRemoteServer.Infrastructure
                 logger.LogWarning(e, "Key bindings of {File} weren't read", latest);
                 bindingsFile = null;
             }
+        }
+
+        //The speed units of the game: the setting of its profile played last
+        private void ReadUnits(int game, string steamId, List<string> profiles)
+        {
+            try
+            {
+                string config = ConfigFile(LatestProfile(profiles), steamId);
+                units.Set(game, config == null ? null : GameUnits.ParseMph(File.ReadAllText(config, FileEncoding)));
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException
+                || e is System.Security.SecurityException)
+            {
+                //The controller uses the usual units of the game then
+                units.Set(game, null);
+            }
+        }
+
+        private static string LatestProfile(List<string> profiles)
+        {
+            string latest = null;
+            DateTime latestActivity = DateTime.MinValue;
+            foreach (string profile in profiles)
+            {
+                DateTime activity = LastActivity(profile);
+                if (activity <= latestActivity) continue;
+                latestActivity = activity;
+                latest = profile;
+            }
+            return latest;
+        }
+
+        //config.cfg of the profile: in its folder, or (a profile of the Steam Cloud) in the folder of the Steam user,
+        //Steam/userdata/[user]/[game id]/remote/profiles/[profile]; the one written last if there are several users
+        private static string ConfigFile(string profile, string steamId)
+        {
+            if (profile == null) return null;
+            string local = Path.Combine(profile, ConfigFileName);
+            if (File.Exists(local)) return local;
+
+            string steam = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", null) as string;
+            if (string.IsNullOrEmpty(steam)) return null;
+            string users = Path.Combine(steam, "userdata");
+            if (!Directory.Exists(users)) return null;
+
+            string latest = null;
+            foreach (string user in Directory.GetDirectories(users))
+            {
+                string config = Path.Combine(user, steamId, "remote", "profiles", Path.GetFileName(profile), ConfigFileName);
+                if (!File.Exists(config)) continue;
+                if (latest == null || File.GetLastWriteTimeUtc(config) > File.GetLastWriteTimeUtc(latest)) latest = config;
+            }
+            return latest;
         }
 
         //When the profile was played last: the game writes its saves (autosaves too) and profile.sii into it.

@@ -38,7 +38,8 @@ namespace TruckRemoteServer.Protocol
     //  6 beacon, 7 analog pedals available, 8-9 lights mode (see ServerMessage),
     //  10 telemetry available (the dashboard values are real)
     //  flags2: 0 air pressure warning, 1 air pressure emergency, 2 oil pressure warning, 3 water temperature warning,
-    //  4 battery voltage warning, 5 AdBlue warning, 6 fuel warning, 7 differential lock, 8 lift axle, 9 engine brake
+    //  4 battery voltage warning, 5 AdBlue warning, 6 fuel warning, 7 differential lock, 8 lift axle, 9 engine brake,
+    //  10 the speed units of the game are known, 11 they are miles per hour (km/h otherwise)
     //
     //Viewers (a dashboard on a tablet or another phone) send the text hello "TruckRemoteViewer2" once a second, get
     //"Hi!2", the server state (without haptics) 20 times per second and the job once a second; type 0x04 is their goodbye.
@@ -56,7 +57,8 @@ namespace TruckRemoteServer.Protocol
 
         //What the server sends: 3 - the job messages and this byte, 4 - the fuel range;
         //5 - no new data, the actions 24-41 of the panel are known (see ControllerActions); 6 - haptics;
-        //7 - no new data, the actions 42 and 43 are known (the held light horn and "activate")
+        //7 - no new data, the actions 42 and 43 are known (the held light horn and "activate"),
+        //the speed units of the game are in flags2
         public const byte Revision = 7;
 
         private const int ControllerHeaderSize = 16;
@@ -133,7 +135,8 @@ namespace TruckRemoteServer.Protocol
             int flags2 = Flag(truck.AirPressureWarning, 0) | Flag(truck.AirPressureEmergency, 1)
                 | Flag(truck.OilPressureWarning, 2) | Flag(truck.WaterTemperatureWarning, 3)
                 | Flag(truck.BatteryVoltageWarning, 4) | Flag(truck.AdBlueWarning, 5) | Flag(truck.FuelWarning, 6)
-                | Flag(truck.DifferentialLock, 7) | Flag(truck.LiftAxle, 8) | Flag(truck.EngineBrake, 9);
+                | Flag(truck.DifferentialLock, 7) | Flag(truck.LiftAxle, 8) | Flag(truck.EngineBrake, 9)
+                | Flag(truck.SpeedInMph.HasValue, 10) | Flag(truck.SpeedInMph == true, 11);
             WriteUInt16(message, 22, flags2);
             message[24] = (byte)Clamp(truck.RetarderLevel, 0, byte.MaxValue);
             message[25] = (byte)Clamp(truck.RetarderStepCount, 0, byte.MaxValue);

@@ -15,6 +15,8 @@ namespace TruckRemoteServer.Telemetry
         public bool Available { get; set; }
         //GameEts2 (km/h) or GameAts (mph)
         public int Game { get; set; }
+        //The speed units of the game: miles per hour or km/h, null - unknown (see GameUnits)
+        public bool? SpeedInMph { get; set; }
 
         public bool EngineOn { get; set; }
         public bool ParkingBrake { get; set; }

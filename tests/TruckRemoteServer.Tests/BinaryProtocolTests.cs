@@ -123,6 +123,18 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void SpeedUnitsOfTheGameAreInTheSecondFlags()
+        {
+            ushort Flags2(bool? mph) => BitConverter.ToUInt16(BinaryProtocol.FormatServerState(
+                new TruckTelemetry { Available = true, SpeedInMph = mph }, lightsMode: 0, ffbDuration: 0,
+                analogPedalsAvailable: false, sequence: 1), 22);
+
+            Assert.Equal(0, Flags2(null));
+            Assert.Equal(1 << 10, Flags2(false));
+            Assert.Equal(1 << 10 | 1 << 11, Flags2(true));
+        }
+
+        [Fact]
         public void HapticsFollowTheState()
         {
             var haptics = new HapticDetector();

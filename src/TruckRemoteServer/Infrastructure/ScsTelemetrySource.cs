@@ -16,6 +16,12 @@ namespace TruckRemoteServer.Infrastructure
         private readonly Stopwatch sinceCheck = new Stopwatch();
         private MemoryMappedFile map;
         private MemoryMappedViewAccessor view;
+        private readonly GameUnits units;
+
+        public ScsTelemetrySource(GameUnits units)
+        {
+            this.units = units;
+        }
 
         public TruckTelemetry Read()
         {
@@ -31,7 +37,10 @@ namespace TruckRemoteServer.Infrastructure
                 if (view == null) return TruckTelemetry.Unknown;
 
                 view.ReadArray(0, buffer, 0, buffer.Length);
-                return ScsTelemetryMap.Parse(buffer);
+                TruckTelemetry truck = ScsTelemetryMap.Parse(buffer);
+                //The units aren't in the telemetry: they are a setting of the game
+                if (truck.Available) truck.SpeedInMph = units.Mph(truck.Game);
+                return truck;
             }
         }
 

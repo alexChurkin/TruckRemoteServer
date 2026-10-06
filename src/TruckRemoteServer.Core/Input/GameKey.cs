@@ -38,6 +38,25 @@ namespace TruckRemoteServer.Input
         DashboardDisplay,
         Hud,
         RadioNext,
-        QuickSave
+        QuickSave,
+        //Since revision 5
+        Mirrors,
+        CameraTop,
+        CameraRoof,
+        CameraLeanOut,
+        CameraBumper,
+        CameraWheel,
+        CameraDriveBy,
+        LookLeft,
+        LookRight,
+        GearUp,
+        GearDown,
+        RadioPrevious,
+        Radio,
+        AdvisorZoom,
+        AdvisorMode,
+        RoadAssistance,
+        Screenshot,
+        Menu
     }
 }

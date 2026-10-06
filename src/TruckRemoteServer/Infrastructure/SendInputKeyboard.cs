@@ -47,13 +47,31 @@ namespace TruckRemoteServer.Infrastructure
             { GameKey.DashboardDisplay, 0x17 }, //I
             { GameKey.Hud, 0x3D },           //F3
             { GameKey.RadioNext, 0x51 },     //Page Down (extended)
-            { GameKey.QuickSave, 0x46 }      //Scroll Lock
+            { GameKey.QuickSave, 0x46 },     //Scroll Lock
+            { GameKey.Mirrors, 0x3C },       //F2
+            { GameKey.CameraTop, 0x04 },     //3
+            { GameKey.CameraRoof, 0x05 },    //4
+            { GameKey.CameraLeanOut, 0x06 }, //5
+            { GameKey.CameraBumper, 0x07 },  //6
+            { GameKey.CameraWheel, 0x08 },   //7
+            { GameKey.CameraDriveBy, 0x09 }, //8
+            { GameKey.LookLeft, 0x35 },      //Numpad / (extended)
+            { GameKey.LookRight, 0x37 },     //Numpad *
+            { GameKey.GearUp, 0x2A },        //Left Shift
+            { GameKey.GearDown, 0x1D },      //Left Ctrl
+            { GameKey.RadioPrevious, 0x49 }, //Page Up (extended)
+            { GameKey.Radio, 0x13 },         //R
+            { GameKey.AdvisorZoom, 0x3F },   //F5
+            { GameKey.AdvisorMode, 0x40 },   //F6
+            { GameKey.RoadAssistance, 0x41 }, //F7
+            { GameKey.Screenshot, 0x44 },    //F10
+            { GameKey.Menu, 0x01 }           //Esc
         };
 
         //Without the flag their scan codes are the keys of the numeric keypad
         private static readonly HashSet<GameKey> ExtendedKeys = new HashSet<GameKey>
         {
-            GameKey.Gas, GameKey.Brake, GameKey.RadioNext
+            GameKey.Gas, GameKey.Brake, GameKey.RadioNext, GameKey.RadioPrevious, GameKey.LookLeft
         };
 
         private const int InputKeyboard = 1;

@@ -66,7 +66,12 @@ The quick actions panel in the app (button at the bottom center, swipe it for mo
 - driving: retarder **;** / **'**, engine brake **B** (held while the button is pressed), quick park **Q**,
   cruise control speed **.** / **,**, resume cruise control **/**;
 - view: cab camera **1**, chase camera **2**, next camera **9**, map **M**, dashboard display **I**, HUD **F3**,
-  next radio station **Page Down**, quick save **Scroll Lock**.
+  next radio station **Page Down**, quick save **Scroll Lock**;
+- more cameras: top **3**, roof **4**, window **5**, bumper **6**, wheel **7**, drive-by **8**, mirrors **F2**,
+  screenshot **F10**;
+- looking around and gears: look left **Numpad /** and right **Numpad \*** (held while the button is pressed),
+  gear up **Shift** and down **Ctrl**, previous radio station **Page Up**, radio **R**,
+  route advisor **F5** and **F6**, road assistance **F7**, menu **Esc**.
 
 The games have no default keys for the cruise control speed and resume, so the server adds these keys to the key bindings
 of every game profile (`controls.sii`, the original is kept beside it as `controls.truckremote.bak`). A key the profile

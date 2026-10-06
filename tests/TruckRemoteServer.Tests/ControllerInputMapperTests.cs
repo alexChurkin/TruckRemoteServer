@@ -34,6 +34,21 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void ActionsOfThePanelHaveTheirKeys()
+        {
+            //Every code is a click or a hold, never both; the codes are fixed (the controller sends them)
+            Assert.Empty(System.Linq.Enumerable.Intersect(ControllerActions.Clicks.Keys, ControllerActions.Holds.Keys));
+            for (int code = 1; code <= 41; code++)
+            {
+                Assert.True(ControllerActions.Clicks.ContainsKey(code) || ControllerActions.Holds.ContainsKey(code), "action " + code);
+            }
+            Assert.Equal(GameKey.Mirrors, ControllerActions.Clicks[24]);
+            Assert.Equal(GameKey.LookLeft, ControllerActions.Holds[31]);
+            Assert.Equal(GameKey.LookRight, ControllerActions.Holds[32]);
+            Assert.Equal(GameKey.Menu, ControllerActions.Clicks[41]);
+        }
+
+        [Fact]
         public void FirstMessageTakesTogglesWithoutClicks()
         {
             mapper.Apply(State(left: true, actions: (1, 3)));

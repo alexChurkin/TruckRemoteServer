@@ -46,8 +46,9 @@ namespace TruckRemoteServer.Protocol
         public const byte GoodbyeType = 0x04;
         public const byte JobType = 0x05;
 
-        //What the server sends: 3 - the job messages and this byte, 4 - the fuel range
-        public const byte Revision = 4;
+        //What the server sends: 3 - the job messages and this byte, 4 - the fuel range;
+        //5 - no new data, the actions 24-41 of the panel are known (see ControllerActions)
+        public const byte Revision = 5;
 
         private const int ControllerHeaderSize = 16;
         private const int ServerStateSize = 40;

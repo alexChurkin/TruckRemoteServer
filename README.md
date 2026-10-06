@@ -4,8 +4,6 @@ Server app for [Truck Remote Control](https://github.com/alexChurkin/TruckRemote
 
 #### [Russian guide](README_ru.md)
 
-### [VIDEO INSTRUCTION](https://www.youtube.com/watch?v=qJOPYtYDHOo)
-
 ### [DOWNLOAD THE LATEST VERSION](https://github.com/alexChurkin/TruckRemoteServer/releases)
 
 ### Supported OS
@@ -48,21 +46,26 @@ in its window: **Update** replaces the exe and restarts the server.
 A tablet or a second phone can show the instruments of the truck beside the phone that drives (the **Dashboard** mode of
 the app): it finds the server like the controller does, up to 4 of them at once, and controls nothing.
 
+The app shows the speed in the units set in the game (km/h or mph): the server reads them from the profile played last.
+
 To set vJoy up manually (e.g. if the automatic setup failed), install **vJoySetup.exe** from the
 [vJoy project](https://sourceforge.net/projects/vjoystick/files/Beta%202.x/2.1.9.1-160719/) and configure the 1-st device
 in **Configure vJoy** as on this screenshot:
 
 ![](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_vjoy_conf.png)
 
-### Analog pedals (optional)
+### Analog pedals
 
-By default gas and brake are emulated with the arrow keys (full press). To control the press force
-(the **Analog** pedal mode in the app settings):
-1) In **Configure vJoy** additionally enable the **Y** and **Z** axes of the 1-st device and press **Apply**
-2) In the game, open *Options → Controls*, choose the vJoy device and bind **Throttle** to the Y axis
-   and **Brake** to the Z axis (both are 0 when released; invert them in the game if needed)
+The app presses the pedals by their force (the **Analog** pedal mode, the default one) through the **Y** and **Z**
+axes of vJoy. The automatic vJoy setup makes the 1-st device with the X axis only, so the axes are enabled once
+by hand:
+1) Open **Configure vJoy**, enable the **Y** and **Z** axes of the 1-st device and press **Apply**
+2) Restart the server. It binds **Throttle** to the Y axis and **Brake** to the Z axis in the game profiles
+   by itself (see below); in a profile with your own controller bind them in *Options → Controls*
+   (both are 0 when released; invert them in the game if needed)
 
-If the axes aren't enabled, the app shows a hint and keeps using the arrow keys.
+Until the axes are enabled the app shows a hint and presses the arrow keys instead (full press), as in its
+**Digital** pedal mode.
 
 ### Keys
 

@@ -36,7 +36,7 @@ jobs:
           $actual = [Version]$version
           $normalize = { param($v) [Version]::new($v.Major, $v.Minor, [Math]::Max(0, $v.Build), [Math]::Max(0, $v.Revision)) }
           if ((& $normalize $expected) -ne (& $normalize $actual)) {
-            throw "The exe is $actual, the release is $expected: change AssemblyVersion in Properties\AssemblyInfo.cs"
+            throw "The exe is ${actual}, the release is ${expected}: change AssemblyVersion in Properties\AssemblyInfo.cs"
           }
 
       - name: Attach the exe

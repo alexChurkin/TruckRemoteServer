@@ -37,6 +37,8 @@ namespace TruckRemoteServer.Presentation
         event EventHandler AllowFirewallRequested;
         event EventHandler InstallJoystickRequested;
         event EventHandler SetupWizardRequested;
+        event EventHandler UpdateRequested;
+        event EventHandler CheckForUpdatesRequested;
 
         //"" - the language of Windows
         void ShowLanguage(string language);
@@ -57,6 +59,15 @@ namespace TruckRemoteServer.Presentation
         bool AskInstallJoystick();
 
         void ShowWarning(Warning warning, string detail);
+
+        //A newer version of the server; null hides the banner. Busy: it is being downloaded
+        void ShowUpdate(string version, bool busy);
+
+        //The answer to "Check for updates" of the menu when there's nothing newer
+        void ShowUpToDate();
+
+        //The new version of the server has been started: this one closes
+        void CloseForUpdate();
 
         //The window of the setup wizard over this one, not shown yet
         ISetupWizardView CreateSetupWizard();

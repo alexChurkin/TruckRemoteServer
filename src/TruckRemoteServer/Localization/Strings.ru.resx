@@ -83,4 +83,9 @@
   <data name="WizardBrake" xml:space="preserve"><value>Тормоз</value></data>
   <data name="WizardRetry" xml:space="preserve"><value>Ещё раз</value></data>
   <data name="WizardDone" xml:space="preserve"><value>Готово</value></data>
+  <data name="CheckForUpdates" xml:space="preserve"><value>Проверить обновления</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Доступен Truck Remote Server {0}</value></data>
+  <data name="UpdateInstall" xml:space="preserve"><value>Обновить</value></data>
+  <data name="UpdateInstalling" xml:space="preserve"><value>Обновление…</value></data>
+  <data name="UpToDate" xml:space="preserve"><value>У вас последняя версия сервера.</value></data>
 </root>

@@ -53,6 +53,11 @@ namespace TruckRemoteServer.UI
         private readonly RoundedPanel joystickBanner = new RoundedPanel { Visible = false };
         private readonly Label joystickLabel = new Label { AutoSize = false };
         private readonly RoundedButton installJoystickButton = new RoundedButton();
+        private readonly RoundedPanel updateBanner = new RoundedPanel { Visible = false };
+        private readonly Label updateLabel = new Label { AutoSize = false };
+        private readonly RoundedButton updateButton = new RoundedButton();
+        //The version offered by the banner
+        private string updateVersion;
 
         private readonly RoundedButton startStopButton = new RoundedButton();
         private readonly RoundedButton settingsButton = new RoundedButton { ShowChevron = true };
@@ -61,6 +66,7 @@ namespace TruckRemoteServer.UI
         private readonly ToolStripMenuItem languageItem = new ToolStripMenuItem();
         private readonly ToolStripMenuItem minimizeToTrayItem = new ToolStripMenuItem();
         private readonly ToolStripMenuItem wizardItem = new ToolStripMenuItem();
+        private readonly ToolStripMenuItem updatesItem = new ToolStripMenuItem();
         private readonly Label versionLabel = new Label { AutoSize = true };
 
         private readonly NotifyIcon trayIcon = new NotifyIcon();
@@ -105,9 +111,10 @@ namespace TruckRemoteServer.UI
             addressCard.Controls.AddRange(new Control[] { addressCaption, addressLabel, copyButton, portInfoLabel, qrView, hintLabel });
             firewallBanner.Controls.AddRange(new Control[] { firewallLabel, allowButton });
             joystickBanner.Controls.AddRange(new Control[] { joystickLabel, installJoystickButton });
+            updateBanner.Controls.AddRange(new Control[] { updateLabel, updateButton });
             Controls.AddRange(new Control[]
             {
-                titleLabel, statusPill, addressCard, joystickBanner, firewallBanner,
+                titleLabel, statusPill, addressCard, updateBanner, joystickBanner, firewallBanner,
                 startStopButton, settingsButton, versionLabel
             });
 
@@ -121,9 +128,10 @@ namespace TruckRemoteServer.UI
             portItem.Click += (s, e) => ChangePort();
             minimizeToTrayItem.Click += (s, e) => MinimizeToTrayChanged?.Invoke(this, !minimizeToTray);
             wizardItem.Click += (s, e) => SetupWizardRequested?.Invoke(this, EventArgs.Empty);
+            updatesItem.Click += (s, e) => CheckForUpdatesRequested?.Invoke(this, EventArgs.Empty);
             settingsMenu.Items.AddRange(new ToolStripItem[]
             {
-                portItem, languageItem, minimizeToTrayItem, new ToolStripSeparator(), wizardItem
+                portItem, languageItem, minimizeToTrayItem, new ToolStripSeparator(), wizardItem, updatesItem
             });
             settingsMenu.Font = Theme.Body;
             settingsButton.Click += (s, e) => settingsMenu.Show(settingsButton, 0, settingsButton.Height + Px(2));
@@ -146,6 +154,7 @@ namespace TruckRemoteServer.UI
             };
             allowButton.Click += (s, e) => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
             installJoystickButton.Click += (s, e) => InstallJoystickRequested?.Invoke(this, EventArgs.Empty);
+            updateButton.Click += (s, e) => UpdateRequested?.Invoke(this, EventArgs.Empty);
             startStopButton.Click += (s, e) => (IsRunning ? StopRequested : StartRequested)?.Invoke(this, EventArgs.Empty);
             SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
 
@@ -163,6 +172,8 @@ namespace TruckRemoteServer.UI
         public event EventHandler AllowFirewallRequested;
         public event EventHandler InstallJoystickRequested;
         public event EventHandler SetupWizardRequested;
+        public event EventHandler UpdateRequested;
+        public event EventHandler CheckForUpdatesRequested;
 
         private bool IsRunning => state == ServerState.WaitingForController || state == ServerState.ControllerConnected
             || state == ServerState.ControllerConnectedWithoutJoystick || state == ServerState.ControllerPaused;
@@ -252,6 +263,25 @@ namespace TruckRemoteServer.UI
             firewallBanner.Visible = visible;
             allowButton.Enabled = !busy;
             LayoutContent();
+        }
+
+        public void ShowUpdate(string version, bool busy)
+        {
+            updateVersion = version;
+            updateBanner.Visible = version != null;
+            updateButton.Enabled = !busy;
+            ApplyUpdateTexts(busy);
+            LayoutContent();
+        }
+
+        public void ShowUpToDate()
+        {
+            MessageBox.Show(this, Texts.Get(T.UpToDate), Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        public void CloseForUpdate()
+        {
+            Close();
         }
 
         public void ShowJoystickWarning(bool visible, bool busy)
@@ -375,6 +405,7 @@ namespace TruckRemoteServer.UI
             allowButton.Text = Texts.Get(T.FirewallAllow);
             joystickLabel.Text = Texts.Get(T.JoystickWarning);
             installJoystickButton.Text = Texts.Get(T.JoystickInstall);
+            ApplyUpdateTexts(!updateButton.Enabled);
             settingsButton.Text = Texts.Get(T.SettingsTitle);
             trayOpenItem.Text = Texts.Get(T.TrayOpen);
             trayExitItem.Text = Texts.Get(T.TrayExit);
@@ -395,6 +426,7 @@ namespace TruckRemoteServer.UI
             minimizeToTrayItem.Text = Texts.Get(T.MinimizeToTray);
             minimizeToTrayItem.Checked = minimizeToTray;
             wizardItem.Text = Texts.Get(T.WizardMenu);
+            updatesItem.Text = Texts.Get(T.CheckForUpdates);
             foreach (ToolStripMenuItem item in languageItem.DropDownItems)
             {
                 string code = (string)item.Tag;
@@ -485,6 +517,15 @@ namespace TruckRemoteServer.UI
             }
             StyleSecondary(allowButton, theme.WarningBackground);
             StyleSecondary(installJoystickButton, theme.WarningBackground);
+            //The update is good news: a card with the accent button
+            updateBanner.FillColor = theme.Card;
+            updateBanner.BorderColor = theme.CardBorder;
+            updateLabel.BackColor = theme.Card;
+            updateLabel.ForeColor = theme.Text;
+            updateButton.FillColor = theme.Accent;
+            updateButton.TextColor = theme.OnAccent;
+            updateButton.BorderColor = Color.Transparent;
+            updateButton.ParentColor = theme.Card;
             StyleSecondary(copyButton, theme.Card);
             StyleSecondary(settingsButton, theme.Background);
 
@@ -611,7 +652,8 @@ namespace TruckRemoteServer.UI
             addressCard.Bounds = new Rectangle(pad, y, width, cy);
             y += cy + gap;
 
-            //Warnings: vJoy isn't ready (the phone can't steer), the firewall may block the phone
+            //A newer version, then warnings: vJoy isn't ready (the phone can't steer), the firewall may block the phone
+            y = LayoutBanner(updateBanner, updateLabel, updateButton, y);
             y = LayoutBanner(joystickBanner, joystickLabel, installJoystickButton, y);
             y = LayoutBanner(firewallBanner, firewallLabel, allowButton, y);
             y += Px(8);
@@ -628,6 +670,12 @@ namespace TruckRemoteServer.UI
             ClientSize = new Size(width + 2 * pad, y);
             ResumeLayout(false);
             Invalidate(true);
+        }
+
+        private void ApplyUpdateTexts(bool busy)
+        {
+            updateLabel.Text = updateVersion == null ? "" : Texts.Format(T.UpdateAvailable, updateVersion);
+            updateButton.Text = Texts.Get(busy ? T.UpdateInstalling : T.UpdateInstall);
         }
 
         //A warning banner (text and a button) at y, returns y under it

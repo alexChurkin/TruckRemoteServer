@@ -10,6 +10,7 @@ using TruckRemoteServer.Presentation;
 using TruckRemoteServer.Settings;
 using TruckRemoteServer.Telemetry;
 using TruckRemoteServer.UI;
+using TruckRemoteServer.Updates;
 
 namespace TruckRemoteServer
 {
@@ -20,6 +21,8 @@ namespace TruckRemoteServer
         {
             //The server started itself with administrator rights to install vJoy
             if (args.Length > 0 && args[0] == VJoySetup.ElevatedArgument) return VJoySetup.RunElevated();
+            //Started by an update: the old server releases the port first
+            GitHubUpdater.FinishUpdate(Application.ExecutablePath, args);
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -51,6 +54,9 @@ namespace TruckRemoteServer
             services.AddSingleton<ITelemetryPluginSetup, TelemetryPluginSetup>();
             services.AddSingleton<IJoystickSetup, VJoySetup>();
             services.AddSingleton<IGameControlsSetup, GameControlsSetup>();
+            Version version = typeof(Program).Assembly.GetName().Version;
+            services.AddSingleton<IUpdater>(provider => new GitHubUpdater(Application.ExecutablePath, version,
+                provider.GetRequiredService<ILogger<GitHubUpdater>>()));
 
             services.AddSingleton<ControllerInputMapper>();
             services.AddSingleton<ControllerServer>();
@@ -68,7 +74,9 @@ namespace TruckRemoteServer
                 provider.GetRequiredService<ITelemetryPluginSetup>(),
                 provider.GetRequiredService<IJoystickSetup>(),
                 provider.GetRequiredService<IGameControlsSetup>(),
-                Application.ExecutablePath));
+                Application.ExecutablePath,
+                provider.GetRequiredService<IUpdater>(),
+                version));
             return services.BuildServiceProvider();
         }
     }

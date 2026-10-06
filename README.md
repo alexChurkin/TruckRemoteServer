@@ -116,6 +116,14 @@ The result is a single `src/TruckRemoteServer/bin/Release/TruckRemoteServer.exe`
 the native vJoy library, the vJoy setup and the telemetry plugin are embedded into it ([Costura](https://github.com/Fody/Costura)).
 The process is 32-bit, as the vJoy libraries in `lib` are x86 only.
 
+### Releases and updates
+
+The server checks the latest release on GitHub at the start (and from **Settings → Check for updates**) and offers
+a newer version in its window: **Update** downloads `TruckRemoteServer.exe` of the release, puts it in place of the
+running one and restarts the server (a folder that can't be written, e.g. Program Files, opens the release page instead).
+To release a version, change `AssemblyVersion` in `src/TruckRemoteServer/Properties/AssemblyInfo.cs`, then publish
+a release with the same tag (`1.3` or `v1.3`): the Release workflow builds it, checks the version and attaches the exe.
+
 ### Architecture
 
 - `src/TruckRemoteServer.Core` (.NET Standard 2.0) — the logic without Windows dependencies:

@@ -8,6 +8,7 @@ using TruckRemoteServer.Network;
 using TruckRemoteServer.Presentation;
 using TruckRemoteServer.Settings;
 using TruckRemoteServer.Telemetry;
+using TruckRemoteServer.Updates;
 
 namespace TruckRemoteServer.Tests
 {
@@ -197,6 +198,28 @@ namespace TruckRemoteServer.Tests
         public event EventHandler AllowFirewallRequested;
         public event EventHandler InstallJoystickRequested;
         public event EventHandler SetupWizardRequested;
+        public event EventHandler UpdateRequested;
+        public event EventHandler CheckForUpdatesRequested;
+
+        //null: no banner
+        public string Update;
+        public bool UpdateBusy;
+        public int UpToDateMessages;
+        public bool Exited;
+
+        public void RequestUpdate() => UpdateRequested?.Invoke(this, EventArgs.Empty);
+
+        public void CheckForUpdates() => CheckForUpdatesRequested?.Invoke(this, EventArgs.Empty);
+
+        public void ShowUpdate(string version, bool busy)
+        {
+            Update = version;
+            UpdateBusy = busy;
+        }
+
+        public void ShowUpToDate() => UpToDateMessages++;
+
+        public void CloseForUpdate() => Exited = true;
 
         public FakeWizardView Wizard = new FakeWizardView();
         public int Wizards;
@@ -266,6 +289,24 @@ namespace TruckRemoteServer.Tests
         public void ShowWarning(Warning warning, string detail) => Warnings.Add(warning);
 
         public void RunOnUiThread(Action action) => action();
+    }
+
+    public class FakeUpdater : IUpdater
+    {
+        public ReleaseInfo Latest;
+        public bool InstallWorks = true;
+        public int Installs;
+        public int PagesOpened;
+
+        public ReleaseInfo GetLatestRelease() => Latest;
+
+        public bool Install(ReleaseInfo release)
+        {
+            Installs++;
+            return InstallWorks && release.Exe != null;
+        }
+
+        public void OpenPage(ReleaseInfo release) => PagesOpened++;
     }
 
     public class FakeWizardView : ISetupWizardView

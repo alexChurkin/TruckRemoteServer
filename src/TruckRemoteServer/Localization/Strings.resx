@@ -83,4 +83,9 @@ Install and set it up now? Administrator rights are needed, Windows may also ask
   <data name="WizardBrake" xml:space="preserve"><value>Brake</value></data>
   <data name="WizardRetry" xml:space="preserve"><value>Try again</value></data>
   <data name="WizardDone" xml:space="preserve"><value>Done</value></data>
+  <data name="CheckForUpdates" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Truck Remote Server {0} is available</value></data>
+  <data name="UpdateInstall" xml:space="preserve"><value>Update</value></data>
+  <data name="UpdateInstalling" xml:space="preserve"><value>Updating…</value></data>
+  <data name="UpToDate" xml:space="preserve"><value>You have the latest version of the server.</value></data>
 </root>

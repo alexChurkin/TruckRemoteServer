@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using TruckRemoteServer.Firewall;
 using TruckRemoteServer.Input;
 using TruckRemoteServer.Presentation;
+using TruckRemoteServer.Updates;
 using Xunit;
 
 namespace TruckRemoteServer.Tests
@@ -19,6 +20,7 @@ namespace TruckRemoteServer.Tests
         private readonly FakePluginSetup pluginSetup = new FakePluginSetup();
         private readonly FakeJoystickSetup joystickSetup = new FakeJoystickSetup();
         private readonly FakeControlsSetup controlsSetup = new FakeControlsSetup();
+        private readonly FakeUpdater updater = new FakeUpdater();
         private readonly ControllerInputMapper mapper;
         private readonly ControllerServer server;
         private readonly MainPresenter presenter;
@@ -29,7 +31,7 @@ namespace TruckRemoteServer.Tests
             server = new ControllerServer(mapper, new FakeTelemetry(), joystick, new NoTimerResolution(),
                 NullLogger<ControllerServer>.Instance);
             presenter = new MainPresenter(view, server, mapper, joystick, settings, firewall, network, pluginSetup,
-                joystickSetup, controlsSetup, "server.exe")
+                joystickSetup, controlsSetup, "server.exe", updater, new Version(1, 3))
             {
                 RunInBackground = work =>
                 {
@@ -78,6 +80,45 @@ namespace TruckRemoteServer.Tests
 
             view.OpenSetupWizard();
             Assert.Equal(1, view.Wizards);
+        }
+
+        [Fact]
+        public void NewerReleaseIsOfferedAndInstalled()
+        {
+            updater.Latest = new ReleaseInfo(new Version(1, 4), "https://github.com/x/releases/tag/1.4", "https://github.com/x/1.4/TruckRemoteServer.exe");
+            view.Show();
+            Assert.Equal("1.4", view.Update);
+
+            view.RequestUpdate();
+
+            Assert.Equal(1, updater.Installs);
+            Assert.True(view.Exited);
+        }
+
+        [Fact]
+        public void ReleaseWithoutTheExeOpensItsPage()
+        {
+            updater.Latest = new ReleaseInfo(new Version(1, 4), "https://github.com/x/releases/tag/1.4", null);
+            view.Show();
+            view.RequestUpdate();
+
+            Assert.False(view.Exited);
+            Assert.Equal(1, updater.PagesOpened);
+            Assert.Equal("1.4", view.Update);
+            Assert.False(view.UpdateBusy);
+        }
+
+        [Fact]
+        public void SameOrOlderReleaseIsNotOffered()
+        {
+            updater.Latest = new ReleaseInfo(new Version(1, 3), "https://github.com/x/releases/tag/1.3", null);
+            view.Show();
+            Assert.Null(view.Update);
+            Assert.Equal(0, view.UpToDateMessages);
+
+            //Asked from the menu, the answer is told
+            view.CheckForUpdates();
+            Assert.Equal(1, view.UpToDateMessages);
         }
 
         [Fact]

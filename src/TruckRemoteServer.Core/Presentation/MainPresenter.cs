@@ -6,6 +6,7 @@ using TruckRemoteServer.Firewall;
 using TruckRemoteServer.Input;
 using TruckRemoteServer.Network;
 using TruckRemoteServer.Settings;
+using TruckRemoteServer.Updates;
 
 namespace TruckRemoteServer.Presentation
 {
@@ -23,13 +24,20 @@ namespace TruckRemoteServer.Presentation
         private readonly IJoystickSetup joystickSetup;
         private readonly IGameControlsSetup controlsSetup;
         private readonly string programPath;
+        private readonly IUpdater updater;
+        private readonly Version version;
+        //The newer release found, null if there's none
+        private ReleaseInfo update;
         //The last start failed because the port is used by another program
         private bool portBusy;
 
         public MainPresenter(IMainView view, ControllerServer server, ControllerInputMapper input, IVirtualJoystick joystick,
             ISettingsStore settings, IFirewall firewall, INetworkInfo network, ITelemetryPluginSetup pluginSetup,
-            IJoystickSetup joystickSetup, IGameControlsSetup controlsSetup, string programPath)
+            IJoystickSetup joystickSetup, IGameControlsSetup controlsSetup, string programPath, IUpdater updater,
+            Version version)
         {
+            this.updater = updater;
+            this.version = version;
             this.view = view;
             this.server = server;
             this.input = input;
@@ -52,6 +60,8 @@ namespace TruckRemoteServer.Presentation
             view.AllowFirewallRequested += (s, e) => AllowInFirewall();
             view.InstallJoystickRequested += (s, e) => SetupJoystick();
             view.SetupWizardRequested += (s, e) => OpenSetupWizard();
+            view.UpdateRequested += (s, e) => InstallUpdate();
+            view.CheckForUpdatesRequested += (s, e) => CheckForUpdates(manual: true);
         }
 
         //For tests: firewall and vJoy checks run on this scheduler
@@ -92,6 +102,7 @@ namespace TruckRemoteServer.Presentation
             bool firstStart = !settings.SetupWizardShown;
             CheckFirewall(offerFix: !firstStart);
             CheckJoystick(offerSetup: !firstStart);
+            CheckForUpdates(manual: false);
             //After the window is shown and the server is started
             if (firstStart) view.RunOnUiThread(OpenSetupWizard);
         }
@@ -187,6 +198,40 @@ namespace TruckRemoteServer.Presentation
         private void ShowAddresses()
         {
             view.ShowAddresses(network.GetLocalAddresses().Select(address => address.ToString()).ToList(), settings.Port);
+        }
+
+        /* Updates: the latest release on GitHub */
+
+        private void CheckForUpdates(bool manual)
+        {
+            ReleaseInfo latest = null;
+            RunInBackground(() => latest = updater.GetLatestRelease())
+                .ContinueWith(task => view.RunOnUiThread(() =>
+                {
+                    update = latest != null && latest.IsNewerThan(version) ? latest : null;
+                    view.ShowUpdate(update?.ToString(), busy: false);
+                    if (manual && update == null) view.ShowUpToDate();
+                }), TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        //The new exe is put in place and started, it waits for this one to exit; otherwise the release page is opened
+        private void InstallUpdate()
+        {
+            ReleaseInfo release = update;
+            if (release == null) return;
+            view.ShowUpdate(release.ToString(), busy: true);
+            bool installed = false;
+            RunInBackground(() => installed = updater.Install(release))
+                .ContinueWith(task => view.RunOnUiThread(() =>
+                {
+                    if (installed)
+                    {
+                        view.CloseForUpdate();
+                        return;
+                    }
+                    view.ShowUpdate(release.ToString(), busy: false);
+                    updater.OpenPage(release);
+                }), TaskContinuationOptions.ExecuteSynchronously);
         }
 
         /* Windows Firewall blocks the phone's packets when there is no allowing rule */

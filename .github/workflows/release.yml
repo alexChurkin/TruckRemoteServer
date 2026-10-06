@@ -1,0 +1,49 @@
+name: Release
+
+# A published release gets the exe: the server updates itself from the TruckRemoteServer.exe of the latest release
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  contents: write
+
+jobs:
+  exe:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Build
+        run: dotnet build TruckRemoteServer.sln -c Release
+
+      - name: Test
+        run: dotnet test tests/TruckRemoteServer.Tests/TruckRemoteServer.Tests.csproj -c Release --no-build
+
+      # The version of the exe must be the version of the release, otherwise the update would be offered again
+      - name: Check the version
+        shell: pwsh
+        run: |
+          $exe = "src\TruckRemoteServer\bin\Release\TruckRemoteServer.exe"
+          $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo((Resolve-Path $exe)).FileVersion
+          $tag = "${{ github.event.release.tag_name }}" -replace '^[vV]', '' -replace '-.*$', ''
+          $expected = [Version]($(if ($tag.Contains('.')) { $tag } else { "$tag.0" }))
+          $actual = [Version]$version
+          $normalize = { param($v) [Version]::new($v.Major, $v.Minor, [Math]::Max(0, $v.Build), [Math]::Max(0, $v.Revision)) }
+          if ((& $normalize $expected) -ne (& $normalize $actual)) {
+            throw "The exe is $actual, the release is $expected: change AssemblyVersion in Properties\AssemblyInfo.cs"
+          }
+
+      - name: Attach the exe
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" `
+            src\TruckRemoteServer\bin\Release\TruckRemoteServer.exe `
+            src\TruckRemoteServer\bin\Release\THIRD-PARTY-NOTICES.txt --clobber

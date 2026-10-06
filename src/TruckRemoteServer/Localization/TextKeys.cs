@@ -45,6 +45,11 @@ namespace TruckRemoteServer.Localization
         public const string TrayExit = nameof(TrayExit);
         public const string TrayHint = nameof(TrayHint);
         public const string QrCode = nameof(QrCode);
+        public const string CheckForUpdates = nameof(CheckForUpdates);
+        public const string UpdateAvailable = nameof(UpdateAvailable);
+        public const string UpdateInstall = nameof(UpdateInstall);
+        public const string UpdateInstalling = nameof(UpdateInstalling);
+        public const string UpToDate = nameof(UpToDate);
         public const string WizardMenu = nameof(WizardMenu);
         public const string WizardTitle = nameof(WizardTitle);
         public const string WizardSubtitle = nameof(WizardSubtitle);

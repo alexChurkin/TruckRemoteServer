@@ -37,6 +37,8 @@ namespace TruckRemoteServer.Telemetry
         public float CruiseSpeed { get; set; }
         //The gear on the dashboard: negative - reverse, 0 - neutral
         public int Gear { get; set; }
+        //The gearbox, if it is one whose gears the game names not by their numbers (see Gearbox); null otherwise
+        public Gearbox Gearbox { get; set; }
         public float EngineRpm { get; set; }
         public float EngineRpmMax { get; set; }
         //Liters

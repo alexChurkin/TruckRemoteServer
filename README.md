@@ -47,6 +47,9 @@ A tablet or a second phone can show the instruments of the truck beside the phon
 the app): it finds the server like the controller does, up to 4 of them at once, and controls nothing.
 
 The app shows the speed in the units set in the game (km/h or mph): the server reads them from the profile played last.
+The gear is shown as the game names it: a gearbox with crawler gears counts its gears after them (C1, C2, then 1-12).
+The telemetry doesn't tell that, so the server knows such gearboxes of both games by their ratios (`Core/Telemetry/Gearbox`);
+a gearbox it doesn't know is shown by the numbers of its gears.
 
 To set vJoy up manually (e.g. if the automatic setup failed), install **vJoySetup.exe** from the
 [vJoy project](https://sourceforge.net/projects/vjoystick/files/Beta%202.x/2.1.9.1-160719/) and configure the 1-st device

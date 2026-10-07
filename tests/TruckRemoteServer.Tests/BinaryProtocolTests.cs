@@ -135,6 +135,33 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void GearIsSentAsTheGameNamesIt()
+        {
+            //A 12+2 gearbox: C1, C2, then 1-12
+            Gearbox scania = Gearbox.Find(TruckTelemetry.GameEts2, GearboxTests.ScaniaGrso925);
+            byte[] State(int gear, Gearbox gearbox) => BinaryProtocol.FormatServerState(
+                new TruckTelemetry { Available = true, Gear = gear, Gearbox = gearbox }, lightsMode: 0,
+                ffbDuration: 0, analogPedalsAvailable: false, sequence: 1);
+            int Flags2(byte[] message) => BitConverter.ToUInt16(message, 22);
+
+            byte[] third = State(5, scania);
+            Assert.Equal(3, (sbyte)third[15]);
+            Assert.Equal(0, Flags2(third));
+
+            byte[] crawler = State(2, scania);
+            Assert.Equal(2, (sbyte)crawler[15]);
+            Assert.Equal(1 << 12, Flags2(crawler));
+
+            Assert.Equal(-1, (sbyte)State(-1, scania)[15]);
+            Assert.Equal(0, (sbyte)State(0, scania)[15]);
+
+            //An unknown gearbox is sent as it is
+            byte[] plain = State(5, null);
+            Assert.Equal(5, (sbyte)plain[15]);
+            Assert.Equal(0, Flags2(plain));
+        }
+
+        [Fact]
         public void HapticsFollowTheState()
         {
             var haptics = new HapticDetector();

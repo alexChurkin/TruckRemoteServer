@@ -24,7 +24,7 @@ namespace TruckRemoteServer.Protocol
     //Server state (43 bytes and 3 per haptic event; older controllers read the first 22 or 40):
     //  type 0x02 | sequence u32 | flags u16 | force feedback duration u16 (ms) |
     //  speed i16 (cm/s, negative when reversing) | speed limit u16 (cm/s, 0 - none) |
-    //  cruise speed u16 (cm/s, 0 - off) | gear i8 (negative - reverse) | engine rpm u16 | max rpm u16 |
+    //  cruise speed u16 (cm/s, 0 - off) | gear i8 (negative - reverse; see flags2 12-13) | engine rpm u16 | max rpm u16 |
     //  fuel u8 (percent of the tank) | game u8 (1 - ETS2, 2 - ATS) |
     //  flags2 u16 | retarder level u8 | retarder steps u8 (0 - no retarder) | wear u8 (percent, the most worn part) |
     //  rest stop i16 (game minutes until the driver must rest) | route distance u32 (m) | route time u32 (s) |
@@ -39,7 +39,10 @@ namespace TruckRemoteServer.Protocol
     //  10 telemetry available (the dashboard values are real)
     //  flags2: 0 air pressure warning, 1 air pressure emergency, 2 oil pressure warning, 3 water temperature warning,
     //  4 battery voltage warning, 5 AdBlue warning, 6 fuel warning, 7 differential lock, 8 lift axle, 9 engine brake,
-    //  10 the speed units of the game are known, 11 they are miles per hour (km/h otherwise)
+    //  10 the speed units of the game are known, 11 they are miles per hour (km/h otherwise),
+    //  12 the gear is a crawler gear (the game shows C1, C2: the gear field is its number among the crawler gears),
+    //  13 the gear is the one the game names "OD". The gear field is counted after the crawler gears, as the game
+    //  names it, so the controllers that don't know these flags show the same number as the game
     //
     //Viewers (a dashboard on a tablet or another phone) send the text hello "TruckRemoteViewer2" once a second, get
     //"Hi!2", the server state (without haptics) 20 times per second and the job once a second; type 0x04 is their goodbye.
@@ -124,7 +127,9 @@ namespace TruckRemoteServer.Protocol
             WriteUInt16(message, 9, Clamp(Centimeters(truck.Speed), short.MinValue, short.MaxValue));
             WriteUInt16(message, 11, Clamp(Centimeters(truck.SpeedLimit), 0, ushort.MaxValue));
             WriteUInt16(message, 13, Clamp(Centimeters(truck.CruiseSpeed), 0, ushort.MaxValue));
-            message[15] = (byte)(sbyte)Clamp(truck.Gear, sbyte.MinValue, sbyte.MaxValue);
+            //The gear as the game names it, where its name isn't its number (see Gearbox)
+            int gear = Gearbox.ShownGear(truck.Gearbox, truck.Gear);
+            message[15] = (byte)(sbyte)Clamp(gear, sbyte.MinValue, sbyte.MaxValue);
             WriteUInt16(message, 16, Clamp((int)Math.Round(truck.EngineRpm), 0, ushort.MaxValue));
             WriteUInt16(message, 18, Clamp((int)Math.Round(truck.EngineRpmMax), 0, ushort.MaxValue));
             message[20] = (byte)(truck.FuelCapacity > 0
@@ -136,7 +141,9 @@ namespace TruckRemoteServer.Protocol
                 | Flag(truck.OilPressureWarning, 2) | Flag(truck.WaterTemperatureWarning, 3)
                 | Flag(truck.BatteryVoltageWarning, 4) | Flag(truck.AdBlueWarning, 5) | Flag(truck.FuelWarning, 6)
                 | Flag(truck.DifferentialLock, 7) | Flag(truck.LiftAxle, 8) | Flag(truck.EngineBrake, 9)
-                | Flag(truck.SpeedInMph.HasValue, 10) | Flag(truck.SpeedInMph == true, 11);
+                | Flag(truck.SpeedInMph.HasValue, 10) | Flag(truck.SpeedInMph == true, 11)
+                | Flag(Gearbox.IsCrawlerGear(truck.Gearbox, truck.Gear), 12)
+                | Flag(Gearbox.IsOverdrive(truck.Gearbox, truck.Gear), 13);
             WriteUInt16(message, 22, flags2);
             message[24] = (byte)Clamp(truck.RetarderLevel, 0, byte.MaxValue);
             message[25] = (byte)Clamp(truck.RetarderStepCount, 0, byte.MaxValue);

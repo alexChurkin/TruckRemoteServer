@@ -20,6 +20,11 @@ namespace TruckRemoteServer.Telemetry
         //common_ui.time_abs and config_ui.time_abs_delivery: game minutes
         private const int GameTimeOffset = 64;
         private const int DeliveryTimeOffset = 88;
+        //config_ui.gears: the number of forward gears
+        private const int ForwardGearCountOffset = 68;
+        //config_f.gearRatiosForward[24]
+        private const int ForwardRatiosOffset = 816;
+        private const int MaxForwardGears = 24;
         //config_ui.retarderStepCount, truck_ui.retarderBrake
         private const int RetarderStepCountOffset = 76;
         private const int RetarderLevelOffset = 108;
@@ -137,6 +142,7 @@ namespace TruckRemoteServer.Telemetry
                 SpeedLimit = ReadFloat(data, SpeedLimitOffset),
                 CruiseSpeed = ReadFloat(data, CruiseSpeedOffset),
                 Gear = ReadInt(data, GearOffset),
+                Gearbox = ReadGearbox(data),
                 EngineRpm = ReadFloat(data, EngineRpmOffset),
                 EngineRpmMax = ReadFloat(data, EngineRpmMaxOffset),
                 Fuel = ReadFloat(data, FuelOffset),
@@ -216,6 +222,16 @@ namespace TruckRemoteServer.Telemetry
         }
 
         //Little-endian, as on x86/x64
+        //The gearbox is recognised by its forward ratios (config_f.gearRatiosForward[24])
+        private static Gearbox ReadGearbox(byte[] data)
+        {
+            int count = ReadInt(data, ForwardGearCountOffset);
+            if (count <= 0 || count > MaxForwardGears) return null;
+            var ratios = new float[count];
+            for (int i = 0; i < count; i++) ratios[i] = ReadFloat(data, ForwardRatiosOffset + 4 * i);
+            return Gearbox.Find(ReadInt(data, GameOffset), ratios);
+        }
+
         private static int ReadInt(byte[] data, int offset)
         {
             return data[offset] | data[offset + 1] << 8 | data[offset + 2] << 16 | data[offset + 3] << 24;

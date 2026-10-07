@@ -50,9 +50,9 @@ namespace TruckRemoteServer.Protocol
     //Job (sent once a second): type 0x05 | delivery minutes left i32 (game time, negative when late) |
     //  cargo length u8 | cargo UTF-8 | destination city length u8 | destination city UTF-8; no cargo - no job
     //
-    //Unbound actions (revision 8, sent to the controller once a second): type 0x06 | count u8 | action id u8 * count -
-    //  the actions of the panel (see ControllerActions) the player has no key for in the game, the server can't press
-    //  them. Older controllers drop the message (it isn't a state)
+    //Unbound actions (revision 8, sent to the controller once a second): type 0x06 | count u8 | id u8 * count -
+    //  the actions of the panel and the controls of the main screen (200+, see ControllerActions) the player has no key
+    //  for in the game, the server can't press them. Older controllers drop the message (it isn't a state)
     public static class BinaryProtocol
     {
         public const int Version = 2;

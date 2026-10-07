@@ -77,6 +77,8 @@ Shift, Ctrl or Alt), so keys changed in the game settings keep working; an actio
 pressed. An action the profile doesn't have gets the default key of the game:
 gas and brake **↑**/**↓** (in the digital pedal mode), blinkers **[** and **]**, hazard lights **F**,
 parking brake **Space**, lights **L**, high beam **K**, horn **H**, air horn **N**, cruise control **C**.
+The app marks the buttons whose actions have no key in the profile: they are dimmed with an amber dot, and
+a press tells to bind a key in the game.
 
 The quick actions panel in the app (button at the bottom center, swipe it for more pages) uses:
 
@@ -157,7 +159,8 @@ is 22 bytes and more with the dashboard of the app: speed, speed limit, cruise s
 (`Core/Protocol/BinaryProtocol`). Actions are sent by fixed codes, not by the places of their buttons.
 Older apps and servers keep the text protocol.
 The server state grows by revisions (its revision byte tells the app what it may read): the warnings, the route and
-the job, the fuel range, and the haptics — the road vibration, the surface under the wheels and the counters of the
+the job, the fuel range, the actions without a key in the player's profile (revision 8, sent once a second), and
+the haptics — the road vibration, the surface under the wheels and the counters of the
 haptic events (bumps, collisions, the engine starting and stopping, the blinker relay, gear shifts, the retarder, the
 trailer coupling, fines, deliveries...) found by `Core/Haptics/HapticDetector` in the telemetry. A dashboard (viewer)
 says `TruckRemoteViewer2` and gets the state and the job without controlling anything. The format of every message is described in `BinaryProtocol`.

@@ -60,5 +60,21 @@ namespace TruckRemoteServer.Input
             //Held to refuel (revision 7; older controllers click it by 3)
             { 43, GameKey.Activate }
         };
+
+        //The controls of the main screen, by their ids in the unbound actions message only (revision 8, see
+        //BinaryProtocol): they are sent as flags, not as actions. The lights button uses both of its keys.
+        //The pedals aren't here: without the keys of the gas and the brake the game can't be driven at all
+        public static readonly IReadOnlyDictionary<int, GameKey> MainControls = new Dictionary<int, GameKey>
+        {
+            { 200, GameKey.LeftBlinker },
+            { 201, GameKey.RightBlinker },
+            { 202, GameKey.HazardLights },
+            { 203, GameKey.ParkingBrake },
+            { 204, GameKey.Lights },
+            { 205, GameKey.HighBeam },
+            { 206, GameKey.Horn },
+            { 207, GameKey.AirHorn },
+            { 208, GameKey.CruiseControl }
+        };
     }
 }

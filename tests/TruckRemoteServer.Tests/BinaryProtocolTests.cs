@@ -202,6 +202,15 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void UnboundActionsAreTheirIds()
+        {
+            Assert.Equal(new byte[] { BinaryProtocol.UnboundActionsType, 2, 19, 43 },
+                BinaryProtocol.FormatUnboundActions(new[] { 19, 43 }));
+            Assert.Equal(new byte[] { BinaryProtocol.UnboundActionsType, 0 },
+                BinaryProtocol.FormatUnboundActions(Array.Empty<int>()));
+        }
+
+        [Fact]
         public void NoJobHasEmptyTexts()
         {
             Assert.Equal(new byte[] { BinaryProtocol.JobType, 0, 0, 0, 0, 0, 0 },

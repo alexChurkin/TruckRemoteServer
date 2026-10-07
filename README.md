@@ -40,8 +40,9 @@ Launching:
 
 The steering (sensitivity, dead zone, curve) is set in the app. The **Settings** menu of the server window has only
 the port, the language (the language of Windows by default), **Minimize to the notification area** (off by default),
-the setup wizard and **Check for updates**. The server checks for a newer version by itself at the start and offers it
-in its window: **Update** replaces the exe and restarts the server.
+**Start with Windows** (off by default; the server then starts minimized), the setup wizard and
+**Check for updates**. The server checks for a newer version by itself at the start and offers it in its window:
+**Update** replaces the exe and restarts the server.
 
 A tablet or a second phone can show the instruments of the truck beside the phone that drives (the **Dashboard** mode of
 the app): it finds the server like the controller does, up to 4 of them at once, and controls nothing.
@@ -77,6 +78,8 @@ Shift, Ctrl or Alt), so keys changed in the game settings keep working; an actio
 pressed. An action the profile doesn't have gets the default key of the game:
 gas and brake **↑**/**↓** (in the digital pedal mode), blinkers **[** and **]**, hazard lights **F**,
 parking brake **Space**, lights **L**, high beam **K**, horn **H**, air horn **N**, cruise control **C**.
+The app (1.4+) marks the buttons whose actions have no key in the profile: they are dimmed with an amber dot, and
+a press tells to bind a key in the game.
 
 The quick actions panel in the app (button at the bottom center, swipe it for more pages) uses:
 
@@ -133,7 +136,7 @@ The server checks the latest release on GitHub at the start (and from **Settings
 a newer version in its window: **Update** downloads `TruckRemoteServer.exe` of the release, puts it in place of the
 running one and restarts the server (a folder that can't be written, e.g. Program Files, opens the release page instead).
 To release a version, change `AssemblyVersion` in `src/TruckRemoteServer/Properties/AssemblyInfo.cs`, then publish
-a release with the same tag (`1.3` or `v1.3`): the Release workflow builds it, checks the version and attaches the exe.
+a release with the same tag (`1.4` or `v1.4`): the Release workflow builds it, checks the version and attaches the exe.
 
 ### Architecture
 
@@ -144,7 +147,7 @@ a release with the same tag (`1.3` or `v1.3`): the Release workflow builds it, c
   Platform services are interfaces (`IKeyboard`, `IVirtualJoystick`, `ITelemetrySource`, `IFirewall`, ...).
 - `src/TruckRemoteServer` (.NET Framework 4.7.2, WinForms) — the application: `Program` is the composition root
   (Microsoft.Extensions.DependencyInjection), `UI/MainForm` is a passive view (MVP), `Infrastructure`
-  has the Windows implementations (vJoy, SendInput, telemetry, Windows Firewall, settings), `Infrastructure/VJoySetup`
+  has the Windows implementations (vJoy, SendInput, telemetry, Windows Firewall, settings, autostart), `Infrastructure/VJoySetup`
   installs and configures vJoy (in the same exe started with administrator rights), `Telemetry/Setup` installs
   the plugin into the games, `Localization` has the texts (English, Russian, Belarusian, Ukrainian).
 - `tests/TruckRemoteServer.Tests` (.NET 8, xUnit) — tests of the core, including real UDP sessions on the loopback interface.
@@ -157,7 +160,8 @@ is 22 bytes and more with the dashboard of the app: speed, speed limit, cruise s
 (`Core/Protocol/BinaryProtocol`). Actions are sent by fixed codes, not by the places of their buttons.
 Older apps and servers keep the text protocol.
 The server state grows by revisions (its revision byte tells the app what it may read): the warnings, the route and
-the job, the fuel range, and the haptics — the road vibration, the surface under the wheels and the counters of the
+the job, the fuel range, the actions without a key in the player's profile (revision 8, sent once a second), and
+the haptics — the road vibration, the surface under the wheels and the counters of the
 haptic events (bumps, collisions, the engine starting and stopping, the blinker relay, gear shifts, the retarder, the
 trailer coupling, fines, deliveries...) found by `Core/Haptics/HapticDetector` in the telemetry. A dashboard (viewer)
 says `TruckRemoteViewer2` and gets the state and the job without controlling anything. The format of every message is described in `BinaryProtocol`.

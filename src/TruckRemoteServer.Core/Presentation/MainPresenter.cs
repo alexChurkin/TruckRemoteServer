@@ -25,6 +25,7 @@ namespace TruckRemoteServer.Presentation
         private readonly IGameControlsSetup controlsSetup;
         private readonly string programPath;
         private readonly IUpdater updater;
+        private readonly IAutostart autostart;
         private readonly Version version;
         //The newer release found, null if there's none
         private ReleaseInfo update;
@@ -34,8 +35,9 @@ namespace TruckRemoteServer.Presentation
         public MainPresenter(IMainView view, ControllerServer server, ControllerInputMapper input, IVirtualJoystick joystick,
             ISettingsStore settings, IFirewall firewall, INetworkInfo network, ITelemetryPluginSetup pluginSetup,
             IJoystickSetup joystickSetup, IGameControlsSetup controlsSetup, string programPath, IUpdater updater,
-            Version version)
+            IAutostart autostart, Version version)
         {
+            this.autostart = autostart;
             this.updater = updater;
             this.version = version;
             this.view = view;
@@ -57,6 +59,7 @@ namespace TruckRemoteServer.Presentation
             view.PortChanged += (s, port) => ChangePort(port);
             view.LanguageChanged += (s, language) => ChangeLanguage(language);
             view.MinimizeToTrayChanged += (s, enabled) => ChangeMinimizeToTray(enabled);
+            view.StartWithWindowsChanged += (s, enabled) => ChangeStartWithWindows(enabled);
             view.AllowFirewallRequested += (s, e) => AllowInFirewall();
             view.InstallJoystickRequested += (s, e) => SetupJoystick();
             view.SetupWizardRequested += (s, e) => OpenSetupWizard();
@@ -75,7 +78,9 @@ namespace TruckRemoteServer.Presentation
 
         private void OnShown()
         {
-            view.ShowSettings(settings.Port, settings.MinimizeToTray);
+            //The program may have been moved since the autostart was turned on
+            if (IsAutostartEnabled()) SetAutostart(true);
+            ShowSettings();
             server.StatusChanged += OnServerStatus;
             network.AddressesChanged += OnAddressesChanged;
             ShowAddresses();
@@ -170,7 +175,43 @@ namespace TruckRemoteServer.Presentation
         {
             settings.MinimizeToTray = enabled;
             settings.Save();
-            view.ShowSettings(settings.Port, settings.MinimizeToTray);
+            ShowSettings();
+        }
+
+        private void ChangeStartWithWindows(bool enabled)
+        {
+            SetAutostart(enabled);
+            ShowSettings();
+        }
+
+        private void ShowSettings()
+        {
+            view.ShowSettings(settings.Port, settings.MinimizeToTray, IsAutostartEnabled());
+        }
+
+        //The registry may be locked by a policy: the menu item then shows what Windows has
+        private bool IsAutostartEnabled()
+        {
+            try
+            {
+                return autostart.IsEnabled;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private void SetAutostart(bool enabled)
+        {
+            try
+            {
+                autostart.SetEnabled(enabled);
+            }
+            catch (Exception)
+            {
+                //Shown as it is
+            }
         }
 
         private void OnServerStatus(ServerStatus status)

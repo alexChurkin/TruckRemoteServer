@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TruckRemoteServer.Protocol;
 using TruckRemoteServer.Telemetry;
 
@@ -44,6 +45,17 @@ namespace TruckRemoteServer.Input
 
         //The steering and the pedals as they were applied last (read by the window on its thread)
         public ControlsSnapshot Controls => controls;
+
+        //The ids of the panel's actions and of the main screen's controls (see ControllerActions) the player has no key
+        //for in the game, in order
+        public IReadOnlyList<int> UnboundActions()
+        {
+            return ControllerActions.Clicks.Concat(ControllerActions.Holds).Concat(ControllerActions.MainControls)
+                .Where(action => !keyboard.HasKey(action.Value))
+                .Select(action => action.Key)
+                .OrderBy(id => id)
+                .ToList();
+        }
 
         //The lights button needs to know the current lights of the truck
         public void UpdateTelemetry(TruckTelemetry telemetry)

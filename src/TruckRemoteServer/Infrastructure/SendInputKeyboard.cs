@@ -58,6 +58,8 @@ namespace TruckRemoteServer.Infrastructure
             clicker.Click(key);
         }
 
+        public bool HasKey(GameKey key) => bindings.For(key) != null;
+
         public void Dispose()
         {
             clicker.Dispose();

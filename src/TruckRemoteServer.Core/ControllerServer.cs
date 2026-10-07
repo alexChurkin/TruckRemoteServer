@@ -452,10 +452,12 @@ namespace TruckRemoteServer
                         if (!controllerPaused)
                         {
                             socket.SendTo(MakeMessage(truck, haptics, ++sequence), endPoint);
-                            //The job changes rarely, it is sent once a second (a lost message is repeated soon)
+                            //The job and the player's keys change rarely, they are sent once a second
+                            //(a lost message is repeated soon)
                             if (binaryController && sequence % JobSendEvery == 1)
                             {
                                 socket.SendTo(BinaryProtocol.FormatJob(truck), endPoint);
+                                socket.SendTo(BinaryProtocol.FormatUnboundActions(input.UnboundActions()), endPoint);
                             }
                         }
                     }

@@ -32,6 +32,11 @@ namespace TruckRemoteServer.Tests
 
         public void Click(GameKey key) => Add("click " + key);
 
+        //The keys the player has no key for
+        public HashSet<GameKey> Unbound { get; } = new HashSet<GameKey>();
+
+        public bool HasKey(GameKey key) => !Unbound.Contains(key);
+
         private void Add(string e)
         {
             lock (events) events.Add(e);
@@ -99,6 +104,18 @@ namespace TruckRemoteServer.Tests
         public int Saves;
 
         public void Save() => Saves++;
+    }
+
+    public class FakeAutostart : IAutostart
+    {
+        public bool IsEnabled { get; set; }
+        public int Updates;
+
+        public void SetEnabled(bool enabled)
+        {
+            IsEnabled = enabled;
+            Updates++;
+        }
     }
 
     public class FakeFirewall : IFirewall
@@ -173,6 +190,7 @@ namespace TruckRemoteServer.Tests
     {
         public int? Port;
         public bool MinimizeToTray;
+        public bool StartWithWindows;
         public IList<string> Addresses;
         public int AddressesPort;
         public ServerState State;
@@ -195,6 +213,7 @@ namespace TruckRemoteServer.Tests
         public event EventHandler<int> PortChanged;
         public event EventHandler<string> LanguageChanged;
         public event EventHandler<bool> MinimizeToTrayChanged;
+        public event EventHandler<bool> StartWithWindowsChanged;
         public event EventHandler AllowFirewallRequested;
         public event EventHandler InstallJoystickRequested;
         public event EventHandler SetupWizardRequested;
@@ -241,13 +260,15 @@ namespace TruckRemoteServer.Tests
         public void InstallJoystick() => InstallJoystickRequested?.Invoke(this, EventArgs.Empty);
         public void ChangeLanguage(string language) => LanguageChanged?.Invoke(this, language);
         public void ChangeMinimizeToTray(bool enabled) => MinimizeToTrayChanged?.Invoke(this, enabled);
+        public void ChangeStartWithWindows(bool enabled) => StartWithWindowsChanged?.Invoke(this, enabled);
 
         public void ShowLanguage(string language) => Language = language;
 
-        public void ShowSettings(int port, bool minimizeToTray)
+        public void ShowSettings(int port, bool minimizeToTray, bool startWithWindows)
         {
             Port = port;
             MinimizeToTray = minimizeToTray;
+            StartWithWindows = startWithWindows;
         }
 
         public void ShowAddresses(IList<string> addresses, int port)

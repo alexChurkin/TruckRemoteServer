@@ -49,6 +49,10 @@ namespace TruckRemoteServer.Protocol
     //
     //Job (sent once a second): type 0x05 | delivery minutes left i32 (game time, negative when late) |
     //  cargo length u8 | cargo UTF-8 | destination city length u8 | destination city UTF-8; no cargo - no job
+    //
+    //Unbound actions (revision 8, sent to the controller once a second): type 0x06 | count u8 | id u8 * count -
+    //  the actions of the panel and the controls of the main screen (200+, see ControllerActions) the player has no key
+    //  for in the game, the server can't press them. Older controllers drop the message (it isn't a state)
     public static class BinaryProtocol
     {
         public const int Version = 2;
@@ -57,12 +61,13 @@ namespace TruckRemoteServer.Protocol
         public const byte PausedType = 0x03;
         public const byte GoodbyeType = 0x04;
         public const byte JobType = 0x05;
+        public const byte UnboundActionsType = 0x06;
 
         //What the server sends: 3 - the job messages and this byte, 4 - the fuel range;
         //5 - no new data, the actions 24-41 of the panel are known (see ControllerActions); 6 - haptics;
         //7 - no new data, the actions 42 and 43 are known (the held light horn and "activate"),
-        //the speed units of the game are in flags2
-        public const byte Revision = 7;
+        //the speed units of the game are in flags2; 8 - the unbound actions
+        public const byte Revision = 8;
 
         private const int ControllerHeaderSize = 16;
         private const int ServerStateBaseSize = 40;
@@ -183,6 +188,16 @@ namespace TruckRemoteServer.Protocol
             cargo.CopyTo(message, 6);
             message[6 + cargo.Length] = (byte)city.Length;
             city.CopyTo(message, 7 + cargo.Length);
+            return message;
+        }
+
+        public static byte[] FormatUnboundActions(IReadOnlyList<int> actions)
+        {
+            int count = Math.Min(actions.Count, byte.MaxValue);
+            var message = new byte[2 + count];
+            message[0] = UnboundActionsType;
+            message[1] = (byte)count;
+            for (int i = 0; i < count; i++) message[2 + i] = (byte)Clamp(actions[i], 0, byte.MaxValue);
             return message;
         }
 

@@ -50,6 +50,7 @@
   <data name="Ok" xml:space="preserve"><value>OK</value></data>
   <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
   <data name="MinimizeToTray" xml:space="preserve"><value>Сворачивать в область уведомлений</value></data>
+  <data name="StartWithWindows" xml:space="preserve"><value>Запускать вместе с Windows</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>Открыть</value></data>
   <data name="TrayExit" xml:space="preserve"><value>Выход</value></data>
   <data name="TrayHint" xml:space="preserve"><value>Сервер продолжает работать здесь. Дважды щёлкните по значку, чтобы открыть его.</value></data>

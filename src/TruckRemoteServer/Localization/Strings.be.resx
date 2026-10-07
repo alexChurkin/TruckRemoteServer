@@ -50,6 +50,7 @@
   <data name="Ok" xml:space="preserve"><value>OK</value></data>
   <data name="Cancel" xml:space="preserve"><value>Скасаваць</value></data>
   <data name="MinimizeToTray" xml:space="preserve"><value>Згортваць у вобласць апавяшчэнняў</value></data>
+  <data name="StartWithWindows" xml:space="preserve"><value>Запускаць разам з Windows</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>Адкрыць</value></data>
   <data name="TrayExit" xml:space="preserve"><value>Выхад</value></data>
   <data name="TrayHint" xml:space="preserve"><value>Сервер працягвае працаваць тут. Двойчы пстрыкніце па значку, каб адкрыць яго.</value></data>

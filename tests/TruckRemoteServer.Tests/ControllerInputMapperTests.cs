@@ -38,6 +38,7 @@ namespace TruckRemoteServer.Tests
         {
             //Every code is a click or a hold, never both; the codes are fixed (the controller sends them)
             Assert.Empty(System.Linq.Enumerable.Intersect(ControllerActions.Clicks.Keys, ControllerActions.Holds.Keys));
+            Assert.All(ControllerActions.MainControls.Keys, id => Assert.InRange(id, 200, 255));
             for (int code = 1; code <= 41; code++)
             {
                 Assert.True(ControllerActions.Clicks.ContainsKey(code) || ControllerActions.Holds.ContainsKey(code), "action " + code);
@@ -51,6 +52,20 @@ namespace TruckRemoteServer.Tests
             Assert.Equal(GameKey.LightHorn, ControllerActions.Holds[42]);
             Assert.Equal(GameKey.Activate, ControllerActions.Clicks[3]);
             Assert.Equal(GameKey.Activate, ControllerActions.Holds[43]);
+        }
+
+        [Fact]
+        public void ActionsWithoutKeysAreUnbound()
+        {
+            Assert.Empty(mapper.UnboundActions());
+
+            keyboard.Unbound.Add(GameKey.Map);
+            keyboard.Unbound.Add(GameKey.Activate);
+
+            keyboard.Unbound.Add(GameKey.AirHorn);
+
+            //"Activate" is clicked by 3 and held by 43; the controls of the main screen are 200+
+            Assert.Equal(new[] { 3, 19, 43, 207 }, mapper.UnboundActions());
         }
 
         [Fact]

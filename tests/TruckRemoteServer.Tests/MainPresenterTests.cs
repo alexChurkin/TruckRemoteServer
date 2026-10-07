@@ -21,6 +21,7 @@ namespace TruckRemoteServer.Tests
         private readonly FakeJoystickSetup joystickSetup = new FakeJoystickSetup();
         private readonly FakeControlsSetup controlsSetup = new FakeControlsSetup();
         private readonly FakeUpdater updater = new FakeUpdater();
+        private readonly FakeAutostart autostart = new FakeAutostart();
         private readonly ControllerInputMapper mapper;
         private readonly ControllerServer server;
         private readonly MainPresenter presenter;
@@ -31,7 +32,7 @@ namespace TruckRemoteServer.Tests
             server = new ControllerServer(mapper, new FakeTelemetry(), joystick, new NoTimerResolution(),
                 NullLogger<ControllerServer>.Instance);
             presenter = new MainPresenter(view, server, mapper, joystick, settings, firewall, network, pluginSetup,
-                joystickSetup, controlsSetup, "server.exe", updater, new Version(1, 3))
+                joystickSetup, controlsSetup, "server.exe", updater, autostart, new Version(1, 3))
             {
                 RunInBackground = work =>
                 {
@@ -256,6 +257,33 @@ namespace TruckRemoteServer.Tests
             Assert.True(settings.MinimizeToTray);
             Assert.True(view.MinimizeToTray);
             Assert.True(settings.Saves > 0);
+        }
+
+        [Fact]
+        public void StartingWithWindowsIsOffByDefaultAndKeptByWindows()
+        {
+            view.Show();
+            Assert.False(view.StartWithWindows);
+            Assert.Equal(0, autostart.Updates);
+
+            view.ChangeStartWithWindows(true);
+            Assert.True(autostart.IsEnabled);
+            Assert.True(view.StartWithWindows);
+
+            view.ChangeStartWithWindows(false);
+            Assert.False(autostart.IsEnabled);
+            Assert.False(view.StartWithWindows);
+        }
+
+        [Fact]
+        public void EnabledAutostartGetsThePathOfTheProgramAgain()
+        {
+            autostart.IsEnabled = true;
+
+            view.Show();
+
+            Assert.Equal(1, autostart.Updates);
+            Assert.True(view.StartWithWindows);
         }
 
         private static int FreePort()

@@ -30,6 +30,8 @@ namespace TruckRemoteServer
             using (ServiceProvider services = ConfigureServices())
             {
                 var form = services.GetRequiredService<MainForm>();
+                //Started with Windows: the server works minimized
+                if (Array.IndexOf(args, RegistryAutostart.Argument) >= 0) form.WindowState = FormWindowState.Minimized;
                 //The presenter subscribes to the view, it lives as long as the form
                 services.GetRequiredService<MainPresenter>().Initialize();
                 Application.Run(form);
@@ -55,6 +57,7 @@ namespace TruckRemoteServer
             services.AddSingleton<ITelemetryPluginSetup, TelemetryPluginSetup>();
             services.AddSingleton<IJoystickSetup, VJoySetup>();
             services.AddSingleton<IGameControlsSetup, GameControlsSetup>();
+            services.AddSingleton<IAutostart>(new RegistryAutostart(Application.ExecutablePath));
             Version version = typeof(Program).Assembly.GetName().Version;
             services.AddSingleton<IUpdater>(provider => new GitHubUpdater(Application.ExecutablePath, version,
                 provider.GetRequiredService<ILogger<GitHubUpdater>>()));
@@ -77,6 +80,7 @@ namespace TruckRemoteServer
                 provider.GetRequiredService<IGameControlsSetup>(),
                 Application.ExecutablePath,
                 provider.GetRequiredService<IUpdater>(),
+                provider.GetRequiredService<IAutostart>(),
                 version));
             return services.BuildServiceProvider();
         }

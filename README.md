@@ -40,7 +40,7 @@ Launching:
 
 The steering (sensitivity, dead zone, curve) is set in the app. The **Settings** menu of the server window has only
 the port, the language (the language of Windows by default), **Minimize to the notification area** (off by default),
-the setup wizard and **Check for updates**. The server checks for a newer version by itself at the start and offers it
+**Start with Windows** (off by default; the server then starts minimized), the setup wizard and **Check for updates**. The server checks for a newer version by itself at the start and offers it
 in its window: **Update** replaces the exe and restarts the server.
 
 A tablet or a second phone can show the instruments of the truck beside the phone that drives (the **Dashboard** mode of

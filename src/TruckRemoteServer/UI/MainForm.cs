@@ -65,6 +65,7 @@ namespace TruckRemoteServer.UI
         private readonly ToolStripMenuItem portItem = new ToolStripMenuItem();
         private readonly ToolStripMenuItem languageItem = new ToolStripMenuItem();
         private readonly ToolStripMenuItem minimizeToTrayItem = new ToolStripMenuItem();
+        private readonly ToolStripMenuItem startWithWindowsItem = new ToolStripMenuItem();
         private readonly ToolStripMenuItem wizardItem = new ToolStripMenuItem();
         private readonly ToolStripMenuItem updatesItem = new ToolStripMenuItem();
         private readonly Label versionLabel = new Label { AutoSize = true };
@@ -82,6 +83,7 @@ namespace TruckRemoteServer.UI
         private ServerState state = ServerState.Stopped;
         private string language = "";
         private bool minimizeToTray;
+        private bool startWithWindows;
 
         public MainForm()
         {
@@ -127,11 +129,13 @@ namespace TruckRemoteServer.UI
             }
             portItem.Click += (s, e) => ChangePort();
             minimizeToTrayItem.Click += (s, e) => MinimizeToTrayChanged?.Invoke(this, !minimizeToTray);
+            startWithWindowsItem.Click += (s, e) => StartWithWindowsChanged?.Invoke(this, !startWithWindows);
             wizardItem.Click += (s, e) => SetupWizardRequested?.Invoke(this, EventArgs.Empty);
             updatesItem.Click += (s, e) => CheckForUpdatesRequested?.Invoke(this, EventArgs.Empty);
             settingsMenu.Items.AddRange(new ToolStripItem[]
             {
-                portItem, languageItem, minimizeToTrayItem, new ToolStripSeparator(), wizardItem, updatesItem
+                portItem, languageItem, minimizeToTrayItem, startWithWindowsItem, new ToolStripSeparator(), wizardItem,
+                updatesItem
             });
             settingsMenu.Font = Theme.Body;
             settingsButton.Click += (s, e) => settingsMenu.Show(settingsButton, 0, settingsButton.Height + Px(2));
@@ -169,6 +173,7 @@ namespace TruckRemoteServer.UI
         public event EventHandler<int> PortChanged;
         public event EventHandler<string> LanguageChanged;
         public event EventHandler<bool> MinimizeToTrayChanged;
+        public event EventHandler<bool> StartWithWindowsChanged;
         public event EventHandler AllowFirewallRequested;
         public event EventHandler InstallJoystickRequested;
         public event EventHandler SetupWizardRequested;
@@ -188,12 +193,19 @@ namespace TruckRemoteServer.UI
         {
             base.OnShown(e);
             Shown?.Invoke(this, EventArgs.Empty);
+            //Started with Windows: minimized, to the notification area if the user chose so (known after Shown)
+            HideToTrayIfMinimized();
         }
 
-        //If the user chose so, the minimized window is hidden to the notification area (the server keeps working there)
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
+            HideToTrayIfMinimized();
+        }
+
+        //If the user chose so, the minimized window is hidden to the notification area (the server keeps working there)
+        private void HideToTrayIfMinimized()
+        {
             if (!minimizeToTray || WindowState != FormWindowState.Minimized || !Visible) return;
             trayIcon.Visible = true;
             Hide();
@@ -232,10 +244,11 @@ namespace TruckRemoteServer.UI
             ApplyTexts();
         }
 
-        public void ShowSettings(int port, bool minimizeToTray)
+        public void ShowSettings(int port, bool minimizeToTray, bool startWithWindows)
         {
             this.port = port;
             this.minimizeToTray = minimizeToTray;
+            this.startWithWindows = startWithWindows;
             ApplyMenuTexts();
             LayoutContent();
         }
@@ -425,6 +438,8 @@ namespace TruckRemoteServer.UI
             languageItem.Text = Texts.Get(T.Language) + ": " + languageName;
             minimizeToTrayItem.Text = Texts.Get(T.MinimizeToTray);
             minimizeToTrayItem.Checked = minimizeToTray;
+            startWithWindowsItem.Text = Texts.Get(T.StartWithWindows);
+            startWithWindowsItem.Checked = startWithWindows;
             wizardItem.Text = Texts.Get(T.WizardMenu);
             updatesItem.Text = Texts.Get(T.CheckForUpdates);
             foreach (ToolStripMenuItem item in languageItem.DropDownItems)

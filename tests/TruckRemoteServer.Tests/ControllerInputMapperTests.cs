@@ -54,6 +54,18 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void ActionsWithoutKeysAreUnbound()
+        {
+            Assert.Empty(mapper.UnboundActions());
+
+            keyboard.Unbound.Add(GameKey.Map);
+            keyboard.Unbound.Add(GameKey.Activate);
+
+            //"Activate" is clicked by 3 and held by 43
+            Assert.Equal(new[] { 3, 19, 43 }, mapper.UnboundActions());
+        }
+
+        [Fact]
         public void FirstMessageTakesTogglesWithoutClicks()
         {
             mapper.Apply(State(left: true, actions: (1, 3)));

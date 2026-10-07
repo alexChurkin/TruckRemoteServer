@@ -32,6 +32,11 @@ namespace TruckRemoteServer.Tests
 
         public void Click(GameKey key) => Add("click " + key);
 
+        //The keys the player has no key for
+        public HashSet<GameKey> Unbound { get; } = new HashSet<GameKey>();
+
+        public bool HasKey(GameKey key) => !Unbound.Contains(key);
+
         private void Add(string e)
         {
             lock (events) events.Add(e);

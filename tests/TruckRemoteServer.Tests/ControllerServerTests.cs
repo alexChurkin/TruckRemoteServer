@@ -8,6 +8,7 @@ using System.Threading;
 using Microsoft.Extensions.Logging.Abstractions;
 using TruckRemoteServer.Haptics;
 using TruckRemoteServer.Input;
+using TruckRemoteServer.Protocol;
 using TruckRemoteServer.Telemetry;
 using Xunit;
 
@@ -108,6 +109,13 @@ namespace TruckRemoteServer.Tests
             SendBytes(BinaryState(2, flags: 1 << 1, 1, 1, 11, 1));
             WaitFor(() => keyboard.Events.Contains("click Engine") && keyboard.Events.Contains("press EngineBrake"));
             Assert.Contains("press Gas", keyboard.Events);
+
+            //The actions without keys come once a second, together with the job
+            keyboard.Unbound.Add(GameKey.Map);
+            byte[] unbound;
+            do unbound = phone.Receive(ref from);
+            while (unbound[0] != BinaryProtocol.UnboundActionsType || unbound.Length < 3);
+            Assert.Equal(new byte[] { BinaryProtocol.UnboundActionsType, 1, 19 }, unbound);
 
             //Binary pause releases everything
             SendBytes(new byte[] { 0x03 });

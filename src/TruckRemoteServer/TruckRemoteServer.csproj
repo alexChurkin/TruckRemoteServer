@@ -8,6 +8,7 @@
     <RootNamespace>TruckRemoteServer</RootNamespace>
     <AssemblyName>TruckRemoteServer</AssemblyName>
     <ApplicationIcon>app_icon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- Version attributes are kept in Properties\AssemblyInfo.cs -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <!-- The program is a single exe: references are embedded by Costura (it loads them whatever version is asked),

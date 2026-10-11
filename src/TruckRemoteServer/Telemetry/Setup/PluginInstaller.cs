@@ -72,7 +72,7 @@ namespace TruckRemoteServer.Setup
 
                 Properties.Settings.Default.ETSPath = ets2State.GamePath;
                 Properties.Settings.Default.ATSPath = atsState.GamePath;
-                Properties.Settings.Default.Save();
+                SaveSettings();
 
                 Status = SetupStatus.Installed;
             }
@@ -83,6 +83,19 @@ namespace TruckRemoteServer.Setup
             }
 
             return Status;
+        }
+
+        //The settings file may be locked (a policy, a read-only profile): the paths are used in memory anyway,
+        //and the plugin is already installed by now, so a failed saving isn't an installation failure
+        static void SaveSettings()
+        {
+            try
+            {
+                Properties.Settings.Default.Save();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         sealed class GameState

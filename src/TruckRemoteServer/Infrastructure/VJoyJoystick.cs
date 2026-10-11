@@ -11,6 +11,10 @@ namespace TruckRemoteServer.Infrastructure
         private const uint DeviceId = 1;
         private const int ErrorSuccess = 0;
         private const int ReacquireIntervalMs = 2000;
+        private static readonly HID_USAGES[] RotationAxes =
+        {
+            HID_USAGES.HID_USAGE_RX, HID_USAGES.HID_USAGE_RY, HID_USAGES.HID_USAGE_RZ
+        };
 
         private readonly ILogger<VJoyJoystick> logger;
         private readonly object initLock = new object();
@@ -65,6 +69,7 @@ namespace TruckRemoteServer.Infrastructure
                 }
 
                 device.ResetVJD(DeviceId);
+                CenterRotationAxes();
                 pedalAxesExist = device.GetVJDAxisExist(DeviceId, HID_USAGES.HID_USAGE_Y)
                     && device.GetVJDAxisExist(DeviceId, HID_USAGES.HID_USAGE_Z);
                 if (forceFeedbackCallback == null)
@@ -81,6 +86,18 @@ namespace TruckRemoteServer.Infrastructure
                 //vJoy is not installed
                 logger.LogWarning("vJoy initialization failed: {Message}", e.Message);
                 return false;
+            }
+        }
+
+        //The reset leaves the rotation axes at 0, an end of their range. The server doesn't use them, but a device
+        //that has them (the default one of vJoy) is also a controller of the game's menus and cameras (ui_joy of
+        //the game looks around with rx and ry whatever the profile binds), and the camera would keep turning left
+        //and up: they rest in the middle
+        private void CenterRotationAxes()
+        {
+            foreach (HID_USAGES axis in RotationAxes)
+            {
+                if (device.GetVJDAxisExist(DeviceId, axis)) device.SetAxis(JoystickAxis.Center, DeviceId, axis);
             }
         }
 

@@ -84,6 +84,8 @@ namespace TruckRemoteServer.UI
         private string language = "";
         private bool minimizeToTray;
         private bool startWithWindows;
+        //The fonts of the display the window is on: it follows another display while the program runs
+        private Fonts fonts;
 
         public MainForm()
         {
@@ -92,7 +94,7 @@ namespace TruckRemoteServer.UI
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
             AutoScaleMode = AutoScaleMode.None;
-            Font = Theme.Body;
+            fonts = Fonts.For(Dpi.Of(this));
             try
             {
                 Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -101,14 +103,6 @@ namespace TruckRemoteServer.UI
             {
                 ShowIcon = false;
             }
-
-            titleLabel.Font = Theme.Title;
-            statusPill.Font = Theme.Caption;
-            addressCaption.Font = Theme.Caption;
-            addressLabel.Font = Theme.Display;
-            portInfoLabel.Font = Theme.Caption;
-            hintLabel.Font = Theme.Caption;
-            versionLabel.Font = Theme.Caption;
 
             addressCard.Controls.AddRange(new Control[] { addressCaption, addressLabel, copyButton, portInfoLabel, qrView, hintLabel });
             firewallBanner.Controls.AddRange(new Control[] { firewallLabel, allowButton });
@@ -123,7 +117,7 @@ namespace TruckRemoteServer.UI
             foreach (var item in Languages)
             {
                 string code = item.Code;
-                var menuItem = new ToolStripMenuItem { Tag = code, Font = Theme.Body };
+                var menuItem = new ToolStripMenuItem { Tag = code };
                 menuItem.Click += (s, e) => OnLanguageSelected(code);
                 languageItem.DropDownItems.Add(menuItem);
             }
@@ -137,13 +131,11 @@ namespace TruckRemoteServer.UI
                 portItem, languageItem, minimizeToTrayItem, startWithWindowsItem, new ToolStripSeparator(), wizardItem,
                 updatesItem
             });
-            settingsMenu.Font = Theme.Body;
             settingsButton.Click += (s, e) => settingsMenu.Show(settingsButton, 0, settingsButton.Height + Px(2));
 
             trayOpenItem.Click += (s, e) => RestoreFromTray();
             trayExitItem.Click += (s, e) => Close();
             trayMenu.Items.AddRange(new ToolStripItem[] { trayOpenItem, trayExitItem });
-            trayMenu.Font = Theme.Body;
             trayIcon.Icon = Icon;
             trayIcon.ContextMenuStrip = trayMenu;
             trayIcon.DoubleClick += (s, e) => RestoreFromTray();
@@ -162,6 +154,7 @@ namespace TruckRemoteServer.UI
             startStopButton.Click += (s, e) => (IsRunning ? StopRequested : StartRequested)?.Invoke(this, EventArgs.Empty);
             SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
 
+            ApplyFonts();
             ApplyTexts();
             ApplyTheme();
         }
@@ -187,6 +180,24 @@ namespace TruckRemoteServer.UI
         {
             base.OnHandleCreated(e);
             theme.ApplyToTitleBar(Handle);
+            //The window knows the display it is on (and so its scale) only now
+            ReloadFonts();
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            //The window is on a display of another scale now. The base class goes first: it resizes the window to the
+            //size the system suggests, and the layout has to set its own size over it
+            base.WndProc(ref m);
+            if (m.Msg == Dpi.WmDpiChanged) ReloadFonts();
+        }
+
+        //The display of the window, and with it the scale of the UI, changed: the fonts and the sizes follow it
+        private void ReloadFonts()
+        {
+            fonts = Fonts.For(Dpi.Of(this));
+            ApplyFonts();
+            LayoutContent();
         }
 
         protected override void OnShown(EventArgs e)
@@ -451,11 +462,28 @@ namespace TruckRemoteServer.UI
             }
         }
 
+        //The controls that don't inherit the font of the window: it is built for the display the window is on, so it
+        //is set again when the window follows another display
+        private void ApplyFonts()
+        {
+            Font = fonts.Body;
+            titleLabel.Font = fonts.Title;
+            statusPill.Font = fonts.Caption;
+            addressCaption.Font = fonts.Caption;
+            addressLabel.Font = addresses.Count > 0 ? fonts.Display : fonts.Subtitle;
+            portInfoLabel.Font = fonts.Caption;
+            hintLabel.Font = fonts.Caption;
+            versionLabel.Font = fonts.Caption;
+            settingsMenu.Font = fonts.Body;
+            trayMenu.Font = fonts.Body;
+            foreach (ToolStripItem item in languageItem.DropDownItems) item.Font = fonts.Body;
+        }
+
         private void ApplyAddressTexts()
         {
             bool hasAddress = addresses.Count > 0;
             addressLabel.Text = hasAddress ? addresses[0] : Texts.Get(T.NoAddress);
-            addressLabel.Font = hasAddress ? Theme.Display : Theme.Subtitle;
+            addressLabel.Font = hasAddress ? fonts.Display : fonts.Subtitle;
             copyButton.Visible = hasAddress;
             qrView.Visible = hasAddress;
             qrView.Content = hasAddress ? QrScheme + addresses[0] + ":" + port.ToString(CultureInfo.InvariantCulture) : null;
@@ -610,7 +638,7 @@ namespace TruckRemoteServer.UI
 
         /* Layout */
 
-        private int Px(float value) => (int)Math.Round(value * DeviceDpi / 96f);
+        private int Px(float value) => (int)Math.Round(value * Dpi.Of(this) / 96f);
 
         private void LayoutContent()
         {

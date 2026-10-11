@@ -94,6 +94,6 @@ namespace TruckRemoteServer.UI.Controls
             }
         }
 
-        private int Px(float value) => (int)Math.Round(value * DeviceDpi / 96f);
+        private int Px(float value) => (int)Math.Round(value * Dpi.Of(this) / 96f);
     }
 }

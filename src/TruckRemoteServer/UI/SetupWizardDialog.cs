@@ -20,6 +20,8 @@ namespace TruckRemoteServer.UI
 
         private readonly Theme theme;
         private readonly IWin32Window owner;
+        //The fonts of the display the window is on: it follows another display while the program runs
+        private Fonts fonts;
         private readonly Label titleLabel = new Label { AutoSize = true };
         private readonly Label subtitleLabel = new Label { AutoSize = false };
         private readonly Dictionary<SetupStep, StepRow> rows = new Dictionary<SetupStep, StepRow>();
@@ -40,14 +42,10 @@ namespace TruckRemoteServer.UI
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterParent;
             AutoScaleMode = AutoScaleMode.None;
-            Font = Theme.Body;
+            fonts = Fonts.For(Dpi.Of(this));
 
-            titleLabel.Font = Theme.Subtitle;
             titleLabel.Text = Texts.Get(T.WizardTitle);
-            subtitleLabel.Font = Theme.Caption;
             subtitleLabel.Text = Texts.Get(T.WizardSubtitle);
-            addressLabel.Font = Theme.BodyStrong;
-            preview.Font = Theme.Caption;
             preview.SteeringLabel = Texts.Get(T.WizardSteering);
             preview.GasLabel = Texts.Get(T.WizardGas);
             preview.BrakeLabel = Texts.Get(T.WizardBrake);
@@ -58,7 +56,7 @@ namespace TruckRemoteServer.UI
 
             foreach (SetupStep step in (SetupStep[])Enum.GetValues(typeof(SetupStep)))
             {
-                var row = new StepRow(step);
+                var row = new StepRow(step, fonts);
                 SetupStep fixedStep = step;
                 row.Button.Click += (s, e) => FixRequested?.Invoke(this, fixedStep);
                 rows[step] = row;
@@ -71,6 +69,7 @@ namespace TruckRemoteServer.UI
             //Esc closes the wizard too: everything is checked again from the Settings menu
             CancelButton = doneButton;
             ApplyTheme();
+            ApplyFonts();
             LayoutContent();
         }
 
@@ -141,6 +140,8 @@ namespace TruckRemoteServer.UI
         {
             base.OnHandleCreated(e);
             theme.ApplyToTitleBar(Handle);
+            //The window knows the display it is on (and so its scale) only now
+            ReloadFonts();
         }
 
         protected override void Dispose(bool disposing)
@@ -233,7 +234,38 @@ namespace TruckRemoteServer.UI
             }
         }
 
-        private int Px(float value) => (int)Math.Round(value * DeviceDpi / 96f);
+        protected override void WndProc(ref Message m)
+        {
+            //The window is on a display of another scale now. The base class goes first: it resizes the window to the
+            //size the system suggests, and the layout has to set its own size over it
+            base.WndProc(ref m);
+            if (m.Msg == Dpi.WmDpiChanged) ReloadFonts();
+        }
+
+        //The display of the window, and with it the scale of the UI, changed: the fonts and the sizes follow it
+        private void ReloadFonts()
+        {
+            fonts = Fonts.For(Dpi.Of(this));
+            ApplyFonts();
+            LayoutContent();
+        }
+
+        //The controls that don't inherit the font of the window
+        private void ApplyFonts()
+        {
+            Font = fonts.Body;
+            titleLabel.Font = fonts.Subtitle;
+            subtitleLabel.Font = fonts.Caption;
+            addressLabel.Font = fonts.BodyStrong;
+            preview.Font = fonts.Caption;
+            foreach (StepRow row in rows.Values)
+            {
+                row.Title.Font = fonts.BodyStrong;
+                row.Detail.Font = fonts.Caption;
+            }
+        }
+
+        private int Px(float value) => (int)Math.Round(value * Dpi.Of(this) / 96f);
 
         private static int TextHeight(Label label, int width)
         {
@@ -301,11 +333,11 @@ namespace TruckRemoteServer.UI
         //The controls of a step
         private sealed class StepRow
         {
-            public StepRow(SetupStep step)
+            public StepRow(SetupStep step, Fonts fonts)
             {
                 Icon = new StepIcon { AccessibleName = step.ToString() };
-                Title = new Label { AutoSize = true, Font = Theme.BodyStrong };
-                Detail = new Label { AutoSize = false, Font = Theme.Caption };
+                Title = new Label { AutoSize = true, Font = fonts.BodyStrong };
+                Detail = new Label { AutoSize = false, Font = fonts.Caption };
                 Button = new RoundedButton { Visible = false };
             }
 

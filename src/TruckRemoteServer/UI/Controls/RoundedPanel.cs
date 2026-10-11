@@ -24,7 +24,7 @@ namespace TruckRemoteServer.UI.Controls
         protected override void OnPaint(PaintEventArgs e)
         {
             Drawing.Prepare(e.Graphics);
-            float radius = Radius * DeviceDpi / 96f;
+            float radius = Radius * Dpi.Of(this) / 96f;
             var bounds = new RectangleF(0.5f, 0.5f, Width - 1.5f, Height - 1.5f);
             using (var path = Drawing.RoundedRectangle(bounds, radius))
             using (var fill = new SolidBrush(FillColor))

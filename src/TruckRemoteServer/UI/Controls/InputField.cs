@@ -23,7 +23,7 @@ namespace TruckRemoteServer.UI.Controls
         protected override void OnLayout(LayoutEventArgs levent)
         {
             base.OnLayout(levent);
-            int padding = (int)(10 * DeviceDpi / 96f);
+            int padding = (int)(10 * Dpi.Of(this) / 96f);
             TextBox.BackColor = FillColor;
             TextBox.Bounds = new Rectangle(padding, (Height - TextBox.PreferredHeight) / 2,
                 Width - 2 * padding, TextBox.PreferredHeight);
@@ -33,8 +33,8 @@ namespace TruckRemoteServer.UI.Controls
         {
             base.OnPaint(e);
             if (!TextBox.Focused) return;
-            float thickness = 2 * DeviceDpi / 96f;
-            float radius = Radius * DeviceDpi / 96f;
+            float thickness = 2 * Dpi.Of(this) / 96f;
+            float radius = Radius * Dpi.Of(this) / 96f;
             using (var pen = new Pen(AccentColor, thickness))
             {
                 e.Graphics.DrawLine(pen, radius, Height - thickness / 2 - 1, Width - radius, Height - thickness / 2 - 1);

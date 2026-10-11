@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 
@@ -99,23 +98,6 @@ namespace TruckRemoteServer.UI
                 return Light;
             }
         }
-
-        /* Fonts: Segoe UI Variable on Windows 11, Segoe UI on Windows 10 */
-
-        private static readonly string FontFamilyName = FontFamily.Families.Any(f => f.Name == "Segoe UI Variable Text")
-            ? "Segoe UI Variable Text"
-            : "Segoe UI";
-
-        private static readonly string DisplayFontFamilyName = FontFamily.Families.Any(f => f.Name == "Segoe UI Variable Display")
-            ? "Segoe UI Variable Display"
-            : "Segoe UI";
-
-        public static readonly Font Body = new Font(FontFamilyName, 10f);
-        public static readonly Font Caption = new Font(FontFamilyName, 9f);
-        public static readonly Font BodyStrong = new Font(FontFamilyName, 10f, FontStyle.Bold);
-        public static readonly Font Subtitle = new Font(DisplayFontFamilyName, 13f, FontStyle.Bold);
-        public static readonly Font Title = new Font(DisplayFontFamilyName, 16f, FontStyle.Bold);
-        public static readonly Font Display = new Font(DisplayFontFamilyName, 24f, FontStyle.Bold);
 
         /* Title bar */
 

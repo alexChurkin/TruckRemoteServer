@@ -18,7 +18,7 @@ namespace TruckRemoteServer.UI.Controls
         public Color TextColor { get; set; } = Color.Black;
         public Color ParentColor { get; set; } = Color.White;
 
-        private float DpiScale => DeviceDpi / 96f;
+        private float DpiScale => Dpi.Of(this) / 96f;
 
         public override Size GetPreferredSize(Size proposedSize)
         {

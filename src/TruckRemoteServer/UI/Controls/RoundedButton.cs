@@ -29,7 +29,7 @@ namespace TruckRemoteServer.UI.Controls
         public override Size GetPreferredSize(Size proposedSize)
         {
             Size text = TextRenderer.MeasureText(Text, Font);
-            float scale = DeviceDpi / 96f;
+            float scale = Dpi.Of(this) / 96f;
             int minHeight = (int)(32 * scale);
             //The chevron layout: the text from 10 px, the chevron in the last 34 px
             int width = ShowChevron ? text.Width + (int)(46 * scale) : text.Width + Padding.Horizontal;
@@ -69,7 +69,7 @@ namespace TruckRemoteServer.UI.Controls
         {
             pevent.Graphics.Clear(ParentColor);
             Drawing.Prepare(pevent.Graphics);
-            float radius = 4 * DeviceDpi / 96f;
+            float radius = 4 * Dpi.Of(this) / 96f;
             Color fill = !Enabled ? Blend(FillColor, ParentColor, 0.5f)
                 : pressed ? Blend(FillColor, ParentColor, 0.25f)
                 : hovered ? Blend(FillColor, ParentColor, 0.12f)
@@ -100,7 +100,7 @@ namespace TruckRemoteServer.UI.Controls
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine);
                 return;
             }
-            float scale = DeviceDpi / 96f;
+            float scale = Dpi.Of(this) / 96f;
             var textBounds = new Rectangle((int)(10 * scale), 0, Width - (int)(34 * scale), Height);
             TextRenderer.DrawText(pevent.Graphics, Text, Font, textBounds, text,
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);

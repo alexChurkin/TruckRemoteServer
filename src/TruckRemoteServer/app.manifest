@@ -14,11 +14,16 @@
       <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
     </application>
   </compatibility>
-  <!-- The window is drawn at the scale of the display (the sizes of the UI follow DeviceDpi) instead of being
-       stretched by Windows, which blurs it. The scale of the main display: Windows Forms of .NET Framework follows
-       a display of another scale only with settings in an exe.config, and the program is a single exe -->
+  <!-- The window is drawn at the scale of the display it is on (the sizes and the fonts of the UI are built for it)
+       instead of being stretched by Windows, which blurs it. Per-monitor: with the scale of the system alone, a
+       window on a display of another scale is stretched, and after the scale of the main display is changed the
+       window stays stretched until the next sign-in, as the system scale is taken at it.
+       dpiAwareness is what Windows 10 1703 and newer know, dpiAware what the older ones do. Windows Forms of
+       .NET Framework follows a display of another scale of a running program only with settings in an exe.config,
+       and the program is a single exe: the window follows another scale itself (UI/Dpi, UI/Fonts) -->
   <application xmlns="urn:schemas-microsoft-com:asm.v3">
     <windowsSettings>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
       <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
     </windowsSettings>
   </application>

@@ -20,6 +20,8 @@ namespace TruckRemoteServer.UI
         private readonly RoundedButton okButton = new RoundedButton();
         private readonly RoundedButton cancelButton = new RoundedButton();
         private readonly Theme theme;
+        //The fonts of the display the window is on: it follows another display while the program runs
+        private Fonts fonts;
 
         public PortDialog(Theme theme, int port)
         {
@@ -32,15 +34,12 @@ namespace TruckRemoteServer.UI
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterParent;
             AutoScaleMode = AutoScaleMode.None;
-            Font = Theme.Body;
+            fonts = Fonts.For(Dpi.Of(this));
 
             hintLabel.Text = Texts.Get(T.PortHint);
-            hintLabel.Font = Theme.Caption;
-            errorLabel.Font = Theme.Caption;
             okButton.Text = Texts.Get(T.Ok);
             cancelButton.Text = Texts.Get(T.Cancel);
             TextBox box = portField.TextBox;
-            box.Font = Theme.Body;
             box.MaxLength = 5;
             box.Text = port.ToString(CultureInfo.InvariantCulture);
             box.KeyPress += (s, e) => e.Handled = !char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar);
@@ -62,6 +61,7 @@ namespace TruckRemoteServer.UI
             Controls.AddRange(new Control[] { hintLabel, portField, errorLabel, okButton, cancelButton });
 
             ApplyTheme();
+            ApplyFonts();
             LayoutContent();
         }
 
@@ -71,6 +71,16 @@ namespace TruckRemoteServer.UI
         {
             base.OnHandleCreated(e);
             theme.ApplyToTitleBar(Handle);
+            //The window knows the display it is on (and so its scale) only now
+            ReloadFonts();
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            //The window is on a display of another scale now. The base class goes first: it resizes the window to the
+            //size the system suggests, and the layout has to set its own size over it
+            base.WndProc(ref m);
+            if (m.Msg == Dpi.WmDpiChanged) ReloadFonts();
         }
 
         protected override void OnShown(EventArgs e)
@@ -115,7 +125,24 @@ namespace TruckRemoteServer.UI
             cancelButton.ParentColor = theme.Background;
         }
 
-        private int Px(float value) => (int)Math.Round(value * DeviceDpi / 96f);
+        //The display of the window, and with it the scale of the UI, changed: the fonts and the sizes follow it
+        private void ReloadFonts()
+        {
+            fonts = Fonts.For(Dpi.Of(this));
+            ApplyFonts();
+            LayoutContent();
+        }
+
+        //The controls that don't inherit the font of the window
+        private void ApplyFonts()
+        {
+            Font = fonts.Body;
+            hintLabel.Font = fonts.Caption;
+            errorLabel.Font = fonts.Caption;
+            portField.TextBox.Font = fonts.Body;
+        }
+
+        private int Px(float value) => (int)Math.Round(value * Dpi.Of(this) / 96f);
 
         private void LayoutContent()
         {

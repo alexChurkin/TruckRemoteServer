@@ -47,7 +47,7 @@ namespace TruckRemoteServer.UI.Controls
             Graphics g = e.Graphics;
             g.Clear(ParentColor);
             Drawing.Prepare(g);
-            float scale = DeviceDpi / 96f;
+            float scale = Dpi.Of(this) / 96f;
             var circle = new RectangleF(1, 1, Width - 3, Height - 3);
             if (kind == Kind.Waiting)
             {

@@ -45,7 +45,7 @@ namespace TruckRemoteServer.UI.Controls
 
         protected override AccessibleObject CreateAccessibilityInstance() => new SliderAccessibleObject(this);
 
-        private float DpiScale => DeviceDpi / 96f;
+        private float DpiScale => Dpi.Of(this) / 96f;
         private float ThumbRadius => 10 * DpiScale;
         private float TrackLeft => ThumbRadius + 1;
         private float TrackRight => Width - ThumbRadius - 1;

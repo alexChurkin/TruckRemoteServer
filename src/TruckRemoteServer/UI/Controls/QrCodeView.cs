@@ -58,7 +58,7 @@ namespace TruckRemoteServer.UI.Controls
             if (modules == null) return;
             Drawing.Prepare(e.Graphics);
             var bounds = new RectangleF(0.5f, 0.5f, Width - 1.5f, Height - 1.5f);
-            using (var path = Drawing.RoundedRectangle(bounds, 8 * DeviceDpi / 96f))
+            using (var path = Drawing.RoundedRectangle(bounds, 8 * Dpi.Of(this) / 96f))
             {
                 e.Graphics.FillPath(Brushes.White, path);
             }

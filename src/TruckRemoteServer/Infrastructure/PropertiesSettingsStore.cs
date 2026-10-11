@@ -1,3 +1,4 @@
+using System;
 using TruckRemoteServer.Settings;
 
 namespace TruckRemoteServer.Infrastructure
@@ -43,9 +44,17 @@ namespace TruckRemoteServer.Infrastructure
             set => Values.MinimizeToTray = value;
         }
 
+        //The settings file may be locked (a policy, a read-only profile): the value then lives until the program ends
         public void Save()
         {
-            Values.Save();
+            try
+            {
+                Values.Save();
+            }
+            catch (Exception)
+            {
+                //The setting is already applied in memory: only saving it failed, and that must not stop the program
+            }
         }
     }
 }

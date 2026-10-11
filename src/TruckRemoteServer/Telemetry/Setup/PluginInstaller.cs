@@ -55,7 +55,9 @@ namespace TruckRemoteServer.Setup
                     ets2State.DetectPath();
                     if (!ets2State.IsPathValid())
                         ets2State.BrowserForValidPath(owner);
-                    ets2State.InstallPlugin();
+                    //The path may just have been found again: the plugin there is already the one needed
+                    if (!ets2State.IsPluginValid())
+                        ets2State.InstallPlugin();
                 }
 
                 if (!atsState.IsPluginValid())
@@ -63,7 +65,9 @@ namespace TruckRemoteServer.Setup
                     atsState.DetectPath();
                     if (!atsState.IsPathValid())
                         atsState.BrowserForValidPath(owner);
-                    atsState.InstallPlugin();
+                    //The path may just have been found again: the plugin there is already the one needed
+                    if (!atsState.IsPluginValid())
+                        atsState.InstallPlugin();
                 }
 
                 Properties.Settings.Default.ETSPath = ets2State.GamePath;

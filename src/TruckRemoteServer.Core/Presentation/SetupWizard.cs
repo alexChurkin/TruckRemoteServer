@@ -165,6 +165,7 @@ namespace TruckRemoteServer.Presentation
             Show(SetupStep.Joystick, StepState.Working);
             bool done = false;
             bool needsSetup = true;
+            //Not done: administrator rights were refused, nothing has changed
             Background(() =>
                 {
                     done = joystickSetup.Setup();
@@ -172,8 +173,8 @@ namespace TruckRemoteServer.Presentation
                     //A connected phone gets the joystick at once
                     if (!needsSetup && !joystick.IsAvailable) joystick.Initialize();
                 },
-                //Not done: administrator rights were refused, nothing has changed
-                () => Show(SetupStep.Joystick, !needsSetup ? StepState.Done : done ? StepState.Failed : StepState.NeedsAction));
+                () => Show(SetupStep.Joystick, !needsSetup ? StepState.Done
+                    : done ? StepState.Failed : StepState.NeedsAction));
         }
 
         private void CheckFirewall()

@@ -103,8 +103,9 @@ In the same file the server makes vJoy the controller of a profile that has none
 on Y and the brake on Z (a new profile has no controller and both pedals on one axis). A profile with another controller
 or with your own axes isn't touched.
 
-A running game writes its bindings on exit, so its profiles are changed when it's closed: after the first start of
-a game with a new profile, close the game once while the server is running and start it again.
+The server knows the name of vJoy from DirectInput, so the profiles are ready right after vJoy is set up, before
+the game is started. A running game writes its bindings on exit, so its profiles are changed when it's closed: a profile
+made in the game while it's running gets its controller after the game is closed (start it again).
 
 Enjoy using!
 

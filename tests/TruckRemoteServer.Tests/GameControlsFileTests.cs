@@ -58,6 +58,20 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void DirectInputControllerIsNamedAsTheGameNamesIt()
+        {
+            var instance = new System.Guid("2616f400-c575-11f1-8001-444553540000");
+            var product = new System.Guid("bead1234-0000-0000-0000-504944564944");
+
+            string name = GameControlsFile.DeviceName(instance, product);
+
+            Assert.Equal("di8.'{2616F400-C575-11F1-8001-444553540000}|{BEAD1234-0000-0000-0000-504944564944}'", name);
+            Assert.Equal(name, GameControlsFile.FindVJoyDevice(" display_names[7]: \"`" + name + "`|vJoy Device\""));
+            Assert.True(GameControlsFile.IsVJoy(product));
+            Assert.False(GameControlsFile.IsVJoy(instance));
+        }
+
+        [Fact]
         public void VJoyIsFoundAmongTheControllersOfTheGame()
         {
             string global = "SiiNunit\r\n{\r\n display_names[2]: \"`di8.keyboard`|@@keyboard@@\"\r\n"

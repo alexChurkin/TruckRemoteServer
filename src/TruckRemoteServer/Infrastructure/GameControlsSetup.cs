@@ -252,10 +252,14 @@ namespace TruckRemoteServer.Infrastructure
             return processes.Length > 0;
         }
 
+        //The name of vJoy as the game has written it, or (the game hasn't been started since vJoy was installed)
+        //as DirectInput tells it, so the profiles are ready before the first start of the game
         private static string FindVJoyDevice(string globalControlsFile)
         {
-            if (!File.Exists(globalControlsFile)) return null;
-            return GameControlsFile.FindVJoyDevice(File.ReadAllText(globalControlsFile, FileEncoding));
+            string seen = File.Exists(globalControlsFile)
+                ? GameControlsFile.FindVJoyDevice(File.ReadAllText(globalControlsFile, FileEncoding))
+                : null;
+            return seen ?? DirectInputDevices.FindVJoy();
         }
 
         private void SetUp(string controlsFile, string vJoyDevice)
@@ -273,7 +277,7 @@ namespace TruckRemoteServer.Infrastructure
                 File.WriteAllText(controlsFile, changed, FileEncoding);
                 logger.LogInformation("Controls were set up in {File}", controlsFile);
             }
-            //Until the game has seen vJoy the joystick can't be set up: the file is checked again later
+            //Until there is a vJoy device the joystick can't be set up: the file is checked again later
             if (vJoyDevice != null) checkedFiles[controlsFile] = File.GetLastWriteTimeUtc(controlsFile);
         }
     }

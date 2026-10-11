@@ -31,8 +31,19 @@ namespace TruckRemoteServer.Input
         //everywhere, the instance id depends on the PC)
         private static readonly Regex VJoyDevice = new Regex(@"di8\.'\{[0-9A-Fa-f-]+\}\|\{BEAD1234-[0-9A-Fa-f-]+\}'");
 
+        private static readonly Guid VJoyProduct = new Guid("BEAD1234-0000-0000-0000-504944564944");
+
+        public static bool IsVJoy(Guid product) => product == VJoyProduct;
+
+        //The name the game gives a DirectInput controller: its instance and product ids
+        public static string DeviceName(Guid instance, Guid product)
+        {
+            return "di8.'" + instance.ToString("B").ToUpperInvariant() + "|"
+                + product.ToString("B").ToUpperInvariant() + "'";
+        }
+
         //Everything the server needs in a profile; returns the same content if there is nothing to change.
-        //vJoyDevice is null if the game hasn't seen vJoy (see FindVJoyDevice): only the keys are added then
+        //vJoyDevice is null if there is no vJoy device: only the keys are added then
         public static string SetUp(string content, string vJoyDevice)
         {
             return SetUpJoystick(AddMissingKeys(content), vJoyDevice);

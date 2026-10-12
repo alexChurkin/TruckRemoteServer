@@ -93,8 +93,10 @@ namespace TruckRemoteServer.Setup
             {
                 Properties.Settings.Default.Save();
             }
-            catch (Exception)
+            catch (Exception e) when (e is System.Configuration.ConfigurationErrorsException || e is IOException
+                || e is UnauthorizedAccessException)
             {
+                //The paths are found again at the next start
             }
         }
 

@@ -1,4 +1,6 @@
 using System;
+using System.Configuration;
+using System.IO;
 using TruckRemoteServer.Settings;
 
 namespace TruckRemoteServer.Infrastructure
@@ -51,7 +53,8 @@ namespace TruckRemoteServer.Infrastructure
             {
                 Values.Save();
             }
-            catch (Exception)
+            catch (Exception e) when (e is ConfigurationErrorsException || e is IOException
+                || e is UnauthorizedAccessException)
             {
                 //The setting is already applied in memory: only saving it failed, and that must not stop the program
             }

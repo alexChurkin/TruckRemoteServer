@@ -186,10 +186,14 @@ namespace TruckRemoteServer.UI
 
         protected override void WndProc(ref Message m)
         {
-            //The window is on a display of another scale now. The base class goes first: it resizes the window to the
-            //size the system suggests, and the layout has to set its own size over it
             base.WndProc(ref m);
-            if (m.Msg == Dpi.WmDpiChanged) ReloadFonts();
+            //The window is on a display of another scale now: it gets its fonts and its size for that scale itself
+            //(Windows Forms does nothing here without an exe.config) and goes where Windows suggests
+            if (m.Msg == Dpi.WmDpiChanged)
+            {
+                ReloadFonts();
+                Location = Dpi.SuggestedLocation(m);
+            }
         }
 
         //The display of the window, and with it the scale of the UI, changed: the fonts and the sizes follow it

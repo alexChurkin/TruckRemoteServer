@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -39,12 +40,34 @@ namespace TruckRemoteServer.UI
 
         public static int Of(Control control)
         {
-            if (CanAsk && control.IsHandleCreated)
+            //A control that hasn't been shown yet has no window: it is on the display of its window, so the nearest
+            //parent that has one is asked (otherwise a hidden control would be laid out for the scale of the system)
+            Control window = control;
+            while (window != null && !window.IsHandleCreated) window = window.Parent;
+            if (CanAsk && window != null)
             {
-                uint dpi = GetDpiForWindow(control.Handle);
+                uint dpi = GetDpiForWindow(window.Handle);
                 if (dpi > 0) return (int)dpi;
             }
             return control.DeviceDpi > 0 ? control.DeviceDpi : Default;
+        }
+
+        //Where Windows suggests to put a window that got the scale of another display (WmDpiChanged). The window
+        //has to go there: the place is chosen so that the window stays on the new display, and a window that only
+        //changes its size where it is may get back to the old display and change the scale again, endlessly
+        public static Point SuggestedLocation(Message dpiChanged)
+        {
+            var bounds = Marshal.PtrToStructure<SuggestedBounds>(dpiChanged.LParam);
+            return new Point(bounds.Left, bounds.Top);
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SuggestedBounds
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
         }
     }
 }

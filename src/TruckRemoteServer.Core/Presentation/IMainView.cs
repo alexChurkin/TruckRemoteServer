@@ -36,6 +36,8 @@ namespace TruckRemoteServer.Presentation
         event EventHandler<bool> MinimizeToTrayChanged;
         event EventHandler<bool> StartWithWindowsChanged;
         event EventHandler AllowFirewallRequested;
+        //Once in a few seconds while the firewall warning is shown (and its button isn't at work)
+        event EventHandler FirewallCheckRequested;
         event EventHandler InstallJoystickRequested;
         event EventHandler SetupWizardRequested;
         event EventHandler UpdateRequested;

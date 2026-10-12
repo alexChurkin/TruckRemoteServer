@@ -34,6 +34,8 @@ namespace TruckRemoteServer.UI
 
         private readonly ToolTip toolTip = new ToolTip();
         private readonly Timer copiedTimer = new Timer { Interval = 1500 };
+        //While the firewall warning is shown the firewall is checked again: the user may answer Windows itself
+        private readonly Timer firewallTimer = new Timer { Interval = 2000 };
 
         private readonly Label titleLabel = new Label { AutoSize = true, Text = "Truck Remote Server" };
         private readonly StatusPill statusPill = new StatusPill();
@@ -149,6 +151,7 @@ namespace TruckRemoteServer.UI
                 LayoutContent();
             };
             allowButton.Click += (s, e) => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
+            firewallTimer.Tick += (s, e) => FirewallCheckRequested?.Invoke(this, EventArgs.Empty);
             installJoystickButton.Click += (s, e) => InstallJoystickRequested?.Invoke(this, EventArgs.Empty);
             updateButton.Click += (s, e) => UpdateRequested?.Invoke(this, EventArgs.Empty);
             startStopButton.Click += (s, e) => (IsRunning ? StopRequested : StartRequested)?.Invoke(this, EventArgs.Empty);
@@ -168,6 +171,7 @@ namespace TruckRemoteServer.UI
         public event EventHandler<bool> MinimizeToTrayChanged;
         public event EventHandler<bool> StartWithWindowsChanged;
         public event EventHandler AllowFirewallRequested;
+        public event EventHandler FirewallCheckRequested;
         public event EventHandler InstallJoystickRequested;
         public event EventHandler SetupWizardRequested;
         public event EventHandler UpdateRequested;
@@ -243,6 +247,7 @@ namespace TruckRemoteServer.UI
                 SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
                 toolTip.Dispose();
                 copiedTimer.Dispose();
+                firewallTimer.Dispose();
                 settingsMenu.Dispose();
                 trayMenu.Dispose();
                 trayIcon.Dispose();
@@ -288,6 +293,9 @@ namespace TruckRemoteServer.UI
 
         public void ShowFirewallWarning(bool visible, bool busy)
         {
+            firewallTimer.Enabled = visible && !busy;
+            //The warning is shown again by every check of the firewall: nothing is laid out when nothing changed
+            if (firewallBanner.Visible == visible && allowButton.Enabled == !busy) return;
             firewallBanner.Visible = visible;
             allowButton.Enabled = !busy;
             LayoutContent();

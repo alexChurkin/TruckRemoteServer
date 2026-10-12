@@ -215,6 +215,7 @@ namespace TruckRemoteServer.Tests
         public event EventHandler<bool> MinimizeToTrayChanged;
         public event EventHandler<bool> StartWithWindowsChanged;
         public event EventHandler AllowFirewallRequested;
+        public event EventHandler FirewallCheckRequested;
         public event EventHandler InstallJoystickRequested;
         public event EventHandler SetupWizardRequested;
         public event EventHandler UpdateRequested;
@@ -257,6 +258,8 @@ namespace TruckRemoteServer.Tests
         public void Stop() => StopRequested?.Invoke(this, EventArgs.Empty);
         public void ChangePort(int port) => PortChanged?.Invoke(this, port);
         public void AllowFirewall() => AllowFirewallRequested?.Invoke(this, EventArgs.Empty);
+
+        public void RaiseFirewallCheck() => FirewallCheckRequested?.Invoke(this, EventArgs.Empty);
         public void InstallJoystick() => InstallJoystickRequested?.Invoke(this, EventArgs.Empty);
         public void ChangeLanguage(string language) => LanguageChanged?.Invoke(this, language);
         public void ChangeMinimizeToTray(bool enabled) => MinimizeToTrayChanged?.Invoke(this, enabled);

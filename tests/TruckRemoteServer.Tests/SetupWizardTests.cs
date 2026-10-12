@@ -97,6 +97,23 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void AccessAllowedInTheWindowOfWindowsIsSeenWithoutTheButton()
+        {
+            firewall.Status = FirewallStatus.Blocked;
+            wizard.Check();
+            Assert.Equal(StepState.NeedsAction, view.Steps[SetupStep.Firewall]);
+
+            for (int i = 0; i < 30; i++) view.RaiseTick();
+            Assert.Equal(StepState.NeedsAction, view.Steps[SetupStep.Firewall]);
+
+            firewall.Status = FirewallStatus.Allowed;
+            for (int i = 0; i < 30; i++) view.RaiseTick();
+
+            Assert.Equal(StepState.Done, view.Steps[SetupStep.Firewall]);
+            Assert.Equal(0, firewall.AllowCalls);
+        }
+
+        [Fact]
         public void RefusedRightsChangeNothing()
         {
             joystickSetup.Ready = false;

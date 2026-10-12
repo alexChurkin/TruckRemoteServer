@@ -75,6 +75,10 @@ namespace TruckRemoteServer.Presentation
         private readonly string programPath;
         private readonly Func<Action, Task> runInBackground;
         private readonly Dictionary<SetupStep, StepState> states = new Dictionary<SetupStep, StepState>();
+        //Ticks of the view between the checks of a firewall that blocks the server: about 2 seconds
+        private const int FirewallRecheckTicks = 20;
+        private int ticksSinceFirewallCheck;
+        private bool firewallChecking;
 
         public SetupWizard(ISetupWizardView view, ControllerServer server, ControllerInputMapper input,
             IVirtualJoystick joystick, ISettingsStore settings, IFirewall firewall, INetworkInfo network,
@@ -93,7 +97,11 @@ namespace TruckRemoteServer.Presentation
             this.programPath = programPath;
             this.runInBackground = runInBackground;
             view.FixRequested += (s, step) => Fix(step);
-            view.Tick += (s, e) => ShowPhone();
+            view.Tick += (s, e) =>
+            {
+                ShowPhone();
+                RecheckFirewall();
+            };
         }
 
         //The state of a step as it was shown last
@@ -199,6 +207,31 @@ namespace TruckRemoteServer.Presentation
                 },
                 () => Show(SetupStep.Firewall, !Blocks(status) ? StepState.Done
                     : applied ? StepState.Failed : StepState.NeedsAction));
+        }
+
+        //Windows asks about a new program itself when the server starts (its "Allow access" window) and blocks the
+        //program until it is answered: a step that needs an action is checked again once in a while, so the answer
+        //given there is seen, and the button of the step (one more question of Windows) isn't needed
+        private void RecheckFirewall()
+        {
+            if (!NeedsFirewall() || firewallChecking || ++ticksSinceFirewallCheck < FirewallRecheckTicks) return;
+            ticksSinceFirewallCheck = 0;
+            firewallChecking = true;
+            int port = settings.Port;
+            FirewallStatus status = FirewallStatus.Unknown;
+            Background(() => status = firewall.Check(programPath, port),
+                () =>
+                {
+                    firewallChecking = false;
+                    //Not while the button of the step is at work
+                    if (NeedsFirewall() && !Blocks(status)) Show(SetupStep.Firewall, StepState.Done);
+                });
+        }
+
+        private bool NeedsFirewall()
+        {
+            StepState state = State(SetupStep.Firewall);
+            return state == StepState.NeedsAction || state == StepState.Failed;
         }
 
         //Unknown: another firewall or the service is stopped, nothing can be told or done then

@@ -61,6 +61,8 @@ namespace TruckRemoteServer.Presentation
             view.MinimizeToTrayChanged += (s, enabled) => ChangeMinimizeToTray(enabled);
             view.StartWithWindowsChanged += (s, enabled) => ChangeStartWithWindows(enabled);
             view.AllowFirewallRequested += (s, e) => AllowInFirewall();
+            //The user may have allowed the server in the window of Windows itself: the warning goes away then
+            view.FirewallCheckRequested += (s, e) => CheckFirewall(offerFix: false);
             view.InstallJoystickRequested += (s, e) => SetupJoystick();
             view.SetupWizardRequested += (s, e) => OpenSetupWizard();
             view.UpdateRequested += (s, e) => InstallUpdate();

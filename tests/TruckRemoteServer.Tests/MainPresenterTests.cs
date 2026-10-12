@@ -145,6 +145,21 @@ namespace TruckRemoteServer.Tests
         }
 
         [Fact]
+        public void AccessAllowedInTheWindowOfWindowsHidesTheWarning()
+        {
+            firewall.Status = FirewallStatus.Blocked;
+            view.AnswerAllowFirewall = false;
+            view.Show();
+            Assert.True(view.FirewallWarning);
+
+            firewall.Status = FirewallStatus.Allowed;
+            view.RaiseFirewallCheck();
+
+            Assert.False(view.FirewallWarning);
+            Assert.Equal(0, firewall.AllowCalls);
+        }
+
+        [Fact]
         public void DeclinedFirewallFixLeavesTheLink()
         {
             firewall.Status = FirewallStatus.Blocked;

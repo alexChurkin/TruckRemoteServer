@@ -179,7 +179,8 @@ namespace TruckRemoteServer.Presentation
                     done = joystickSetup.Setup();
                     needsSetup = joystickSetup.NeedsSetup();
                     //A connected phone gets the joystick at once
-                    if (!needsSetup && !joystick.IsAvailable) joystick.Initialize();
+                    //(and a device that got its pedal axes is taken again)
+                    if (!needsSetup && (!joystick.IsAvailable || !joystick.HasPedalAxes)) joystick.Initialize();
                 },
                 () => Show(SetupStep.Joystick, !needsSetup ? StepState.Done
                     : done ? StepState.Failed : StepState.NeedsAction));

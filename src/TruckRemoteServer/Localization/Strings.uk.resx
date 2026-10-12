@@ -38,12 +38,12 @@
 Наприклад: {1}</value></data>
   <data name="SelectGameFolder" xml:space="preserve"><value>Виберіть папку {0}</value></data>
   <data name="Version" xml:space="preserve"><value>Версія {0}</value></data>
-  <data name="JoystickWarning" xml:space="preserve"><value>vJoy не встановлено або не налаштовано: телефон не може кермувати.</value></data>
+  <data name="JoystickWarning" xml:space="preserve"><value>vJoy не встановлено або не налаштовано: телефон не може кермувати й плавно натискати педалі.</value></data>
   <data name="JoystickInstall" xml:space="preserve"><value>Встановити</value></data>
   <data name="JoystickQuestion" xml:space="preserve"><value>vJoy (драйвер віртуального джойстика) не встановлено або не налаштовано, без нього телефон не може кермувати.
 
 Встановити й налаштувати його зараз? Потрібні права адміністратора, Windows також може попросити довіряти драйверу vJoy.</value></data>
-  <data name="JoystickSetupFailed" xml:space="preserve"><value>vJoy не налаштувався. Встановіть vJoySetup.exe з релізу вручну й увімкніть вісь X у пристрою 1 у Configure vJoy.</value></data>
+  <data name="JoystickSetupFailed" xml:space="preserve"><value>vJoy не налаштувався. Встановіть vJoySetup.exe з релізу вручну й увімкніть осі X, Y і Z у пристрою 1 у Configure vJoy.</value></data>
   <data name="PortItem" xml:space="preserve"><value>Порт: {0}…</value></data>
   <data name="PortTitle" xml:space="preserve"><value>Порт сервера</value></data>
   <data name="PortHint" xml:space="preserve"><value>Такий самий порт треба вказати в застосунку. Змінюйте його, лише якщо цей зайнятий іншою програмою.</value></data>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -18,9 +19,20 @@ namespace TruckRemoteServer.Infrastructure
 
         private const uint DeviceId = 1;
         private const string SetupResource = "vJoySetup.exe";
-        //As recommended before: steering on X, 8 buttons, force feedback. Pedal axes (Y, Z) are added by the user
-        //for analog pedals: unbound axes resting in the middle could press the pedals if the game binds them
-        private const string DeviceConfig = "1 -f -a x -b 8 -e All";
+        //The steering on X and the analog pedals on Y and Z (the server binds them in the game profiles, see
+        //GameControlsFile), 8 buttons, force feedback. No rotation axes: the game looks around with them in its
+        //menus and cameras whatever the profile binds
+        private static readonly HID_USAGES[] NeededAxes =
+        {
+            HID_USAGES.HID_USAGE_X, HID_USAGES.HID_USAGE_Y, HID_USAGES.HID_USAGE_Z
+        };
+        //The other axes, as vJoyConfig names them: a device of the user keeps the ones it has
+        private static readonly (HID_USAGES Usage, string Name)[] OtherAxes =
+        {
+            (HID_USAGES.HID_USAGE_RX, "rx"), (HID_USAGES.HID_USAGE_RY, "ry"), (HID_USAGES.HID_USAGE_RZ, "rz"),
+            (HID_USAGES.HID_USAGE_SL0, "sl0"), (HID_USAGES.HID_USAGE_SL1, "sl1")
+        };
+        private const int Buttons = 8;
         private const int SetupTimeoutMs = 5 * 60 * 1000;
         private const int ConfigTimeoutMs = 60 * 1000;
 
@@ -35,7 +47,7 @@ namespace TruckRemoteServer.Infrastructure
                 if (!device.vJoyEnabled()) return true;
                 VjdStat status = device.GetVJDStatus(DeviceId);
                 if (status == VjdStat.VJD_STAT_MISS || status == VjdStat.VJD_STAT_UNKN) return true;
-                return !device.GetVJDAxisExist(DeviceId, HID_USAGES.HID_USAGE_X);
+                return !HasNeededAxes(device);
             }
             catch (Exception e)
             {
@@ -102,7 +114,7 @@ namespace TruckRemoteServer.Infrastructure
                 }
 
                 Run(configTool, "enable on", ConfigTimeoutMs);
-                if (installedNow || DeviceNeedsConfig()) Run(configTool, DeviceConfig, ConfigTimeoutMs);
+                if (installedNow || DeviceNeedsConfig()) Run(configTool, DeviceConfig(installedNow), ConfigTimeoutMs);
 
                 bool ready = WaitUntilReady();
                 Log(ready ? "vJoy is ready" : "vJoy isn't ready");
@@ -121,14 +133,50 @@ namespace TruckRemoteServer.Infrastructure
             {
                 var device = new vJoy();
                 VjdStat status = device.GetVJDStatus(DeviceId);
-                return status == VjdStat.VJD_STAT_MISS || status == VjdStat.VJD_STAT_UNKN
-                    || !device.GetVJDAxisExist(DeviceId, HID_USAGES.HID_USAGE_X);
+                return status == VjdStat.VJD_STAT_MISS || status == VjdStat.VJD_STAT_UNKN || !HasNeededAxes(device);
             }
             catch (Exception e)
             {
                 Log("Device check failed: " + e.Message);
                 return true;
             }
+        }
+
+        private static bool HasNeededAxes(vJoy device)
+        {
+            return NeededAxes.All(axis => device.GetVJDAxisExist(DeviceId, axis));
+        }
+
+        //The arguments of vJoyConfig for device 1. A device of the user that lacks an axis gets it and keeps what
+        //it has (its other axes, buttons and POV switches); the default device of a fresh vJoy is replaced
+        private static string DeviceConfig(bool replace)
+        {
+            var axes = new List<string> { "x", "y", "z" };
+            int buttons = Buttons;
+            string povs = "";
+            if (!replace)
+            {
+                try
+                {
+                    var device = new vJoy();
+                    VjdStat status = device.GetVJDStatus(DeviceId);
+                    if (status != VjdStat.VJD_STAT_MISS && status != VjdStat.VJD_STAT_UNKN)
+                    {
+                        axes.AddRange(OtherAxes.Where(axis => device.GetVJDAxisExist(DeviceId, axis.Usage))
+                            .Select(axis => axis.Name));
+                        buttons = Math.Max(buttons, device.GetVJDButtonNumber(DeviceId));
+                        int continuous = device.GetVJDContPovNumber(DeviceId);
+                        int discrete = device.GetVJDDiscPovNumber(DeviceId);
+                        if (continuous > 0) povs = " -p " + continuous;
+                        else if (discrete > 0) povs = " -s " + discrete;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log("Device check failed: " + e.Message);
+                }
+            }
+            return DeviceId + " -f -a " + string.Join(" ", axes) + " -b " + buttons + povs + " -e All";
         }
 
         //The driver restarts the device after configuring

@@ -3,7 +3,7 @@ namespace TruckRemoteServer.Presentation
     //vJoy driver and its device 1: the phone steers through it
     public interface IJoystickSetup
     {
-        //The driver isn't installed or enabled, or device 1 doesn't exist or has no steering axis.
+        //The driver isn't installed or enabled, or device 1 doesn't exist or lacks the steering or a pedal axis.
         //A device used by another program doesn't need setup
         bool NeedsSetup();
 

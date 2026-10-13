@@ -109,7 +109,7 @@ vJoy. Автоматическая настройка vJoy создаёт 1-е �
 
 Приятного управления!
 
-![Screenshot](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot.png)
+<img src="https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_ru.png" alt="Окно сервера" width="488">
 
 
 ## Сборка

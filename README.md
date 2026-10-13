@@ -110,7 +110,7 @@ made in the game while it's running gets its controller after the game is closed
 
 Enjoy using!
 
-![Screenshot](https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot.png)
+<img src="https://github.com/alexChurkin/TruckRemoteServer/raw/master/Screenshot_en.png" alt="The server window" width="488">
 
 
 ## Building
